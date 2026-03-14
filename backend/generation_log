@@ -1,0 +1,1070 @@
+[
+  {
+    "step": 1,
+    "status": "generating",
+    "file": "config.py"
+  },
+  {
+    "step": 1,
+    "status": "completed",
+    "file": "config.py"
+  },
+  {
+    "step": 2,
+    "status": "generating",
+    "file": "models/"
+  },
+  {
+    "step": 2,
+    "status": "completed",
+    "file": "models/"
+  },
+  {
+    "step": 3,
+    "status": "generating",
+    "file": "database.py"
+  },
+  {
+    "step": 3,
+    "status": "completed",
+    "file": "database.py"
+  },
+  {
+    "step": 4,
+    "status": "generating",
+    "file": "auth.py"
+  },
+  {
+    "step": 4,
+    "status": "completed",
+    "file": "auth.py"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/ai-interactions_service.py",
+    "sub_step": "1/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/ai-interactions_service.py",
+    "sub_step": "1/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/analyst_service.py",
+    "sub_step": "2/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/analyst_service.py",
+    "sub_step": "2/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/business-groups_service.py",
+    "sub_step": "3/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/business-groups_service.py",
+    "sub_step": "3/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_ai_interactions_service.py",
+    "sub_step": "4/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_ai_interactions_service.py",
+    "sub_step": "4/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_business_councils_service.py",
+    "sub_step": "5/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_business_councils_service.py",
+    "sub_step": "5/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_business_groups_service.py",
+    "sub_step": "6/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_business_groups_service.py",
+    "sub_step": "6/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_comments_service.py",
+    "sub_step": "7/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_comments_service.py",
+    "sub_step": "7/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_compliance_audits_service.py",
+    "sub_step": "8/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_compliance_audits_service.py",
+    "sub_step": "8/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_desc_certified_providers_service.py",
+    "sub_step": "9/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_desc_certified_providers_service.py",
+    "sub_step": "9/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_documents_service.py",
+    "sub_step": "10/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_documents_service.py",
+    "sub_step": "10/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_evaluations_service.py",
+    "sub_step": "11/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_evaluations_service.py",
+    "sub_step": "11/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_notification_preferences_service.py",
+    "sub_step": "12/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_notification_preferences_service.py",
+    "sub_step": "12/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_proposals_service.py",
+    "sub_step": "13/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_proposals_service.py",
+    "sub_step": "13/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_trend_analyses_service.py",
+    "sub_step": "14/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_trend_analyses_service.py",
+    "sub_step": "14/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_users_service.py",
+    "sub_step": "15/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_users_service.py",
+    "sub_step": "15/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_vendor_profiles_service.py",
+    "sub_step": "16/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_vendor_profiles_service.py",
+    "sub_step": "16/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/chamber_vendors_service.py",
+    "sub_step": "17/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/chamber_vendors_service.py",
+    "sub_step": "17/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/comments_service.py",
+    "sub_step": "18/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/comments_service.py",
+    "sub_step": "18/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/compliance-audits_service.py",
+    "sub_step": "19/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/compliance-audits_service.py",
+    "sub_step": "19/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/desc-certified-providers_service.py",
+    "sub_step": "20/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/desc-certified-providers_service.py",
+    "sub_step": "20/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/documents_service.py",
+    "sub_step": "21/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/documents_service.py",
+    "sub_step": "21/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/download_service.py",
+    "sub_step": "22/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/download_service.py",
+    "sub_step": "22/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/duplicate-check_service.py",
+    "sub_step": "23/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/duplicate-check_service.py",
+    "sub_step": "23/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/evaluate_service.py",
+    "sub_step": "24/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/evaluate_service.py",
+    "sub_step": "24/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/evaluation-config_service.py",
+    "sub_step": "25/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/evaluation-config_service.py",
+    "sub_step": "25/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/evaluations_service.py",
+    "sub_step": "26/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/evaluations_service.py",
+    "sub_step": "26/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/executive_service.py",
+    "sub_step": "27/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/executive_service.py",
+    "sub_step": "27/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/extracted-data_service.py",
+    "sub_step": "28/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/extracted-data_service.py",
+    "sub_step": "28/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/generate_service.py",
+    "sub_step": "29/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/generate_service.py",
+    "sub_step": "29/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/health_service.py",
+    "sub_step": "30/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/health_service.py",
+    "sub_step": "30/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/login_service.py",
+    "sub_step": "31/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/login_service.py",
+    "sub_step": "31/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/logout_service.py",
+    "sub_step": "32/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/logout_service.py",
+    "sub_step": "32/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/me_service.py",
+    "sub_step": "33/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/me_service.py",
+    "sub_step": "33/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/proposals_service.py",
+    "sub_step": "34/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/proposals_service.py",
+    "sub_step": "34/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/refresh_service.py",
+    "sub_step": "35/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/refresh_service.py",
+    "sub_step": "35/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/report_service.py",
+    "sub_step": "36/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/report_service.py",
+    "sub_step": "36/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/sector_service.py",
+    "sub_step": "37/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/sector_service.py",
+    "sub_step": "37/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/status_service.py",
+    "sub_step": "38/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/status_service.py",
+    "sub_step": "38/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/submit_service.py",
+    "sub_step": "39/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/submit_service.py",
+    "sub_step": "39/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/trend-analyses_service.py",
+    "sub_step": "40/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/trend-analyses_service.py",
+    "sub_step": "40/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/vendors_service.py",
+    "sub_step": "41/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/vendors_service.py",
+    "sub_step": "41/42"
+  },
+  {
+    "step": 5,
+    "status": "generating",
+    "file": "services/verify_service.py",
+    "sub_step": "42/42"
+  },
+  {
+    "step": 5,
+    "status": "completed",
+    "file": "services/verify_service.py",
+    "sub_step": "42/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/ai-interactions.py",
+    "sub_step": "1/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/ai-interactions.py",
+    "sub_step": "1/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/analyst.py",
+    "sub_step": "2/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/analyst.py",
+    "sub_step": "2/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/business-groups.py",
+    "sub_step": "3/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/business-groups.py",
+    "sub_step": "3/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_ai_interactions.py",
+    "sub_step": "4/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_ai_interactions.py",
+    "sub_step": "4/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_business_councils.py",
+    "sub_step": "5/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_business_councils.py",
+    "sub_step": "5/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_business_groups.py",
+    "sub_step": "6/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_business_groups.py",
+    "sub_step": "6/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_comments.py",
+    "sub_step": "7/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_comments.py",
+    "sub_step": "7/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_compliance_audits.py",
+    "sub_step": "8/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_compliance_audits.py",
+    "sub_step": "8/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_desc_certified_providers.py",
+    "sub_step": "9/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_desc_certified_providers.py",
+    "sub_step": "9/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_documents.py",
+    "sub_step": "10/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_documents.py",
+    "sub_step": "10/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_evaluations.py",
+    "sub_step": "11/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_evaluations.py",
+    "sub_step": "11/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_notification_preferences.py",
+    "sub_step": "12/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_notification_preferences.py",
+    "sub_step": "12/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_proposals.py",
+    "sub_step": "13/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_proposals.py",
+    "sub_step": "13/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_trend_analyses.py",
+    "sub_step": "14/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_trend_analyses.py",
+    "sub_step": "14/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_users.py",
+    "sub_step": "15/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_users.py",
+    "sub_step": "15/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_vendor_profiles.py",
+    "sub_step": "16/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_vendor_profiles.py",
+    "sub_step": "16/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/chamber_vendors.py",
+    "sub_step": "17/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/chamber_vendors.py",
+    "sub_step": "17/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/comments.py",
+    "sub_step": "18/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/comments.py",
+    "sub_step": "18/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/compliance-audits.py",
+    "sub_step": "19/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/compliance-audits.py",
+    "sub_step": "19/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/desc-certified-providers.py",
+    "sub_step": "20/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/desc-certified-providers.py",
+    "sub_step": "20/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/documents.py",
+    "sub_step": "21/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/documents.py",
+    "sub_step": "21/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/download.py",
+    "sub_step": "22/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/download.py",
+    "sub_step": "22/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/duplicate-check.py",
+    "sub_step": "23/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/duplicate-check.py",
+    "sub_step": "23/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/evaluate.py",
+    "sub_step": "24/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/evaluate.py",
+    "sub_step": "24/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/evaluation-config.py",
+    "sub_step": "25/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/evaluation-config.py",
+    "sub_step": "25/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/evaluations.py",
+    "sub_step": "26/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/evaluations.py",
+    "sub_step": "26/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/executive.py",
+    "sub_step": "27/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/executive.py",
+    "sub_step": "27/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/extracted-data.py",
+    "sub_step": "28/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/extracted-data.py",
+    "sub_step": "28/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/generate.py",
+    "sub_step": "29/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/generate.py",
+    "sub_step": "29/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/health.py",
+    "sub_step": "30/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/health.py",
+    "sub_step": "30/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/login.py",
+    "sub_step": "31/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/login.py",
+    "sub_step": "31/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/logout.py",
+    "sub_step": "32/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/logout.py",
+    "sub_step": "32/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/me.py",
+    "sub_step": "33/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/me.py",
+    "sub_step": "33/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/proposals.py",
+    "sub_step": "34/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/proposals.py",
+    "sub_step": "34/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/refresh.py",
+    "sub_step": "35/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/refresh.py",
+    "sub_step": "35/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/report.py",
+    "sub_step": "36/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/report.py",
+    "sub_step": "36/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/sector.py",
+    "sub_step": "37/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/sector.py",
+    "sub_step": "37/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/status.py",
+    "sub_step": "38/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/status.py",
+    "sub_step": "38/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/submit.py",
+    "sub_step": "39/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/submit.py",
+    "sub_step": "39/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/trend-analyses.py",
+    "sub_step": "40/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/trend-analyses.py",
+    "sub_step": "40/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/vendors.py",
+    "sub_step": "41/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/vendors.py",
+    "sub_step": "41/42"
+  },
+  {
+    "step": 6,
+    "status": "generating",
+    "file": "routes/verify.py",
+    "sub_step": "42/42"
+  },
+  {
+    "step": 6,
+    "status": "completed",
+    "file": "routes/verify.py",
+    "sub_step": "42/42"
+  },
+  {
+    "step": 7,
+    "status": "generating",
+    "file": "main.py"
+  },
+  {
+    "step": 7,
+    "status": "completed",
+    "file": "main.py"
+  },
+  {
+    "step": 8,
+    "status": "generating",
+    "file": "requirements.txt"
+  },
+  {
+    "step": 8,
+    "status": "completed",
+    "file": "requirements.txt"
+  }
+]
