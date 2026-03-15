@@ -6,7 +6,7 @@ import logging
 import sys
 
 from config import CORS_ORIGINS, APP_VERSION, ENVIRONMENT, validate_env_vars
-from database import get_db_pool
+from database import supabase
 
 # Import all route modules
 from routes import (
@@ -130,13 +130,8 @@ async def startup_event():
     
     # Test database connection
     try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            result = await conn.fetchval("SELECT 1")
-            if result == 1:
-                logger.info("✓ Database connection established")
-            else:
-                raise Exception("Database connection test failed")
+        result = supabase.table("chamber_vendors").select("id").limit(1).execute()
+        logger.info("✓ Database connection established")
     except Exception as e:
         logger.error(f"✗ Database connection failed: {str(e)}")
         sys.exit(1)
@@ -160,10 +155,8 @@ async def shutdown_event():
 )
 async def health_check():
     try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            db_status = await conn.fetchval("SELECT 1")
-            db_healthy = db_status == 1
+        supabase.table("chamber_vendors").select("id").limit(1).execute()
+        db_healthy = True
     except Exception as e:
         logger.error(f"Health check database error: {str(e)}")
         db_healthy = False
