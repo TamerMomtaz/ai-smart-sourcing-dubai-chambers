@@ -11,7 +11,7 @@ from models import (
     ExtractedDocumentData,
     ErrorResponse,
 )
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import document_service, download_service, extracted_data_service
 
 logger = logging.getLogger(__name__)

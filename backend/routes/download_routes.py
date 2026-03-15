@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 import logging
 import os
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.document import DocumentDownloadResponse
 from models.common import ErrorResponse

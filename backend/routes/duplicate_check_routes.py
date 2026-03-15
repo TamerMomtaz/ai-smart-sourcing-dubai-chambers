@@ -5,7 +5,7 @@ import logging
 
 from models.proposal import DuplicateCheckResponse
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services.duplicate_check_service import run_duplicate_check
 
 logger = logging.getLogger(__name__)

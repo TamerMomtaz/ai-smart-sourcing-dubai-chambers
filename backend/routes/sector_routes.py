@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any
 import logging
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.dashboard import SectorDashboard
 from models.common import ErrorResponse
 from services.sector_service import get_sector_dashboard

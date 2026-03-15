@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime, timezone
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.user import NotificationPreferences
 from database import supabase
 import logging

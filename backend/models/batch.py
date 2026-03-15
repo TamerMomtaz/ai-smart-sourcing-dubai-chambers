@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 from uuid import UUID
 from datetime import datetime
@@ -23,6 +23,3 @@ class BatchJobStatus(BaseModel):
     failed: int = Field(..., description="Number of failed proposals")
     started_at: datetime = Field(..., description="Job start timestamp")
     completed_at: Optional[datetime] = Field(None, description="Job completion timestamp")
-
-
-from typing import Optional

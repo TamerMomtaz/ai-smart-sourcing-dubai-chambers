@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from uuid import UUID
 from datetime import datetime
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.comment import CommentCreate, CommentResponse
 from models.common import ErrorResponse, PaginationResponse

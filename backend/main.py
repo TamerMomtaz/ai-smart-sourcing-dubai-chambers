@@ -133,8 +133,7 @@ async def startup_event():
         result = supabase.table("chamber_vendors").select("id").limit(1).execute()
         logger.info("✓ Database connection established")
     except Exception as e:
-        logger.error(f"✗ Database connection failed: {str(e)}")
-        sys.exit(1)
+        logger.warning(f"⚠ Database connection check failed: {str(e)} — app will retry on first request")
     
     logger.info("✓ Application startup complete")
     logger.info(f"✓ CORS origins configured: {len(CORS_ORIGINS)} origin(s)")

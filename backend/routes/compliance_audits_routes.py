@@ -12,7 +12,7 @@ from models.compliance import (
 )
 from models.export import ExportResponse
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services.compliance_audits_service import create_compliance_audit
 from services.report_service import generate_compliance_report
 from database import supabase

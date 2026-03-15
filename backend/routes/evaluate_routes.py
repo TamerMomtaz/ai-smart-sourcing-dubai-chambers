@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.batch import BatchEvaluateRequest, BatchJobResponse
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services.evaluate_service import trigger_proposal_evaluation, trigger_batch_evaluation
 import logging
 

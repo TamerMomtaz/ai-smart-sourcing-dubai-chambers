@@ -10,7 +10,7 @@ from models import (
     ErrorResponse,
     PaginationResponse,
 )
-from middleware.auth import get_current_user
+from auth import get_current_user
 from services import trend_analysis_service
 from database import supabase
 

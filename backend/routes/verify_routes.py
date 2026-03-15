@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any
 import logging
 
-from auth.jwt_handler import get_current_user
+from auth import get_current_user
 from models.compliance import (
     CertifiedProviderVerifyRequest,
     CertifiedProviderVerifyResponse,

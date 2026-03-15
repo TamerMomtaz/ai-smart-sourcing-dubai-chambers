@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import EvaluationDetail, ErrorResponse
-from auth.jwt_handler import get_current_user
+from auth import get_current_user
 from services import evaluation_service
 import logging
 
