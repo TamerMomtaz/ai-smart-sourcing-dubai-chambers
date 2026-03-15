@@ -159,8 +159,9 @@ async def update_vendor(
             profile_data = update_data.profile.model_dump(exclude_none=True)
         
         # Call service to update vendor
-        from services import chamber_vendor_service, chamber_vendor_profile_service
-        
+        from services import chamber_vendor_service
+        from services.chamber_vendor_profile_service import ChamberVendorProfileService
+
         # Update vendor base fields
         if update_payload:
             updated_vendor = await chamber_vendor_service.update_vendor(
@@ -173,16 +174,16 @@ async def update_vendor(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={"error": "Not Found", "detail": "Vendor not found", "code": 404},
                 )
-        
+
         # Update vendor profile if provided
         if profile_data:
-            updated_profile = await chamber_vendor_profile_service.update(
+            updated_profile = await ChamberVendorProfileService.update(
                 vendor_id=vendor_id,
                 **profile_data
             )
             if not updated_profile:
                 # If profile doesn't exist, create it
-                created_profile = await chamber_vendor_profile_service.create(
+                created_profile = await ChamberVendorProfileService.create(
                     vendor_id=vendor_id,
                     **profile_data
                 )
