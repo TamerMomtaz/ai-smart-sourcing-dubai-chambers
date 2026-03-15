@@ -2,7 +2,9 @@ from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Dict, List
-from config import SUPABASE_JWT_SECRET
+import os
+
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "").strip() or None
 
 security = HTTPBearer()
 
@@ -86,6 +88,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     Extract user id, email, role, and permissions.
     Default role to 'vendor' (lowest privilege) if not specified.
     """
+    if not SUPABASE_JWT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "auth_config_error",
+                "detail": "SUPABASE_JWT_SECRET is not configured",
+                "code": 500
+            }
+        )
     try:
         payload = jwt.decode(
             credentials.credentials,

@@ -10,7 +10,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 if not JWT_SECRET:
-    raise ValueError("JWT_SECRET environment variable not set")
+    import logging as _logging
+    _logging.getLogger(__name__).warning("JWT_SECRET environment variable is not set; refresh service will fail at runtime")
 
 
 def refresh_access_token(refresh_token: str) -> Optional[Dict[str, Any]]:

@@ -20,7 +20,7 @@ def _get_env(key, required=True, default=None):
 SUPABASE_URL = _get_env("SUPABASE_URL")
 SUPABASE_ANON_KEY = _get_env("SUPABASE_ANON_KEY")
 SUPABASE_SERVICE_ROLE_KEY = _get_env("SUPABASE_SERVICE_ROLE_KEY")
-SUPABASE_JWT_SECRET = _get_env("SUPABASE_JWT_SECRET")
+SUPABASE_JWT_SECRET = _get_env("SUPABASE_JWT_SECRET", required=False, default=None)
 
 CORS_ORIGINS_RAW = _get_env("CORS_ORIGINS", required=False, default="http://localhost:3000")
 CORS_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_RAW.split(",") if origin.strip()]
@@ -90,7 +90,7 @@ APP_VERSION = _get_env("APP_VERSION", required=False, default="1.0.0")
 
 def validate_env_vars():
     """Validate that all required environment variables are set."""
-    required = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_JWT_SECRET"]
+    required = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"]
     missing = [var for var in required if not os.environ.get(var)]
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
