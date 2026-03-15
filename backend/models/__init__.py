@@ -9,11 +9,13 @@ from models.proposal import (
     ProposalDetail,
     ProposalListResponse,
     ProposalStatusUpdate,
+    ProposalStatusUpdateResponse,
     ProposalSubmitResponse,
+    ProposalEvaluateResponse,
     DuplicateCheckResponse,
     SimilarProposal,
 )
-from models.document import DocumentCreate, DocumentResponse, DocumentUploadResponse, ExtractedDocumentData
+from models.document import DocumentCreate, DocumentResponse, DocumentUploadResponse, DocumentDownloadResponse, ExtractedDocumentData
 from models.evaluation import EvaluationResponse, EvaluationDetail
 from models.compliance import (
     ComplianceAuditCreate,
@@ -65,12 +67,15 @@ __all__ = [
     "ProposalDetail",
     "ProposalListResponse",
     "ProposalStatusUpdate",
+    "ProposalStatusUpdateResponse",
     "ProposalSubmitResponse",
+    "ProposalEvaluateResponse",
     "DuplicateCheckResponse",
     "SimilarProposal",
     "DocumentCreate",
     "DocumentResponse",
     "DocumentUploadResponse",
+    "DocumentDownloadResponse",
     "ExtractedDocumentData",
     "EvaluationResponse",
     "EvaluationDetail",

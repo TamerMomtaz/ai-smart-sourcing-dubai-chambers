@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.evaluation import EvaluationResponse, EvaluationDetail
 from models.common import PaginationResponse, ErrorResponse

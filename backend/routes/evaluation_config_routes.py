@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 import logging
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.business_group import (
     EvaluationWeightConfigUpdate,

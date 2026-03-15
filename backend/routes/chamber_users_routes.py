@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from models.user import UserProfile, UserProfileUpdate
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import chamber_users_service
 import logging
 

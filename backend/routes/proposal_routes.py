@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import datetime
 import logging
 
-from auth.jwt_handler import get_current_user
+from auth import get_current_user
 from models import (
     ProposalCreate,
     ProposalResponse,

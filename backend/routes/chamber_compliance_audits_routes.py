@@ -10,7 +10,7 @@ from models.compliance import (
     ComplianceReportResponse,
 )
 from models.common import PaginationResponse, ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import chamber_compliance_audits_service as compliance_service
 from services import report_service
 import logging

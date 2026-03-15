@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from datetime import datetime, timezone
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.proposal import (
     ProposalCreate,

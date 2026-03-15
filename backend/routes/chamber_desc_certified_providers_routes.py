@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import date
 from models.compliance import CertifiedProvider, CertifiedProviderVerifyRequest, CertifiedProviderVerifyResponse
 from models.common import ErrorResponse, PaginationResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import chamber_desc_certified_providers_service
 import logging
 

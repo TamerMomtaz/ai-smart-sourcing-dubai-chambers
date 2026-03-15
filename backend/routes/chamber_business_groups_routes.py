@@ -11,7 +11,7 @@ from models.business_group import (
     EvaluationWeightConfigUpdateResponse,
 )
 from models.common import ErrorResponse, PaginationResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 import services.business_group_service as business_group_service
 import logging
 

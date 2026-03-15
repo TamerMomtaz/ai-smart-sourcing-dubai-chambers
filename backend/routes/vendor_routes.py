@@ -5,7 +5,7 @@ from datetime import datetime
 
 from models.vendor import VendorResponse, VendorProfileUpdate, VendorUpdateResponse
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import vendor_service
 import logging
 

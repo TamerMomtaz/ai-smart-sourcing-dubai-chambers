@@ -178,6 +178,28 @@ def get_by_session(user_id: UUID, session_id: UUID) -> List[Dict[str, Any]]:
     return response.data if response.data else []
 
 
+def get_ai_interaction_summary(
+    user_id: UUID,
+    limit: int = 10,
+    session_id: Optional[UUID] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+) -> Dict[str, Any]:
+    """
+    Convenience wrapper around get_summary that accepts a limit parameter.
+    The limit controls how many recent_interactions are returned.
+    """
+    result = get_summary(
+        user_id=user_id,
+        session_id=session_id,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    if limit and result.get("recent_interactions"):
+        result["recent_interactions"] = result["recent_interactions"][:limit]
+    return result
+
+
 def delete(user_id: UUID, interaction_id: UUID) -> bool:
     """
     Soft delete an AI interaction (mark as deleted, never actually remove for audit).

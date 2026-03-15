@@ -9,7 +9,7 @@ from models.trend_analysis import (
     TrendAnalysisGenerateResponse,
 )
 from models.common import PaginationResponse, ErrorResponse
-from middleware.auth import get_current_user
+from auth import get_current_user
 from services import trend_analysis_service
 import logging
 

@@ -3,7 +3,7 @@ from typing import Dict, Any
 from uuid import UUID
 import logging
 
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.auth import UserInfo
 from models.proposal import ProposalStatusUpdate, ProposalStatusUpdateResponse
 from models.batch import BatchJobStatus

@@ -3,7 +3,7 @@ from typing import Dict, Any
 from uuid import UUID
 from models.compliance import ComplianceReportResponse
 from models.common import ErrorResponse
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from services import report_service
 import logging
 

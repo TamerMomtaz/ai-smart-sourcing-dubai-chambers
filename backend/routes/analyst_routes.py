@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any
 from uuid import UUID
-from auth.dependencies import get_current_user
+from auth import get_current_user
 from models.dashboard import AnalystDashboard
 from models.common import ErrorResponse
 from services.analyst_service import get_analyst_dashboard
