@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-teal: #016764;
+  --color-gold: #B8904A;
+  --color-burgundy: #7A1E47;
+  --color-cream: #FAF8F4;
+  --color-ink: #1A1612;
+  --font-body: 'Outfit', sans-serif;
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-body;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+
+  code,
+  pre {
+    @apply font-mono;
+  }
+}
+
+@layer utilities {
+  .text-teal {
+    color: var(--color-teal);
+  }
+
+  .bg-teal {
+    background-color: var(--color-teal);
+  }
+
+  .border-teal {
+    border-color: var(--color-teal);
+  }
+
+  .text-gold {
+    color: var(--color-gold);
+  }
+
+  .bg-gold {
+    background-color: var(--color-gold);
+  }
+
+  .border-gold {
+    border-color: var(--color-gold);
+  }
+
+  .text-burgundy {
+    color: var(--color-burgundy);
+  }
+
+  .bg-burgundy {
+    background-color: var(--color-burgundy);
+  }
+
+  .border-burgundy {
+    border-color: var(--color-burgundy);
+  }
+
+  .bg-cream {
+    background-color: var(--color-cream);
+  }
+
+  .text-ink {
+    color: var(--color-ink);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
