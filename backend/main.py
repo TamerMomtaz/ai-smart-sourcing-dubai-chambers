@@ -74,11 +74,10 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
 # Global exception handler middleware
@@ -136,7 +135,7 @@ async def startup_event():
         logger.warning(f"⚠ Database connection check failed: {str(e)} — app will retry on first request")
     
     logger.info("✓ Application startup complete")
-    logger.info(f"✓ CORS origins configured: {len(CORS_ORIGINS)} origin(s)")
+    logger.info("✓ CORS origins configured: ['*'] (all origins allowed)")
     logger.info(f"✓ Docs available at: /docs")
     logger.info("=" * 60)
 
