@@ -39,7 +39,7 @@ const PrivateRoute = ({ children }) => {
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  return !user ? children : <Navigate to="/" />;
+  return !user ? children : <Navigate to="/dashboard" />;
 };
 
 function App() {
@@ -50,7 +50,8 @@ function App() {
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
             <Route path="proposals" element={<ProposalsList />} />
             <Route path="proposals/new" element={<ProposalForm />} />
