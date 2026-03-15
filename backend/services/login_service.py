@@ -13,7 +13,8 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7").strip())
 
 if not JWT_SECRET:
-    raise ValueError("JWT_SECRET environment variable is required")
+    import logging as _logging
+    _logging.getLogger(__name__).warning("JWT_SECRET environment variable is not set; login service will fail at runtime")
 
 
 def _hash_password(password: str) -> str:
