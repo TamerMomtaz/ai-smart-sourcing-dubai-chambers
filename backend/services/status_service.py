@@ -13,7 +13,7 @@ def update_proposal_status(
     """Update proposal status (analyst/executive only)."""
     
     # Verify proposal exists and get current data
-    result = supabase.table("proposals").select("id, status, created_by").eq("id", str(proposal_id)).maybe_single().execute()
+    result = supabase.table("chamber_proposals").select("id, status, created_by").eq("id", str(proposal_id)).maybe_single().execute()
     
     if not result.data:
         return None
@@ -44,7 +44,7 @@ def update_proposal_status(
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
-    update_result = supabase.table("proposals").update(update_data).eq("id", str(proposal_id)).execute()
+    update_result = supabase.table("chamber_proposals").update(update_data).eq("id", str(proposal_id)).execute()
     
     if not update_result.data:
         return None
@@ -58,7 +58,7 @@ def update_proposal_status(
             "reason": reason,
             "changed_at": datetime.now(timezone.utc).isoformat()
         }
-        supabase.table("proposal_status_history").insert(history_data).execute()
+        supabase.table("chamber_proposal_status_history").insert(history_data).execute()
     
     return {
         "proposal_id": str(proposal_id),
@@ -74,7 +74,7 @@ def get_batch_job_status(
     """Get status of batch processing job."""
     
     # Fetch batch job
-    result = supabase.table("batch_jobs").select(
+    result = supabase.table("chamber_batch_jobs").select(
         "id, status, total_proposals, processed, failed, started_at, completed_at, created_by"
     ).eq("id", str(batch_job_id)).maybe_single().execute()
     

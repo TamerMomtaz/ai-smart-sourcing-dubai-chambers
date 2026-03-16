@@ -84,7 +84,7 @@ async def run_duplicate_check(
     
     # Log duplicate check in ai_interactions table
     try:
-        supabase.table("ai_interactions").insert({
+        supabase.table("chamber_ai_interactions").insert({
             "proposal_id": str(proposal_id),
             "model_name": "embedding-service",
             "operation_type": "duplicate_check",

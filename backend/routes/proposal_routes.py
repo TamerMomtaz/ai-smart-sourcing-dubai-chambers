@@ -285,10 +285,10 @@ async def get_proposal_detail(
         user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
-        result = proposal_service.get_proposal_detail(
+        result = proposal_service.get_proposal_by_id(
             user_id=user_id,
-            proposal_id=proposal_id,
             user_role=user_role,
+            proposal_id=proposal_id,
         )
 
         if not result:
