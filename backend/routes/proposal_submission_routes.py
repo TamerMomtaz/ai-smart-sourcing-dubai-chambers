@@ -103,7 +103,7 @@ async def create_proposal(
             "language": payload.language,
             "description": payload.description.strip() if payload.description else None,
             "submitter_id": str(user_id),
-            "status": "submitted",
+            "status": "queued",
             "submission_date": datetime.now(timezone.utc).isoformat(),
             "is_duplicate": False,
             "requires_manual_review": False,
@@ -370,12 +370,12 @@ async def trigger_ai_evaluation(
             )
 
         current_status = proposal_result.data["status"]
-        if current_status not in ("submitted", "queued_for_evaluation", "requires_manual_review"):
+        if current_status not in ("queued", "submitted", "requires_manual_review", "requires_review"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "error": "Invalid status",
-                    "detail": f"Cannot evaluate proposal with status '{current_status}'. Must be 'submitted', 'queued_for_evaluation', or 'requires_manual_review'.",
+                    "detail": f"Cannot evaluate proposal with status '{current_status}'. Must be 'queued', 'submitted', 'requires_manual_review', or 'requires_review'.",
                     "code": 400,
                 },
             )
@@ -400,7 +400,7 @@ async def trigger_ai_evaluation(
         # Revert status on failure
         try:
             supabase.table("chamber_proposals").update({
-                "status": "submitted",
+                "status": "queued",
                 "updated_at": datetime.now(timezone.utc).isoformat(),
             }).eq("id", str(proposal_id)).execute()
         except Exception:
