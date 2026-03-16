@@ -52,7 +52,8 @@ from routes import (
     submit_routes,
     user_routes,
     vendor_routes,
-    verify_routes
+    verify_routes,
+    proposal_document_routes
 )
 
 # Configure logging
@@ -225,6 +226,7 @@ app.include_router(submit_routes.router, prefix="/api/v1", tags=["Submit"])
 app.include_router(user_routes.router, prefix="/api/v1", tags=["Users"])
 app.include_router(vendor_routes.router, prefix="/api/v1", tags=["Vendors"])
 app.include_router(verify_routes.router, prefix="/api/v1", tags=["Verify"])
+app.include_router(proposal_document_routes.router, prefix="/api/v1", tags=["Proposal Documents"])
 
 if __name__ == "__main__":
     import uvicorn

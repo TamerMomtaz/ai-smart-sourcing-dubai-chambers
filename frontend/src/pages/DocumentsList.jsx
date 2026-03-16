@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+
+const FILE_TYPE_STYLES = {
+  pdf: { color: 'text-red-500 bg-red-100 border-red-200', label: 'PDF' },
+  docx: { color: 'text-blue-600 bg-blue-100 border-blue-200', label: 'DOCX' },
+  pptx: { color: 'text-orange-500 bg-orange-100 border-orange-200', label: 'PPTX' },
+  xlsx: { color: 'text-emerald-600 bg-emerald-100 border-emerald-200', label: 'XLSX' },
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 const DocumentsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -8,19 +22,34 @@ const DocumentsList = () => {
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [pagination, setPagination] = useState(null);
+  const [search, setSearch] = useState('');
+  const [fileTypeFilter, setFileTypeFilter] = useState('');
+  const [proposals, setProposals] = useState({});
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 30;
 
   useEffect(() => {
     fetchDocuments();
-  }, [page]);
+  }, [page, fileTypeFilter]);
+
+  useEffect(() => {
+    // Fetch proposals for title mapping
+    api.get('/api/v1/chamber_proposals?page_size=200').then(({ data }) => {
+      const map = {};
+      const items = data.proposals || data.data || [];
+      items.forEach((p) => { map[p.id] = p.title; });
+      setProposals(map);
+    }).catch(() => {});
+  }, []);
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/api/v1/documents?page=${page}&page_size=${pageSize}`);
+      let url = `/api/v1/chamber-documents?page=${page}&page_size=${pageSize}`;
+      if (fileTypeFilter) url += `&file_type=${fileTypeFilter}`;
+      const res = await api.get(url);
       setDocuments(res.data.documents || []);
       setPagination(res.data.pagination);
     } catch (err) {
@@ -33,6 +62,21 @@ const DocumentsList = () => {
   const handlePageChange = (newPage) => {
     setSearchParams({ page: newPage.toString() });
   };
+
+  const handleDownload = async (docId) => {
+    try {
+      const { data } = await api.get(`/api/v1/chamber-documents/${docId}/download`);
+      if (data.download_url) {
+        window.open(data.download_url, '_blank');
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  };
+
+  const filteredDocs = search
+    ? documents.filter((d) => d.file_name.toLowerCase().includes(search.toLowerCase()))
+    : documents;
 
   if (loading) {
     return (
@@ -55,11 +99,34 @@ const DocumentsList = () => {
           </div>
         )}
 
+        {/* Search and filters */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <input
+            type="text"
+            placeholder="Search by filename..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-ink/20 bg-white text-ink focus:outline-none focus:ring-2 focus:ring-teal/50 w-64"
+          />
+          <select
+            value={fileTypeFilter}
+            onChange={(e) => { setFileTypeFilter(e.target.value); setSearchParams({ page: '1' }); }}
+            className="px-4 py-2 rounded-lg border border-ink/20 bg-white text-ink focus:outline-none focus:ring-2 focus:ring-teal/50"
+          >
+            <option value="">All Types</option>
+            <option value="pdf">PDF</option>
+            <option value="docx">DOCX</option>
+            <option value="pptx">PPTX</option>
+            <option value="xlsx">XLSX</option>
+          </select>
+        </div>
+
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <table className="w-full">
             <thead className="bg-teal text-white">
               <tr>
                 <th className="text-left p-4">File Name</th>
+                <th className="text-left p-4">Proposal</th>
                 <th className="text-left p-4">Type</th>
                 <th className="text-left p-4">Size</th>
                 <th className="text-left p-4">Uploaded</th>
@@ -67,33 +134,41 @@ const DocumentsList = () => {
               </tr>
             </thead>
             <tbody>
-              {documents.length === 0 ? (
+              {filteredDocs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center p-8 text-ink/60">
+                  <td colSpan={6} className="text-center p-8 text-ink/60">
                     No documents found
                   </td>
                 </tr>
               ) : (
-                documents.map((d) => (
-                  <tr key={d.id} className="border-b border-cream hover:bg-cream/50">
-                    <td className="p-4">{d.file_name}</td>
-                    <td className="p-4 uppercase text-sm">{d.file_type}</td>
-                    <td className="p-4">{(d.file_size / 1024).toFixed(1)} KB</td>
-                    <td className="p-4">
-                      {d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="p-4">
-                      <a
-                        href={`/api/v1/documents/${d.id}/download`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal hover:underline text-sm"
-                      >
-                        Download →
-                      </a>
-                    </td>
-                  </tr>
-                ))
+                filteredDocs.map((d) => {
+                  const typeInfo = FILE_TYPE_STYLES[d.file_type] || FILE_TYPE_STYLES.pdf;
+                  return (
+                    <tr key={d.id} className="border-b border-cream hover:bg-cream/50">
+                      <td className="p-4 font-medium">{d.file_name}</td>
+                      <td className="p-4 text-sm text-ink/70">
+                        {proposals[d.proposal_id] || d.proposal_id?.slice(0, 8) + '...'}
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${typeInfo.color}`}>
+                          {typeInfo.label}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm">{formatFileSize(d.file_size)}</td>
+                      <td className="p-4 text-sm">
+                        {d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="p-4">
+                        <button
+                          onClick={() => handleDownload(d.id)}
+                          className="text-teal hover:underline text-sm font-medium"
+                        >
+                          Download
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

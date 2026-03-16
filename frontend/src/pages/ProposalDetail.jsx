@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
@@ -42,6 +42,196 @@ const ScoreBar = ({ label, score, reasoning }) => {
   );
 };
 
+const FILE_TYPE_ICONS = {
+  pdf: { color: 'text-red-400 bg-red-500/20 border-red-500/30', label: 'PDF' },
+  docx: { color: 'text-blue-400 bg-blue-500/20 border-blue-500/30', label: 'DOCX' },
+  pptx: { color: 'text-orange-400 bg-orange-500/20 border-orange-500/30', label: 'PPTX' },
+  xlsx: { color: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30', label: 'XLSX' },
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'pptx', 'xlsx'];
+
+const DocumentsSection = ({ proposalId, userRole, onToast }) => {
+  const [documents, setDocuments] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      setDocsLoading(true);
+      const { data } = await api.get(`/api/v1/proposals/${proposalId}/documents`);
+      setDocuments(data.documents || []);
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setDocsLoading(false);
+    }
+  }, [proposalId, onToast]);
+
+  useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
+
+  const uploadFile = async (file) => {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+      onToast({ message: `File type .${ext} not allowed. Use PDF, DOCX, PPTX, or XLSX.`, type: 'error' });
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      onToast({ message: 'File exceeds 20MB limit.', type: 'error' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setUploading(true);
+      setUploadProgress(0);
+      await api.post(`/api/v1/proposals/${proposalId}/documents`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (e.total) setUploadProgress(Math.round((e.loaded * 100) / e.total));
+        },
+      });
+      onToast({ message: `${file.name} uploaded successfully!`, type: 'success' });
+      await fetchDocuments();
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
+    e.target.value = '';
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadFile(file);
+  };
+
+  const handleDelete = async (docId, fileName) => {
+    if (!window.confirm(`Delete "${fileName}"? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/api/v1/proposals/documents/${docId}`);
+      onToast({ message: `${fileName} deleted.`, type: 'success' });
+      await fetchDocuments();
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    }
+  };
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Documents</h3>
+
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors mb-4 ${
+          dragOver ? 'border-[#3B82F6] bg-[#3B82F6]/10' : 'border-gray-600 hover:border-gray-500'
+        }`}
+      >
+        {uploading ? (
+          <div>
+            <p className="text-gray-300 mb-2">Uploading... {uploadProgress}%</p>
+            <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden max-w-md mx-auto">
+              <div
+                className="h-full bg-[#3B82F6] rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-gray-400 mb-2">Drag & drop a file here, or</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-[#3B82F6] hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Upload Document
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.pptx,.xlsx"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <p className="text-gray-500 text-xs mt-2">PDF, DOCX, PPTX, XLSX up to 20MB</p>
+          </div>
+        )}
+      </div>
+
+      {/* Document list */}
+      {docsLoading ? (
+        <p className="text-gray-400 text-sm">Loading documents...</p>
+      ) : documents.length === 0 ? (
+        <p className="text-gray-500 text-sm">No documents uploaded yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {documents.map((doc) => {
+            const typeInfo = FILE_TYPE_ICONS[doc.file_type] || FILE_TYPE_ICONS.pdf;
+            return (
+              <div key={doc.id} className="flex items-center justify-between bg-[#0F172A] rounded-lg p-3 border border-gray-700/50">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`px-2 py-1 rounded text-xs font-bold border ${typeInfo.color}`}>
+                    {typeInfo.label}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{doc.file_name}</p>
+                    <p className="text-gray-500 text-xs">
+                      {formatFileSize(doc.file_size)} &middot; {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {doc.download_url && (
+                    <a
+                      href={doc.download_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium"
+                    >
+                      Download
+                    </a>
+                  )}
+                  {userRole === 'admin' && (
+                    <button
+                      onClick={() => handleDelete(doc.id, doc.file_name)}
+                      className="text-red-400 hover:text-red-300 text-sm font-medium"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProposalDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,8 +241,15 @@ const ProposalDetail = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showArabic, setShowArabic] = useState(false);
   const [toast, setToast] = useState(null);
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => { fetchProposal(); }, [id]);
+
+  useEffect(() => {
+    api.get('/api/v1/users/me').then(({ data }) => {
+      setUserRole(data.role || '');
+    }).catch(() => {});
+  }, []);
 
   const fetchProposal = async () => {
     try {
@@ -190,6 +387,9 @@ const ProposalDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Documents */}
+        <DocumentsSection proposalId={id} userRole={userRole} onToast={setToast} />
 
         {/* Evaluation Scores */}
         {(proposal.composite_score != null || evaluation) && (
