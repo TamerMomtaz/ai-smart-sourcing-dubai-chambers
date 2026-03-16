@@ -15,6 +15,9 @@
 11. ALL routes must be registered in main.py — verify before finishing
 12. No duplicate route prefixes
 13. CORSMiddleware BEFORE routes in main.py
+## AI INTERACTION RULES
+9b. chamber_ai_interactions.operation_type valid values: evaluation, extraction, classification, summary, trend_analysis, compliance_check, proposal_evaluation
+9c. chamber_ai_interactions.user_id references chamber_users(id) — may not match auth user
 ## DEPLOYMENT RULES
 14. Keep both requirements.txt files in sync (root + backend/)
 15. Test imports: python -c "from services.gateway import app"
