@@ -7,6 +7,24 @@ from database import supabase
 
 logger = logging.getLogger(__name__)
 
+
+class UserContext(dict):
+    """Dict subclass that supports attribute access.
+
+    Routes use both dict-style (current_user["id"]) and attribute-style
+    (current_user.id) access.  This class supports both so that all route
+    files work regardless of which pattern they use.
+    """
+
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"'UserContext' has no attribute '{name}'") from None
+
+    def __setattr__(self, name, value):
+        self[name] = value
+
 security = HTTPBearer()
 
 # Permission matrix matching Dubai Chambers RBAC
@@ -114,14 +132,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         # Get permissions for role
         permissions = PERMISSION_MATRIX.get(role, PERMISSION_MATRIX["vendor"])
 
-        return {
+        return UserContext({
             "id": user_id,
+            "sub": user_id,
             "user_id": user_id,
             "email": email,
             "role": role,
             "permissions": permissions,
             "access_token": token,
-        }
+        })
 
     except HTTPException:
         raise
