@@ -48,7 +48,6 @@ from routes import (
     sector_routes,
     status_routes,
     submit_routes,
-    trend_analysis_routes,
     user_routes,
     vendor_routes,
     verify_routes
@@ -217,7 +216,6 @@ app.include_router(report_routes.router, prefix="/api/v1", tags=["Reports"])
 app.include_router(sector_routes.router, prefix="/api/v1", tags=["Sector Dashboard"])
 app.include_router(status_routes.router, prefix="/api/v1", tags=["Status"])
 app.include_router(submit_routes.router, prefix="/api/v1", tags=["Submit"])
-app.include_router(trend_analysis_routes.router, prefix="/api/v1", tags=["Trend Analysis"])
 app.include_router(user_routes.router, prefix="/api/v1", tags=["Users"])
 app.include_router(vendor_routes.router, prefix="/api/v1", tags=["Vendors"])
 app.include_router(verify_routes.router, prefix="/api/v1", tags=["Verify"])
