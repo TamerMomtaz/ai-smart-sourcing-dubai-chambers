@@ -232,6 +232,187 @@ const DocumentsSection = ({ proposalId, userRole, onToast }) => {
   );
 };
 
+const STATUS_BADGE = (score) => {
+  if (score == null) return { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/30', label: 'N/A' };
+  if (score > 80) return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', label: 'Compliant' };
+  if (score >= 50) return { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', label: 'Partial' };
+  return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', label: 'Non-Compliant' };
+};
+
+const CONTROL_STATUS_STYLE = {
+  pass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  fail: 'bg-red-500/20 text-red-400 border-red-500/30',
+  warning: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+};
+
+const ComplianceAuditSection = ({ proposalId, userRole, onToast }) => {
+  const [auditResult, setAuditResult] = useState(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [existingAudit, setExistingAudit] = useState(null);
+  const [expandedFramework, setExpandedFramework] = useState(null);
+  const [loadingExisting, setLoadingExisting] = useState(true);
+
+  useEffect(() => {
+    fetchExistingAudit();
+  }, [proposalId]);
+
+  const fetchExistingAudit = async () => {
+    try {
+      setLoadingExisting(true);
+      const { data } = await api.get(`/api/v1/compliance-audit-results?page=1&page_size=1`);
+      const audits = data.audits || [];
+      const match = audits.find(a => a.proposal_id === proposalId);
+      if (match) {
+        // Fetch full detail
+        const { data: detail } = await api.get(`/api/v1/compliance-audit-results/${match.id}`);
+        setExistingAudit(detail);
+      }
+    } catch {
+      // Non-critical
+    } finally {
+      setLoadingExisting(false);
+    }
+  };
+
+  const handleRunAudit = async () => {
+    try {
+      setAuditLoading(true);
+      const { data } = await api.post(`/api/v1/proposals/${proposalId}/audit`);
+      setAuditResult(data);
+      setExistingAudit(null);
+      onToast({ message: 'DESC compliance audit completed!', type: 'success' });
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  const audit = auditResult || existingAudit;
+  const canRunAudit = userRole === 'admin' || userRole === 'compliance_officer';
+  const badge = STATUS_BADGE(audit?.overall_score);
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white">DESC Compliance Audit</h3>
+        {canRunAudit && (
+          <button
+            onClick={handleRunAudit}
+            disabled={auditLoading}
+            className="bg-teal-500 hover:bg-teal-600 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50 transition-colors"
+          >
+            {auditLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                Running DESC compliance audit...
+              </span>
+            ) : audit ? 'Re-run Compliance Audit' : 'Run Compliance Audit'}
+          </button>
+        )}
+      </div>
+
+      {loadingExisting && !audit && (
+        <p className="text-gray-400 text-sm">Checking for existing audits...</p>
+      )}
+
+      {!audit && !loadingExisting && (
+        <p className="text-gray-500 text-sm">No compliance audit has been run on this proposal yet.</p>
+      )}
+
+      {audit && (
+        <div className="space-y-6">
+          {/* Overall Score Badge */}
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div
+                className="text-5xl font-black"
+                style={{
+                  color: (audit.overall_score || 0) > 80 ? '#10B981' : (audit.overall_score || 0) >= 50 ? '#F59E0B' : '#EF4444'
+                }}
+              >
+                {audit.overall_score ?? '—'}
+              </div>
+              <p className="text-gray-400 text-xs mt-1">Overall Score</p>
+            </div>
+            <div>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${badge.bg} ${badge.text} ${badge.border}`}>
+                {audit.overall_status?.replace(/_/g, ' ') || badge.label}
+              </span>
+            </div>
+          </div>
+
+          {/* Summary */}
+          {audit.summary && (
+            <p className="text-gray-300 text-sm leading-relaxed border-l-2 border-teal-500 pl-4">{audit.summary}</p>
+          )}
+
+          {/* Framework Accordions */}
+          {(audit.frameworks || []).map((fw, idx) => (
+            <div key={idx} className="bg-[#0F172A] rounded-lg border border-gray-700/50">
+              <button
+                onClick={() => setExpandedFramework(expandedFramework === idx ? null : idx)}
+                className="w-full flex items-center justify-between p-4 text-left"
+              >
+                <span className="text-white font-semibold">{fw.name}</span>
+                <div className="flex items-center gap-2">
+                  {(fw.controls || []).map((c, ci) => (
+                    <span key={ci} className={`w-3 h-3 rounded-full ${c.status === 'pass' ? 'bg-emerald-400' : c.status === 'fail' ? 'bg-red-400' : 'bg-amber-400'}`} />
+                  ))}
+                  <span className="text-gray-400 ml-2">{expandedFramework === idx ? '▾' : '▸'}</span>
+                </div>
+              </button>
+              {expandedFramework === idx && (
+                <div className="px-4 pb-4 space-y-3">
+                  {(fw.controls || []).map((ctrl, ci) => (
+                    <div key={ci} className="bg-[#1E293B] rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-gray-300 text-sm font-medium">
+                          <span className="text-gray-500 font-mono text-xs mr-2">{ctrl.control_id}</span>
+                          {ctrl.control_name}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${CONTROL_STATUS_STYLE[ctrl.status] || CONTROL_STATUS_STYLE.warning}`}>
+                          {ctrl.status?.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-gray-400 text-xs mt-1">{ctrl.finding}</p>
+                      {ctrl.recommendation && (
+                        <p className="text-teal-400 text-xs mt-1">Rec: {ctrl.recommendation}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Data Residency & Vendor Certification */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+              <h4 className="text-gray-400 text-sm mb-2">Data Residency</h4>
+              <span className={`px-2 py-1 rounded text-xs font-bold border ${audit.data_residency_verified || audit.data_residency?.compliant ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
+                {audit.data_residency_verified || audit.data_residency?.compliant ? 'UAE Compliant' : 'Not Verified'}
+              </span>
+              {audit.data_residency?.finding && (
+                <p className="text-gray-400 text-xs mt-2">{audit.data_residency.finding}</p>
+              )}
+            </div>
+            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+              <h4 className="text-gray-400 text-sm mb-2">Vendor Certification</h4>
+              <span className={`px-2 py-1 rounded text-xs font-bold border ${audit.vendor_certification?.desc_approved ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'}`}>
+                {audit.vendor_certification?.desc_approved ? 'DESC Approved' : 'Not DESC Approved'}
+              </span>
+              {audit.vendor_certification?.finding && (
+                <p className="text-gray-400 text-xs mt-2">{audit.vendor_certification.finding}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProposalDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -456,6 +637,9 @@ const ProposalDetail = () => {
             )}
           </div>
         )}
+
+        {/* DESC Compliance Audit */}
+        <ComplianceAuditSection proposalId={id} userRole={userRole} onToast={setToast} />
 
         {/* AI Cost / ΣI */}
         {aiCost && (
