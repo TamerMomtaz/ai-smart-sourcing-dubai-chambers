@@ -55,6 +55,28 @@ async def create_proposal(
     """Create a new proposal. Any authenticated role."""
     try:
         user_id = current_user["id"]
+        user_email = current_user.get("email", "")
+
+        # Ensure vendor record exists (submitter_id FK -> chamber_vendors)
+        vendor_check = (
+            supabase.table("chamber_vendors")
+            .select("id")
+            .eq("id", str(user_id))
+            .maybe_single()
+            .execute()
+        )
+        if not vendor_check.data:
+            vendor_data = {
+                "id": str(user_id),
+                "name": user_email.split("@")[0] if user_email else "unknown",
+                "country": "UAE",
+                "contact_email": user_email,
+                "is_desc_approved": False,
+                "onboarding_status": "submitted",
+                "submission_history_count": 0,
+            }
+            supabase.table("chamber_vendors").insert(vendor_data).execute()
+            logger.info(f"Auto-created vendor record for user {user_id}")
 
         # Auto-assign business_group_id by matching sector keyword
         business_group_id = None

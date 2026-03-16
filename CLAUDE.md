@@ -9,6 +9,7 @@
 7. ALL tables use chamber_ prefix — verify every .table() call
 8. Check constraints exist — query pg_constraint before inserting new values
 9. Use keyword arguments for ALL service function calls
+9a. submitter_id in chamber_proposals references chamber_vendors(id) — auto-create vendor record if user doesn't have one
 ## ROUTE RULES
 10. Route paths use "" not "/" in FastAPI
 11. ALL routes must be registered in main.py — verify before finishing
