@@ -48,7 +48,7 @@ def trigger_proposal_evaluation(
         # Create evaluation job record
         job_id = UUID(supabase.rpc("uuid_generate_v4", {}).execute().data)
         
-        job_response = supabase.table("evaluation_jobs").insert({
+        job_response = supabase.table("chamber_evaluation_jobs").insert({
             "id": str(job_id),
             "proposal_id": str(proposal_id),
             "status": "queued",
@@ -119,7 +119,7 @@ def trigger_batch_evaluation(
         # Create batch job
         batch_job_id = UUID(supabase.rpc("uuid_generate_v4", {}).execute().data)
         
-        batch_job_response = supabase.table("batch_evaluation_jobs").insert({
+        batch_job_response = supabase.table("chamber_batch_evaluation_jobs").insert({
             "id": str(batch_job_id),
             "status": "queued",
             "total_proposals": len(valid_proposals),
@@ -147,7 +147,7 @@ def trigger_batch_evaluation(
             # Create evaluation job
             job_id = UUID(supabase.rpc("uuid_generate_v4", {}).execute().data)
             
-            supabase.table("evaluation_jobs").insert({
+            supabase.table("chamber_evaluation_jobs").insert({
                 "id": str(job_id),
                 "proposal_id": proposal_id,
                 "batch_job_id": str(batch_job_id),
@@ -189,7 +189,7 @@ def get_batch_job_status(
         Dict with batch job status if successful, None if not found
     """
     try:
-        batch_job_response = supabase.table("batch_evaluation_jobs").select(
+        batch_job_response = supabase.table("chamber_batch_evaluation_jobs").select(
             "id, status, total_proposals, processed, failed, started_at, completed_at"
         ).eq("id", str(batch_job_id)).execute()
         

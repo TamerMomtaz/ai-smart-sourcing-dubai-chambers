@@ -26,7 +26,7 @@ def create_comment(
     try:
         # First verify the proposal exists and user has access to it
         proposal_check = (
-            supabase.table("proposals")
+            supabase.table("chamber_proposals")
             .select("id, submitter_id, business_group_id")
             .eq("id", proposal_id)
             .eq("deleted_at", None)
@@ -53,7 +53,7 @@ def create_comment(
         }
         
         result = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .insert(comment_data)
             .execute()
         )
@@ -88,7 +88,7 @@ def list_comments(
     try:
         # First verify the proposal exists and user has access
         proposal_check = (
-            supabase.table("proposals")
+            supabase.table("chamber_proposals")
             .select("id, submitter_id")
             .eq("id", proposal_id)
             .eq("deleted_at", None)
@@ -104,7 +104,7 @@ def list_comments(
         
         # Build query
         query = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .select("*", count="exact")
             .eq("proposal_id", proposal_id)
         )
@@ -161,8 +161,8 @@ def get_comment_by_id(
     """
     try:
         result = (
-            supabase.table("proposal_comments")
-            .select("*, proposals!inner(submitter_id)")
+            supabase.table("chamber_comments")
+            .select("*, chamber_proposals!inner(submitter_id)")
             .eq("id", comment_id)
             .maybe_single()
             .execute()
@@ -174,13 +174,13 @@ def get_comment_by_id(
         comment = result.data
         
         # Check visibility permissions
-        is_vendor = comment["proposals"]["submitter_id"] == user_id
+        is_vendor = comment["chamber_proposals"]["submitter_id"] == user_id
         
         if is_vendor and comment["visibility"] == "internal":
             return None
         
         # Remove nested proposals data
-        comment.pop("proposals", None)
+        comment.pop("chamber_proposals", None)
         
         return comment
         
@@ -209,7 +209,7 @@ def update_comment(
     try:
         # Verify ownership
         existing = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .select("id, user_id")
             .eq("id", comment_id)
             .eq("user_id", user_id)
@@ -235,7 +235,7 @@ def update_comment(
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
         
         result = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .update(update_data)
             .eq("id", comment_id)
             .eq("user_id", user_id)
@@ -268,7 +268,7 @@ def delete_comment(
     try:
         # Verify ownership
         existing = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .select("id, user_id")
             .eq("id", comment_id)
             .eq("user_id", user_id)
@@ -281,7 +281,7 @@ def delete_comment(
         
         # Soft delete by setting deleted_at
         result = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .update({"deleted_at": datetime.now(timezone.utc).isoformat()})
             .eq("id", comment_id)
             .eq("user_id", user_id)
@@ -313,7 +313,7 @@ def list_comments_by_user(
     try:
         # Get total count
         count_result = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .select("id", count="exact")
             .eq("user_id", user_id)
             .is_("deleted_at", "null")
@@ -325,7 +325,7 @@ def list_comments_by_user(
         # Get paginated results
         offset = (page - 1) * page_size
         result = (
-            supabase.table("proposal_comments")
+            supabase.table("chamber_comments")
             .select("*")
             .eq("user_id", user_id)
             .is_("deleted_at", "null")

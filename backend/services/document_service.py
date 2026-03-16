@@ -22,7 +22,7 @@ def create_document(
     """
     # Verify proposal exists and user owns it
     proposal_response = (
-        supabase.table("proposals")
+        supabase.table("chamber_proposals")
         .select("id, created_by")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
@@ -56,7 +56,7 @@ def create_document(
         "updated_at": now.isoformat(),
     }
 
-    response = supabase.table("documents").insert(document_data).execute()
+    response = supabase.table("chamber_documents").insert(document_data).execute()
 
     if not response.data or len(response.data) == 0:
         return None
@@ -80,7 +80,7 @@ def create_document(
         }
     except Exception:
         # Cleanup document record if URL generation fails
-        supabase.table("documents").update({"deleted_at": now.isoformat()}).eq(
+        supabase.table("chamber_documents").update({"deleted_at": now.isoformat()}).eq(
             "id", document_id
         ).execute()
         return None
@@ -92,15 +92,15 @@ def get_document_by_id(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
     Checks if user owns the proposal that the document belongs to.
     """
     response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .select(
             "id, proposal_id, file_name, file_type, file_size, uploaded_at, storage_path, "
-            "extraction_status, extracted_at, proposals!inner(id, created_by)"
+            "extraction_status, extracted_at, chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
         .eq("deleted_at", None)
-        .eq("proposals.created_by", str(user_id))
-        .eq("proposals.deleted_at", None)
+        .eq("chamber_proposals.created_by", str(user_id))
+        .eq("chamber_proposals.deleted_at", None)
         .maybe_single()
         .execute()
     )
@@ -147,16 +147,16 @@ def get_extracted_data(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
     Verifies ownership and extraction completion.
     """
     response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .select(
             "id, file_name, extraction_status, extracted_text, extracted_tables, "
             "extracted_charts, financial_data, language_detected, extracted_at, "
-            "proposals!inner(id, created_by)"
+            "chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
         .eq("deleted_at", None)
-        .eq("proposals.created_by", str(user_id))
-        .eq("proposals.deleted_at", None)
+        .eq("chamber_proposals.created_by", str(user_id))
+        .eq("chamber_proposals.deleted_at", None)
         .maybe_single()
         .execute()
     )
@@ -192,7 +192,7 @@ def list_documents_by_proposal(
     """
     # Verify proposal ownership
     proposal_response = (
-        supabase.table("proposals")
+        supabase.table("chamber_proposals")
         .select("id")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
@@ -208,7 +208,7 @@ def list_documents_by_proposal(
 
     # Get total count
     count_response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .select("id", count="exact")
         .eq("proposal_id", str(proposal_id))
         .eq("deleted_at", None)
@@ -219,7 +219,7 @@ def list_documents_by_proposal(
 
     # Get paginated documents
     response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .select("id, file_name, file_type, file_size, uploaded_at, extraction_status")
         .eq("proposal_id", str(proposal_id))
         .eq("deleted_at", None)
@@ -280,7 +280,7 @@ def update_extraction_status(
             update_data["language_detected"] = language_detected
 
     response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .update(update_data)
         .eq("id", str(document_id))
         .execute()
@@ -304,7 +304,7 @@ def delete_document(user_id: UUID, document_id: UUID) -> bool:
 
     now = datetime.now(timezone.utc)
     response = (
-        supabase.table("documents")
+        supabase.table("chamber_documents")
         .update({"deleted_at": now.isoformat(), "updated_at": now.isoformat()})
         .eq("id", str(document_id))
         .execute()
