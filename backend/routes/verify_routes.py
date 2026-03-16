@@ -14,7 +14,7 @@ from services.verify_service import verify_vendor_certification
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/desc-certified-providers",
+    prefix="/desc-certified-providers",
     tags=["DESC Certified Providers"],
 )
 

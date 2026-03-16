@@ -20,7 +20,7 @@ const CommentsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/comments?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/comments?page=${page}&page_size=${pageSize}`);
       setComments(res.data.comments || []);
       setPagination(res.data.pagination);
     } catch (err) {

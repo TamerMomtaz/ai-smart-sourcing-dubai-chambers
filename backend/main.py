@@ -136,7 +136,13 @@ async def startup_event():
     
     logger.info("✓ Application startup complete")
     logger.info("✓ CORS origins configured: ['*'] (all origins allowed)")
-    logger.info(f"✓ Docs available at: /docs")
+    logger.info("✓ Docs available at: /docs")
+    logger.info("-" * 60)
+    logger.info("Registered routes:")
+    for route in app.routes:
+        if hasattr(route, "methods"):
+            methods = ", ".join(route.methods)
+            logger.info(f"  {methods:20s} {route.path}")
     logger.info("=" * 60)
 
 # Shutdown event

@@ -20,7 +20,7 @@ const AIInteractionsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/ai-interactions?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/ai-interactions?page=${page}&page_size=${pageSize}`);
       setInteractions(res.data.interactions || []);
       setPagination(res.data.pagination);
     } catch (err) {

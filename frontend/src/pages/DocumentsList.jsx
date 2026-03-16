@@ -20,7 +20,7 @@ const DocumentsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/documents?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/documents?page=${page}&page_size=${pageSize}`);
       setDocuments(res.data.documents || []);
       setPagination(res.data.pagination);
     } catch (err) {

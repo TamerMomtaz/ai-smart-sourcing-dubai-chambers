@@ -20,7 +20,7 @@ const TrendAnalysesList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/trend-analyses?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/trend-analyses?page=${page}&page_size=${pageSize}`);
       setAnalyses(res.data.analyses || []);
       setPagination(res.data.pagination);
     } catch (err) {

@@ -23,7 +23,7 @@ const DESCCertifiedProvidersList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/desc-certified-providers?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/desc-certified-providers?page=${page}&page_size=${pageSize}`);
       setProviders(res.data.providers || []);
       setPagination(res.data.pagination);
     } catch (err) {

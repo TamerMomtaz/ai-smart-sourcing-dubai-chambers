@@ -20,7 +20,7 @@ const EvaluationsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/proposals?page=${page}&page_size=${pageSize}&status=evaluated`);
+      const res = await api.get(`/api/v1/proposals?page=${page}&page_size=${pageSize}&status=evaluated`);
       const proposalsWithEvals = res.data.proposals || [];
       setEvaluations(proposalsWithEvals.filter(p => p.composite_score !== null));
       setPagination(res.data.pagination);

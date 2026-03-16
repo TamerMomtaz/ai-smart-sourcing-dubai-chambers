@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 # In-memory rate limiting store (for production, use Redis)
 rate_limit_store: Dict[str, Dict[str, Any]] = {}

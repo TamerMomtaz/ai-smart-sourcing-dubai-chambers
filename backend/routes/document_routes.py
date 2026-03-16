@@ -16,7 +16,7 @@ from services import document_service, download_service, extracted_data_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1", tags=["documents"])
+router = APIRouter(tags=["documents"])
 
 
 @router.post(

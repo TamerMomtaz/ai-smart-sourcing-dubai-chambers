@@ -20,7 +20,7 @@ const ComplianceAuditsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/compliance-audits?page=${page}&page_size=${pageSize}`);
+      const res = await api.get(`/api/v1/compliance-audits?page=${page}&page_size=${pageSize}`);
       setAudits(res.data.audits || []);
       setPagination(res.data.pagination);
     } catch (err) {

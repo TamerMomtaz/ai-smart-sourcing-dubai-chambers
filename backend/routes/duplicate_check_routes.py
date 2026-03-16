@@ -11,7 +11,7 @@ from services.duplicate_check_service import run_duplicate_check
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/proposals",
+    prefix="/proposals",
     tags=["duplicate-check"],
 )
 

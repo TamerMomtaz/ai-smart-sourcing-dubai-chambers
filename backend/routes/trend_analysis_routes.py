@@ -17,7 +17,7 @@ from database import supabase
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/trend-analyses",
+    prefix="/trend-analyses",
     tags=["trend-analyses"],
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},

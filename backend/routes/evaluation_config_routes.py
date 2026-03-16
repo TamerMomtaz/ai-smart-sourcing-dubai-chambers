@@ -17,7 +17,7 @@ from database import supabase
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/business-groups",
+    prefix="/business-groups",
     tags=["evaluation-config"],
 )
 

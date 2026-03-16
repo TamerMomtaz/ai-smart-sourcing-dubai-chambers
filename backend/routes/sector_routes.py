@@ -9,7 +9,7 @@ from services.sector_service import get_sector_dashboard
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/dashboard/sector", tags=["sector"])
+router = APIRouter(prefix="/dashboard/sector", tags=["sector"])
 
 
 @router.get(
