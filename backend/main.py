@@ -19,6 +19,7 @@ from routes import (
     chamber_business_groups_routes,
     chamber_comments_routes,
     chamber_compliance_audits_routes,
+    compliance_engine_routes,
     chamber_desc_certified_providers_routes,
     chamber_documents_routes,
     chamber_evaluations,
@@ -227,6 +228,8 @@ app.include_router(user_routes.router, prefix="/api/v1", tags=["Users"])
 app.include_router(vendor_routes.router, prefix="/api/v1", tags=["Vendors"])
 app.include_router(verify_routes.router, prefix="/api/v1", tags=["Verify"])
 app.include_router(proposal_document_routes.router, prefix="/api/v1", tags=["Proposal Documents"])
+app.include_router(compliance_engine_routes.router, prefix="/api/v1", tags=["Compliance Audit Engine"])
+app.include_router(compliance_engine_routes.list_router, prefix="/api/v1", tags=["Compliance Audit Results"])
 
 if __name__ == "__main__":
     import uvicorn
