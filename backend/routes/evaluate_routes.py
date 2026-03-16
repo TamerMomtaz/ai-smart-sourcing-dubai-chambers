@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1", tags=["evaluate"])
+router = APIRouter(tags=["evaluate"])
 
 
 @router.post(

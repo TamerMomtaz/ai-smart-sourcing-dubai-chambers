@@ -11,7 +11,7 @@ from services.extracted_data_service import get_extracted_data_by_document_id
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/documents",
+    prefix="/documents",
     tags=["extracted-data"],
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},

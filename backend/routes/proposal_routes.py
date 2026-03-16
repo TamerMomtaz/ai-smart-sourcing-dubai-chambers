@@ -36,7 +36,7 @@ from services import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/proposals", tags=["proposals"])
+router = APIRouter(prefix="/proposals", tags=["proposals"])
 
 
 @router.post(

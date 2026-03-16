@@ -33,7 +33,7 @@ const ProposalsList = () => {
       if (filters.status) params.append('status', filters.status);
       if (filters.sector) params.append('sector', filters.sector);
       
-      const res = await api.get(`/proposals?${params.toString()}`);
+      const res = await api.get(`/api/v1/proposals?${params.toString()}`);
       setProposals(res.data.proposals || []);
       setPagination(res.data.pagination);
     } catch (err) {

@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/chamber-ai-interactions",
+    prefix="/chamber-ai-interactions",
     tags=["chamber_ai_interactions"]
 )
 

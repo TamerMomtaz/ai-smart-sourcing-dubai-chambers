@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/vendors",
+    prefix="/vendors",
     tags=["vendors"],
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},

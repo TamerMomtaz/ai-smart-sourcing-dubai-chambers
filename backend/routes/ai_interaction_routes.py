@@ -12,7 +12,7 @@ from services.ai_interaction_service import get_ai_interaction_summary
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/ai-interactions", tags=["ai-interactions"])
+router = APIRouter(prefix="/ai-interactions", tags=["ai-interactions"])
 
 
 @router.get(

@@ -13,7 +13,7 @@ from services.submit_service import submit_proposal
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/proposals",
+    prefix="/proposals",
     tags=["submit"],
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},

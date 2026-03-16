@@ -16,7 +16,7 @@ import services.business_group_service as business_group_service
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/chamber-business-groups", tags=["Chamber Business Groups"])
+router = APIRouter(prefix="/chamber-business-groups", tags=["Chamber Business Groups"])
 
 
 @router.get(

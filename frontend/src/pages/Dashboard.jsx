@@ -39,8 +39,8 @@ const Dashboard = () => {
       return res.data;
     } else {
       const [proposals, vendors] = await Promise.all([
-        api.get('/proposals?page=1&page_size=1'),
-        role === 'vendor' ? api.get('/vendors/') : Promise.resolve({ data: {} })
+        api.get('/api/v1/proposals?page=1&page_size=1'),
+        role === 'vendor' ? api.get('/api/v1/vendors/') : Promise.resolve({ data: {} })
       ]);
       return {
         total_proposals: proposals.data.total || 0,

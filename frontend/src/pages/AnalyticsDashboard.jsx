@@ -18,14 +18,14 @@ const AnalyticsDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      let dashboardEndpoint = '/dashboard/analyst';
+      let dashboardEndpoint = '/api/v1/dashboard/analyst';
       if (selectedSector !== 'all') {
-        dashboardEndpoint = `/dashboard/sector/${selectedSector}`;
+        dashboardEndpoint = `/api/v1/dashboard/sector/${selectedSector}`;
       }
 
       const [dashboardResponse, trendsResponse] = await Promise.all([
         api.get(dashboardEndpoint),
-        api.get('/trend-analyses', { params: { limit: 5 } }),
+        api.get('/api/v1/trend-analyses', { params: { limit: 5 } }),
       ]);
 
       setDashboardData(dashboardResponse.data);

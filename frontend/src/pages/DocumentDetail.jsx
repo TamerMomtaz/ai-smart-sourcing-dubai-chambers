@@ -20,7 +20,7 @@ const DocumentDetail = () => {
   const fetchDocument = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/documents/${id}`);
+      const { data } = await api.get(`/api/v1/documents/${id}`);
       setDocument(data);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -31,7 +31,7 @@ const DocumentDetail = () => {
 
   const fetchExtractedData = async () => {
     try {
-      const { data } = await api.get(`/documents/${id}/extracted-data`);
+      const { data } = await api.get(`/api/v1/documents/${id}/extracted-data`);
       setExtractedData(data);
     } catch (err) {
       console.error('Failed to fetch extracted data:', err);
@@ -41,7 +41,7 @@ const DocumentDetail = () => {
   const handleDownload = async () => {
     try {
       setDownloadLoading(true);
-      const { data } = await api.get(`/documents/${id}/download`);
+      const { data } = await api.get(`/api/v1/documents/${id}/download`);
       window.open(data.download_url, '_blank');
     } catch (err) {
       setError(getErrorMessage(err));

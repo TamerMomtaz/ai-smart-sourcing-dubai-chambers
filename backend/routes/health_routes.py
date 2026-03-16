@@ -11,7 +11,6 @@ from services.health_service import HealthService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1",
     tags=["health"]
 )
 

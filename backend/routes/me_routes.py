@@ -11,7 +11,7 @@ from database import supabase
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/users/me", tags=["me"])
+router = APIRouter(prefix="/users/me", tags=["me"])
 
 
 @router.get(

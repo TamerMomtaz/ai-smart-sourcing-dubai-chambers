@@ -21,7 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/compliance-audits",
+    prefix="/compliance-audits",
     tags=["compliance-audits"],
 )
 

@@ -27,7 +27,7 @@ const VendorsList = () => {
       });
       if (search) params.append('search', search);
       
-      const res = await api.get(`/vendors?${params.toString()}`);
+      const res = await api.get(`/api/v1/vendors?${params.toString()}`);
       setVendors(res.data.vendors || []);
       setPagination(res.data.pagination);
     } catch (err) {

@@ -15,7 +15,7 @@ const BusinessGroupsList = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get('/api/v1/api/v1/business-groups/{group_id}');
+      const res = await api.get('/api/v1/business-groups');
       setGroups(res.data.groups || []);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -58,7 +58,7 @@ const BusinessGroupsList = () => {
                   <div>🏢 {g.chamber}</div>
                   {g.description && <div className="mt-2">{g.description}</div>}
                 </div>
-                <Link to={`/api/v1/business-groups/{group_id}/${g.id}`} className="text-teal hover:underline text-sm font-medium">
+                <Link to={`/business-groups/${g.id}`} className="text-teal hover:underline text-sm font-medium">
                   View Details →
                 </Link>
               </div>
