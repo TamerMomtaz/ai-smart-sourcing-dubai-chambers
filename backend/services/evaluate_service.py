@@ -71,6 +71,14 @@ def trigger_proposal_evaluation(
         return None
 
 
+def batch_evaluate_proposals(
+    user_id: UUID,
+    proposal_ids: List[UUID],
+) -> Optional[Dict[str, Any]]:
+    """Alias for trigger_batch_evaluation."""
+    return trigger_batch_evaluation(user_id, proposal_ids)
+
+
 def trigger_batch_evaluation(
     user_id: UUID,
     proposal_ids: List[UUID]

@@ -247,6 +247,58 @@ def update(
     return update_response.data[0]
 
 
+def get_by_id(user_id: UUID, evaluation_id: UUID) -> Optional[Dict[str, Any]]:
+    """Get evaluation by ID."""
+    eval_response = supabase.table("chamber_evaluations").select(
+        "*"
+    ).eq("id", str(evaluation_id)).maybe_single().execute()
+
+    if not eval_response.data:
+        return None
+
+    return eval_response.data
+
+
+def list_evaluations(
+    user_id: UUID,
+    page: int = 1,
+    page_size: int = 50,
+    proposal_id: Optional[UUID] = None,
+    min_composite_score: Optional[float] = None,
+    max_composite_score: Optional[float] = None,
+    **kwargs,
+) -> Optional[Dict[str, Any]]:
+    """List evaluations with pagination and filters."""
+    offset = (page - 1) * page_size
+
+    query = supabase.table("chamber_evaluations").select("*", count="exact")
+
+    if proposal_id:
+        query = query.eq("proposal_id", str(proposal_id))
+    if min_composite_score is not None:
+        query = query.gte("composite_score", min_composite_score)
+    if max_composite_score is not None:
+        query = query.lte("composite_score", max_composite_score)
+
+    query = query.order("evaluated_at", desc=True)
+    query = query.range(offset, offset + page_size - 1)
+
+    result = query.execute()
+    evaluations = result.data or []
+    total = result.count or 0
+    total_pages = (total + page_size - 1) // page_size
+
+    return {
+        "evaluations": evaluations,
+        "pagination": {
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+        },
+    }
+
+
 def delete(user_id: UUID, evaluation_id: UUID) -> bool:
     """
     Soft delete evaluation.

@@ -42,6 +42,26 @@ def create(
     return None
 
 
+def list_audits(
+    user_id: UUID,
+    proposal_id: Optional[UUID] = None,
+    audit_type: Optional[str] = None,
+    remediation_required: Optional[bool] = None,
+    page: int = 1,
+    page_size: int = 20,
+    **kwargs,
+) -> tuple[List[Dict[str, Any]], int]:
+    """Alias for list() that accepts extra kwargs."""
+    return list(
+        user_id=user_id,
+        proposal_id=proposal_id,
+        audit_type=audit_type,
+        remediation_required=remediation_required,
+        page=page,
+        page_size=page_size,
+    )
+
+
 def list(
     user_id: UUID,
     proposal_id: Optional[UUID] = None,
@@ -82,7 +102,7 @@ def list(
     return audits, total
 
 
-def get_by_id(user_id: UUID, audit_id: UUID) -> Optional[Dict[str, Any]]:
+def get_by_id(user_id: UUID, audit_id: UUID, **kwargs) -> Optional[Dict[str, Any]]:
     """Get a single compliance audit by ID."""
     response = (
         supabase.table("chamber_compliance_audits")
@@ -136,6 +156,7 @@ def update(
     remediation_required: Optional[bool] = None,
     audit_report_path: Optional[str] = None,
     hash_chain_signature: Optional[str] = None,
+    **kwargs,
 ) -> Optional[Dict[str, Any]]:
     """Update an existing compliance audit."""
     existing = get_by_id(user_id, audit_id)

@@ -186,6 +186,14 @@ def delete(user_id: UUID, provider_id: UUID) -> bool:
         return False
 
 
+def verify_vendor(user_id: UUID, **kwargs) -> Optional[Dict[str, Any]]:
+    """Alias for verify_certification, accepts vendor_id or certification_number."""
+    cert_number = kwargs.get("certification_number") or kwargs.get("vendor_id")
+    if cert_number is None:
+        return None
+    return verify_certification(user_id, str(cert_number))
+
+
 def verify_certification(
     user_id: UUID,
     certification_number: str,

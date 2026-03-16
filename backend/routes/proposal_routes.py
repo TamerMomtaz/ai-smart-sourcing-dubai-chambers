@@ -235,7 +235,7 @@ async def list_proposals(
             user_role=user_role,
             page=page,
             page_size=page_size,
-            status_filter=status_filter.strip() if status_filter else None,
+            status=status_filter.strip() if status_filter else None,
             sector=sector.strip() if sector else None,
         )
 
@@ -626,7 +626,7 @@ async def export_proposals(
 
         result = proposal_service.export_proposals(
             user_id=user_id,
-            format=format,
+            export_format=format,
             sector=sector.strip() if sector else None,
         )
 
