@@ -2,12 +2,64 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
+const GOLD = '#B8904A';
+const TEAL = '#0D9488';
+const DARK_SURFACE = '#1E293B';
+
+const SigmaIcon = ({ size = 24, color = GOLD }) => (
+  <span
+    style={{
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontSize: size,
+      fontWeight: 700,
+      color,
+      letterSpacing: '-0.05em',
+      userSelect: 'none',
+    }}
+  >
+    σI
+  </span>
+);
+
+const SummaryCard = ({ title, value, subtitle, icon }) => (
+  <div
+    className="rounded-xl p-6 flex flex-col justify-between"
+    style={{ backgroundColor: DARK_SURFACE, minHeight: 160 }}
+  >
+    <div className="flex items-start justify-between">
+      <span className="text-slate-400 text-sm font-medium uppercase tracking-wider">
+        {title}
+      </span>
+      <span className="text-2xl">{icon}</span>
+    </div>
+    <div className="mt-3">
+      <div
+        className="text-3xl font-bold text-white"
+        style={{ fontFamily: '"JetBrains Mono", "Fira Code", "Courier New", monospace' }}
+      >
+        {value}
+      </div>
+      {subtitle && (
+        <div className="text-slate-400 text-xs mt-2 leading-relaxed">{subtitle}</div>
+      )}
+    </div>
+  </div>
+);
+
+const getCostColor = (cost) => {
+  if (cost < 0.01) return '#22C55E';
+  if (cost <= 0.10) return '#F59E0B';
+  return '#EF4444';
+};
+
 const AIInteractionsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [interactions, setInteractions] = useState([]);
   const [pagination, setPagination] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 50;
@@ -15,6 +67,22 @@ const AIInteractionsList = () => {
   useEffect(() => {
     fetchInteractions();
   }, [page]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, []);
+
+  const fetchSummary = async () => {
+    try {
+      setSummaryLoading(true);
+      const res = await api.get('/api/v1/ai-interactions/summary');
+      setSummary(res.data);
+    } catch (err) {
+      console.error('Failed to load summary:', getErrorMessage(err));
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   const fetchInteractions = async () => {
     try {
@@ -34,90 +102,280 @@ const AIInteractionsList = () => {
     setSearchParams({ page: newPage.toString() });
   };
 
-  if (loading) {
+  const formatNumber = (n, decimals = 2) => {
+    if (n == null) return '0';
+    return Number(n).toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  };
+
+  const phoneCharges = summary
+    ? Math.round((summary.total_energy_kwh || 0) / 0.012)
+    : 0;
+
+  const modelBreakdownText = summary?.model_breakdown?.length
+    ? summary.model_breakdown
+        .map((m) => `${m.model_name}: $${formatNumber(m.total_cost_usd, 4)}`)
+        .join(' · ')
+    : null;
+
+  if (loading && summaryLoading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-pulse text-teal font-heading text-2xl">Loading AI interactions...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0F172A' }}>
+        <div className="text-center">
+          <div className="mb-4">
+            <SigmaIcon size={48} />
+          </div>
+          <div className="text-slate-400 text-lg animate-pulse">Loading ΣI Transparency Dashboard...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-6">
-          <h1 className="font-heading text-4xl text-teal">AI Interactions (ΣI Tracking)</h1>
+    <div className="min-h-screen" style={{ backgroundColor: '#0F172A' }}>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
+        <header className="mb-8">
+          <div className="flex items-center gap-4 mb-2">
+            <div
+              className="flex items-center justify-center rounded-lg px-3 py-1.5"
+              style={{
+                border: `2px solid ${GOLD}`,
+                background: `linear-gradient(135deg, ${GOLD}15, ${GOLD}05)`,
+              }}
+            >
+              <SigmaIcon size={28} />
+            </div>
+            <div>
+              <h1
+                className="text-4xl font-bold text-white"
+                style={{ fontFamily: '"Inter", system-ui, sans-serif' }}
+              >
+                ΣI Transparency Dashboard
+              </h1>
+              <p className="text-slate-400 text-sm mt-1">
+                Added Intelligence — Awareness Implemented |{' '}
+                <span style={{ color: TEAL, fontWeight: 600 }}>DEVONEERS</span>
+              </p>
+            </div>
+          </div>
         </header>
 
         {error && (
-          <div className="bg-burgundy/10 border border-burgundy rounded-lg p-4 mb-6">
-            <p className="text-burgundy">{error}</p>
+          <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
+            <p className="text-red-300">{error}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-teal text-white">
-              <tr>
-                <th className="text-left p-3">Timestamp</th>
-                <th className="text-left p-3">Model</th>
-                <th className="text-left p-3">Operation</th>
-                <th className="text-left p-3">Tokens</th>
-                <th className="text-left p-3">Latency</th>
-                <th className="text-left p-3">Cost</th>
-                <th className="text-left p-3">ΣI Units</th>
-              </tr>
-            </thead>
-            <tbody>
-              {interactions.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center p-8 text-ink/60">
-                    No AI interactions found
-                  </td>
+        {/* Summary Cards */}
+        {summary && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <SummaryCard
+              title="Total Intelligence Units"
+              value={formatNumber(summary.total_intelligence_units)}
+              subtitle="1 IU ≈ 1,000 tokens ≈ ~750 words processed"
+              icon="🧠"
+            />
+            <SummaryCard
+              title="Total Cost"
+              value={`$${formatNumber(summary.total_cost_usd)}`}
+              subtitle={modelBreakdownText}
+              icon="💰"
+            />
+            <SummaryCard
+              title="Environmental Impact"
+              value={`${formatNumber(summary.total_energy_kwh, 4)} kWh`}
+              subtitle={
+                <>
+                  {formatNumber(summary.total_carbon_gco2, 4)} gCO₂ ·{' '}
+                  {phoneCharges > 0
+                    ? `= charging a phone ${phoneCharges} time${phoneCharges !== 1 ? 's' : ''}`
+                    : '< 1 phone charge'}
+                </>
+              }
+              icon="🌱"
+            />
+          </div>
+        )}
+
+        {/* Interactions Table */}
+        <div className="rounded-xl overflow-hidden shadow-2xl" style={{ backgroundColor: DARK_SURFACE }}>
+          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+            <h2 className="text-white font-semibold text-lg">Interaction Log</h2>
+            {pagination && (
+              <span className="text-slate-400 text-sm">
+                {pagination.total} total interactions
+              </span>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700/50">
+                  <th className="text-left p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Timestamp</th>
+                  <th className="text-left p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Model</th>
+                  <th className="text-left p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Operation</th>
+                  <th className="text-right p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Tokens</th>
+                  <th className="text-right p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Latency</th>
+                  <th className="text-right p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Cost</th>
+                  <th className="text-right p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">IU</th>
                 </tr>
-              ) : (
-                interactions.map((i) => (
-                  <tr key={i.id} className="border-b border-cream hover:bg-cream/50">
-                    <td className="p-3">
-                      {new Date(i.timestamp).toLocaleString()}
+              </thead>
+              <tbody>
+                {interactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center p-12 text-slate-500">
+                      No AI interactions recorded yet
                     </td>
-                    <td className="p-3 font-mono text-xs">{i.model_name}</td>
-                    <td className="p-3 capitalize">{i.operation_type}</td>
-                    <td className="p-3">
-                      {i.prompt_tokens + i.completion_tokens}
-                      <span className="text-ink/50 text-xs ml-1">({i.prompt_tokens}+{i.completion_tokens})</span>
-                    </td>
-                    <td className="p-3">{i.latency_ms}ms</td>
-                    <td className="p-3">${i.cost_usd?.toFixed(4) || '0.0000'}</td>
-                    <td className="p-3 font-bold text-teal">{i.intelligence_units?.toFixed(2) || 'N/A'}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  interactions.map((i) => {
+                    const cost = parseFloat(i.cost_usd) || 0;
+                    const costColor = getCostColor(cost);
+                    return (
+                      <tr key={i.id} className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
+                        <td className="p-4 text-slate-300 text-xs">
+                          {new Date(i.timestamp).toLocaleString()}
+                        </td>
+                        <td
+                          className="p-4 text-xs"
+                          style={{
+                            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                            color: TEAL,
+                          }}
+                        >
+                          {i.model_name}
+                        </td>
+                        <td className="p-4 text-slate-300 capitalize">{i.operation_type}</td>
+                        <td
+                          className="p-4 text-right text-slate-300"
+                          style={{ fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}
+                        >
+                          {((i.prompt_tokens || 0) + (i.completion_tokens || 0)).toLocaleString()}
+                          <span className="text-slate-500 text-xs ml-1">
+                            ({i.prompt_tokens || 0}+{i.completion_tokens || 0})
+                          </span>
+                        </td>
+                        <td
+                          className="p-4 text-right text-slate-300"
+                          style={{ fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}
+                        >
+                          {i.latency_ms}ms
+                        </td>
+                        <td className="p-4 text-right" style={{ fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}>
+                          <span
+                            className="inline-block px-2 py-0.5 rounded text-xs font-semibold"
+                            style={{
+                              color: costColor,
+                              backgroundColor: `${costColor}18`,
+                            }}
+                          >
+                            ${cost.toFixed(4)}
+                          </span>
+                        </td>
+                        <td
+                          className="p-4 text-right font-bold"
+                          style={{
+                            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                            color: TEAL,
+                          }}
+                        >
+                          {i.intelligence_units != null
+                            ? Number(i.intelligence_units).toFixed(2)
+                            : 'N/A'}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
-          <div className="flex items-center justify-center space-x-2 mt-6">
+          <div className="flex items-center justify-center gap-3 mt-6">
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg bg-white border border-cream disabled:opacity-50 hover:bg-cream transition"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-30"
+              style={{
+                backgroundColor: DARK_SURFACE,
+                color: '#94A3B8',
+                border: '1px solid #334155',
+              }}
             >
               Previous
             </button>
-            <span className="text-ink">
-              Page {page} of {pagination.total_pages}
+            <span className="text-slate-400 text-sm" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+              {page} / {pagination.total_pages}
             </span>
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === pagination.total_pages}
-              className="px-4 py-2 rounded-lg bg-white border border-cream disabled:opacity-50 hover:bg-cream transition"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-30"
+              style={{
+                backgroundColor: DARK_SURFACE,
+                color: '#94A3B8',
+                border: '1px solid #334155',
+              }}
             >
               Next
             </button>
           </div>
         )}
+
+        {/* Explainer Section */}
+        <div className="mt-10 rounded-xl p-8" style={{ backgroundColor: DARK_SURFACE }}>
+          <h3 className="text-white text-xl font-bold mb-6 flex items-center gap-3">
+            <SigmaIcon size={22} />
+            <span>What is 1 Intelligence Unit (IU)?</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col">
+              <span className="text-slate-400 text-xs uppercase tracking-wider mb-1">Tokens</span>
+              <span className="text-white font-semibold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                1 IU ≈ 1,000 tokens
+              </span>
+              <span className="text-slate-500 text-xs mt-1">≈ ~750 words</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 text-xs uppercase tracking-wider mb-1">Cost</span>
+              <span className="text-white font-semibold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                ~$0.003–$0.015
+              </span>
+              <span className="text-slate-500 text-xs mt-1">depending on model</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 text-xs uppercase tracking-wider mb-1">Energy</span>
+              <span className="text-white font-semibold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                ~0.001 kWh
+              </span>
+              <span className="text-slate-500 text-xs mt-1">powers an LED for 6 minutes</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 text-xs uppercase tracking-wider mb-1">Footprint</span>
+              <span className="text-white font-semibold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                ~0.5 mL water · ~0.0004g CO₂
+              </span>
+              <span className="text-slate-500 text-xs mt-1">a human exhales 200g CO₂/hour</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-10 mb-4 text-center">
+          <p className="text-slate-500 text-sm italic leading-relaxed">
+            Every interaction has a cost. Knowing it is the first step to responsible AI.
+          </p>
+          <p className="mt-2 text-slate-600 text-xs">
+            — DEVONEERS{' '}
+            <SigmaIcon size={14} />
+          </p>
+        </footer>
       </div>
     </div>
   );

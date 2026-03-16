@@ -31,7 +31,7 @@ function Layout() {
     { name: 'Documents', href: '/documents', icon: '📄' },
     { name: 'Business Groups', href: '/business-groups', icon: '🏛️' },
     { name: 'Trend Analyses', href: '/trend-analyses', icon: '📈' },
-    { name: 'AI Interactions', href: '/ai-interactions', icon: '🤖' },
+    { name: 'ΣI Transparency', href: '/ai-interactions', icon: '🔬' },
     { name: 'Users', href: '/users', icon: '👥' },
   ];
 
