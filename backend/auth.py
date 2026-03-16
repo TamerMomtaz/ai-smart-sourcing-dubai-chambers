@@ -125,9 +125,19 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         user_id = user.id
         email = user.email
 
-        # Role from app_metadata (set via Supabase dashboard/admin), fallback to vendor
-        app_metadata = user.app_metadata or {}
-        role = app_metadata.get("role", "vendor")
+        # Try to get role from chamber_users table first (source of truth),
+        # then fall back to app_metadata, then default to 'vendor'.
+        role = None
+        try:
+            chamber_user = supabase.table("chamber_users").select("role").eq("id", user_id).maybe_single().execute()
+            if chamber_user and chamber_user.data:
+                role = chamber_user.data.get("role")
+        except Exception as db_err:
+            logger.warning(f"Failed to fetch role from chamber_users: {db_err}")
+
+        if not role:
+            app_metadata = user.app_metadata or {}
+            role = app_metadata.get("role", "vendor")
 
         # Get permissions for role
         permissions = PERMISSION_MATRIX.get(role, PERMISSION_MATRIX["vendor"])
