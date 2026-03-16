@@ -20,7 +20,7 @@ router = APIRouter(prefix="/vendors", tags=["Vendors"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=VendorResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create vendor profile",
@@ -103,7 +103,7 @@ async def create_vendor(
 
 
 @router.get(
-    "/",
+    "",
     response_model=dict,
     summary="List all vendors",
     responses={
@@ -134,7 +134,7 @@ async def list_vendors(
                 },
             )
 
-        result = await chamber_vendor_service.list_vendors(
+        vendor_data, total = await chamber_vendor_service.list_vendors(
             user_id=user_id,
             user_role=user_role,
             page=page,
@@ -142,15 +142,9 @@ async def list_vendors(
             sector=sector,
         )
 
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": "Query failed",
-                    "detail": "Failed to retrieve vendors",
-                    "code": "VENDOR_LIST_FAILED",
-                },
-            )
+        if vendor_data is None:
+            vendor_data = []
+            total = 0
 
         vendors = [
             VendorResponse(
@@ -168,10 +162,9 @@ async def list_vendors(
                 average_compliance_score=v.get("average_compliance_score"),
                 profile=None,
             )
-            for v in result["vendors"]
+            for v in vendor_data
         ]
 
-        total = result["total"]
         total_pages = (total + page_size - 1) // page_size
 
         return {
