@@ -17,7 +17,7 @@ def list_trend_analyses(
     try:
         offset = (page - 1) * page_size
         
-        query = supabase.table("trend_analyses").select("*", count="exact")
+        query = supabase.table("chamber_trend_analyses").select("*", count="exact")
         
         if sector:
             query = query.eq("sector", sector)
@@ -42,7 +42,7 @@ def get_trend_analysis_by_id(user_id: UUID, analysis_id: UUID) -> Optional[Dict[
     """
     try:
         response = (
-            supabase.table("trend_analyses")
+            supabase.table("chamber_trend_analyses")
             .select("*")
             .eq("id", str(analysis_id))
             .single()
@@ -180,7 +180,7 @@ def generate_trend_analysis(
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         
-        insert_response = supabase.table("trend_analyses").insert(analysis_data).execute()
+        insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
         
         if not insert_response.data:
             return None
@@ -218,7 +218,7 @@ def delete_trend_analysis(user_id: UUID, analysis_id: UUID) -> bool:
     """
     try:
         response = (
-            supabase.table("trend_analyses")
+            supabase.table("chamber_trend_analyses")
             .update({"deleted_at": datetime.now(timezone.utc).isoformat()})
             .eq("id", str(analysis_id))
             .execute()

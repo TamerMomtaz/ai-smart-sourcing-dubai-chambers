@@ -62,7 +62,7 @@ async def list_trend_analyses(
 
         # Build query
         offset = (page - 1) * page_size
-        query = supabase.table("trend_analyses").select(
+        query = supabase.table("chamber_trend_analyses").select(
             "id, analysis_date, sector, technology_trends, submission_volume, average_scores, emerging_technologies, generated_by",
             count="exact"
         )
