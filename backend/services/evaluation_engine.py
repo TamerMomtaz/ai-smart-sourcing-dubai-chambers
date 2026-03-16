@@ -121,7 +121,7 @@ class EvaluationEngine:
             requires_review = True
             review_reason = review_reason or "Compliance score below 40 - regulatory risk"
 
-        new_status = "requires_review" if requires_review else "evaluated"
+        new_status = "requires_manual_review" if requires_review else "evaluated"
 
         # 5. Save to chamber_evaluations
         evaluation = create_evaluation(

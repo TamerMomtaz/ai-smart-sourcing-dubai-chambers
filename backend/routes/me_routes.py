@@ -68,7 +68,7 @@ async def get_me(current_user: Dict[str, Any] = Depends(get_current_user)):
         business_group_name = None
         if user_data.get("business_group_id"):
             bg_response = (
-                supabase.table("business_groups")
+                supabase.table("chamber_business_groups")
                 .select("name")
                 .eq("id", user_data["business_group_id"])
                 .maybe_single()
