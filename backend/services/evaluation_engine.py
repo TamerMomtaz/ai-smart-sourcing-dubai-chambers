@@ -159,7 +159,7 @@ class EvaluationEngine:
             "id", str(proposal_id)
         ).execute()
 
-        # 7. Log to chamber_ai_interactions
+        # 7. Log to chamber_ai_interactions (non-critical — never crash the endpoint)
         usage = ai_response.usage
         prompt_tokens = usage.input_tokens
         completion_tokens = usage.output_tokens
@@ -172,20 +172,25 @@ class EvaluationEngine:
         intelligence_units = round(total_tokens / 1000, 4)
 
         evaluation_id = evaluation["id"] if evaluation else None
-        create_ai_interaction(
-            user_id=user_id,
-            session_id=uuid.uuid4(),
-            model_name=CLAUDE_MODEL,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            latency_ms=latency_ms,
-            cost_usd=cost_usd,
-            energy_kwh=energy_kwh,
-            carbon_gco2=carbon_gco2,
-            intelligence_units=intelligence_units,
-            operation_type="proposal_evaluation",
-            evaluation_id=evaluation_id,
-        )
+        try:
+            create_ai_interaction(
+                user_id=user_id,
+                session_id=uuid.uuid4(),
+                model_name=CLAUDE_MODEL,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                cost_usd=cost_usd,
+                energy_kwh=energy_kwh,
+                carbon_gco2=carbon_gco2,
+                intelligence_units=intelligence_units,
+                operation_type="proposal_evaluation",
+                evaluation_id=evaluation_id,
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to log AI interaction for proposal {proposal_id}: {e}"
+            )
 
         # 8. Return result
         return {
