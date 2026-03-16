@@ -1,10 +1,11 @@
-from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Dict, List
-import os
+import logging
 
-SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "").strip() or None
+from database import supabase
+
+logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
 
@@ -84,67 +85,54 @@ PERMISSION_MATRIX: Dict[str, List[str]] = {
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """
-    Decode and validate Supabase JWT token.
+    Validate Supabase auth token using supabase.auth.get_user().
     Extract user id, email, role, and permissions.
     Default role to 'vendor' (lowest privilege) if not specified.
     """
-    if not SUPABASE_JWT_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "auth_config_error",
-                "detail": "SUPABASE_JWT_SECRET is not configured",
-                "code": 500
-            }
-        )
+    token = credentials.credentials
     try:
-        payload = jwt.decode(
-            credentials.credentials,
-            SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-            audience="authenticated"
-        )
-        
-        user_id = payload.get("sub")
-        if not user_id:
+        user_response = supabase.auth.get_user(token)
+        user = user_response.user
+
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={
                     "error": "invalid_token",
-                    "detail": "Token missing user identifier",
+                    "detail": "Invalid or expired token",
                     "code": 401
                 }
             )
-        
-        email = payload.get("email")
-        role = payload.get("role", "vendor")
-        
+
+        user_id = user.id
+        email = user.email
+
+        # Role from app_metadata (set via Supabase dashboard/admin), fallback to vendor
+        app_metadata = user.app_metadata or {}
+        role = app_metadata.get("role", "vendor")
+
         # Get permissions for role
         permissions = PERMISSION_MATRIX.get(role, PERMISSION_MATRIX["vendor"])
-        
+
         return {
             "id": user_id,
+            "user_id": user_id,
             "email": email,
             "role": role,
-            "permissions": permissions
+            "permissions": permissions,
+            "access_token": token,
         }
-    
-    except JWTError as e:
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Authentication failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={
                 "error": "invalid_token",
                 "detail": "Invalid or expired token",
                 "code": 401
-            }
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "auth_error",
-                "detail": "Authentication processing failed",
-                "code": 500
             }
         ) from e
 
