@@ -3,7 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Dict, List
 import logging
 
-from database import supabase
+from database import supabase, supabase_auth
 
 logger = logging.getLogger(__name__)
 
@@ -109,10 +109,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """
     token = credentials.credentials
     try:
-        user_response = supabase.auth.get_user(token)
+        # Use the anon-key client for token validation — NOT the service-role client.
+        user_response = supabase_auth.auth.get_user(token)
         user = user_response.user
 
         if not user:
+            print("AUTH ERROR: supabase_auth.auth.get_user() returned no user object")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={
@@ -133,6 +135,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             if chamber_user and chamber_user.data:
                 role = chamber_user.data.get("role")
         except Exception as db_err:
+            print(f"AUTH ERROR: Failed to fetch role from chamber_users: {db_err}")
             logger.warning(f"Failed to fetch role from chamber_users: {db_err}")
 
         if not role:
@@ -155,6 +158,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except HTTPException:
         raise
     except Exception as e:
+        print(f"AUTH ERROR: {e}")
         logger.error(f"Authentication failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

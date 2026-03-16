@@ -18,7 +18,11 @@ def _get_env(key, required=True, default=None):
     return value
 
 SUPABASE_URL = _get_env("SUPABASE_URL")
-SUPABASE_ANON_KEY = _get_env("SUPABASE_ANON_KEY")
+# Railway may set SUPABASE_KEY or SUPABASE_ANON_KEY — accept either.
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip() or os.environ.get("SUPABASE_KEY", "").strip()
+if not SUPABASE_ANON_KEY:
+    print("FATAL: Required environment variable 'SUPABASE_ANON_KEY' (or 'SUPABASE_KEY') is missing or empty.", file=sys.stderr)
+    sys.exit(1)
 SUPABASE_SERVICE_ROLE_KEY = _get_env("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_JWT_SECRET = _get_env("SUPABASE_JWT_SECRET", required=False, default=None)
 
