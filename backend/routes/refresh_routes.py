@@ -2,22 +2,11 @@ from fastapi import APIRouter, HTTPException, status
 from models.auth import RefreshTokenRequest, TokenResponse
 from models.common import ErrorResponse
 import logging
-import os
-import jwt
-from datetime import datetime, timezone, timedelta
 from database import supabase
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-JWT_SECRET = os.getenv("JWT_SECRET", "").strip()
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256").strip()
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15").strip())
-JWT_REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7").strip())
-
-if not JWT_SECRET:
-    logger.warning("JWT_SECRET environment variable is not set; token refresh endpoints will fail at runtime")
 
 
 @router.post(
@@ -32,130 +21,89 @@ if not JWT_SECRET:
 )
 async def refresh_access_token(request: RefreshTokenRequest):
     """
-    Refresh expired access token using refresh token.
-    
-    Validates the refresh token and issues new access + refresh tokens.
+    Refresh expired access token using Supabase Auth refresh.
+
+    Validates the refresh token via Supabase and issues new tokens.
     Rate limit: 20 requests per minute.
-    
-    Args:
-        request: RefreshTokenRequest containing refresh_token
-        
-    Returns:
-        TokenResponse with new access_token, refresh_token, and user info
-        
-    Raises:
-        HTTPException 401: Invalid or expired refresh token
-        HTTPException 500: Internal server error
     """
     try:
         refresh_token = request.refresh_token.strip()
-        
-        # Decode and validate refresh token
+
+        # Refresh session via Supabase Auth
         try:
-            payload = jwt.decode(
-                refresh_token,
-                JWT_SECRET,
-                algorithms=[JWT_ALGORITHM]
-            )
-        except jwt.ExpiredSignatureError:
-            logger.warning("Refresh token expired")
+            response = supabase.auth.refresh_session(refresh_token)
+        except Exception as e:
+            logger.warning(f"Supabase refresh_session failed: {e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": "Unauthorized", "detail": "Refresh token has expired", "code": 401}
+                detail={"error": "Unauthorized", "detail": "Invalid or expired refresh token", "code": 401}
             )
-        except jwt.InvalidTokenError as e:
-            logger.warning(f"Invalid refresh token: {str(e)}")
+
+        if not response or not response.session:
+            logger.warning("Refresh token invalid: no session returned")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": "Unauthorized", "detail": "Invalid refresh token", "code": 401}
+                detail={"error": "Unauthorized", "detail": "Invalid or expired refresh token", "code": 401}
             )
-        
-        # Validate token type
-        if payload.get("type") != "refresh":
-            logger.warning("Token is not a refresh token")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": "Unauthorized", "detail": "Invalid token type", "code": 401}
-            )
-        
-        user_id = payload.get("sub")
-        if not user_id:
-            logger.error("No user_id in refresh token payload")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": "Unauthorized", "detail": "Invalid token payload", "code": 401}
-            )
-        
-        # Fetch user from database to validate existence and get current data
-        user_response = supabase.table("chamber_users").select(
-            "id, email, role, full_name, chamber"
-        ).eq("id", user_id).maybeSingle().execute()
-        
-        if not user_response.data:
-            logger.warning(f"User {user_id} not found during refresh")
+
+        session = response.session
+        user = response.user
+
+        if not user:
+            logger.warning("Refresh succeeded but no user returned")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={"error": "Unauthorized", "detail": "User not found", "code": 401}
             )
-        
-        user_data = user_response.data
-        
+
+        # Fetch user profile from chamber_users
+        user_data = None
+        try:
+            user_response = supabase.table("chamber_users").select(
+                "id, email, role, full_name, chamber"
+            ).eq("id", str(user.id)).maybe_single().execute()
+            if user_response and user_response.data:
+                user_data = user_response.data
+        except Exception as e:
+            logger.warning(f"Failed to fetch chamber_users profile during refresh: {e}")
+
+        # Fall back to Supabase auth user info if chamber_users lookup fails
+        if not user_data:
+            user_data = {
+                "id": str(user.id),
+                "email": user.email,
+                "role": "vendor",
+                "full_name": "",
+                "chamber": "",
+            }
+
         # Update last_login timestamp
         try:
+            from datetime import datetime, timezone
             supabase.table("chamber_users").update({
                 "last_login": datetime.now(timezone.utc).isoformat()
-            }).eq("id", user_id).execute()
+            }).eq("id", str(user.id)).execute()
         except Exception as e:
-            logger.warning(f"Failed to update last_login for user {user_id}: {str(e)}")
-        
-        # Generate new access token
-        access_token_payload = {
-            "sub": str(user_data["id"]),
-            "email": user_data["email"],
-            "role": user_data["role"],
-            "type": "access",
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
-            "iat": datetime.now(timezone.utc)
-        }
-        
-        new_access_token = jwt.encode(
-            access_token_payload,
-            JWT_SECRET,
-            algorithm=JWT_ALGORITHM
-        )
-        
-        # Generate new refresh token
-        refresh_token_payload = {
-            "sub": str(user_data["id"]),
-            "type": "refresh",
-            "exp": datetime.now(timezone.utc) + timedelta(days=JWT_REFRESH_TOKEN_EXPIRE_DAYS),
-            "iat": datetime.now(timezone.utc)
-        }
-        
-        new_refresh_token = jwt.encode(
-            refresh_token_payload,
-            JWT_SECRET,
-            algorithm=JWT_ALGORITHM
-        )
-        
-        logger.info(f"Successfully refreshed tokens for user {user_id}")
-        
+            logger.warning(f"Failed to update last_login for user {user.id}: {e}")
+
+        logger.info(f"Successfully refreshed tokens for user {user.id}")
+
         return TokenResponse(
-            access_token=new_access_token,
-            refresh_token=new_refresh_token,
+            access_token=session.access_token,
+            refresh_token=session.refresh_token,
             user={
                 "id": user_data["id"],
                 "email": user_data["email"],
-                "role": user_data["role"],
-                "full_name": user_data["full_name"],
-                "chamber": user_data["chamber"]
+                "role": user_data.get("role", "vendor"),
+                "full_name": user_data.get("full_name", ""),
+                "chamber": user_data.get("chamber", ""),
             }
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Unexpected error during token refresh: {str(e)}", exc_info=True)
+        logger.error(f"Unexpected error during token refresh: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "InternalServerError", "detail": "Failed to refresh token", "code": 500}
