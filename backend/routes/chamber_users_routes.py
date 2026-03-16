@@ -31,7 +31,7 @@ async def get_current_user_profile(
     Returns user information including role, chamber, business group, and permissions.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         
         # Get user profile from chamber_users table
         from database import supabase
@@ -133,7 +133,7 @@ async def update_current_user_profile(
     Allows updating full_name, preferred_language, and notification_preferences.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         
         from database import supabase
         
@@ -305,7 +305,7 @@ async def get_user_by_id(
     """
     try:
         user_role = current_user.get("role")
-        current_user_id = UUID(current_user["sub"])
+        current_user_id = UUID(current_user["id"])
         
         # Check permissions
         allowed_roles = ["analyst", "business_group_lead", "compliance_officer", "executive", "admin"]

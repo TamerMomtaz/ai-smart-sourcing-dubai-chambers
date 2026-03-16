@@ -58,7 +58,7 @@ async def create_proposal(
     Creates proposal record and returns pre-signed upload URLs for documents.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         if user_role != "vendor":
@@ -120,7 +120,7 @@ async def upload_document(
     Returns pre-signed upload URL for direct S3/Storage upload.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
 
         if payload.file_size and payload.file_size > 50 * 1024 * 1024:
             raise HTTPException(
@@ -177,7 +177,7 @@ async def submit_proposal(
     Validates that proposal has at least one document attached.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
 
         result = submit_service.submit_proposal(
             user_id=user_id,
@@ -227,7 +227,7 @@ async def list_proposals(
     Analysts and above see all proposals (filtered by chamber affiliation via RLS).
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         result = proposal_service.list_proposals(
@@ -282,7 +282,7 @@ async def get_proposal_detail(
     - Analysts/Compliance Officers/Executives: all proposals
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         result = proposal_service.get_proposal_detail(
@@ -333,7 +333,7 @@ async def update_proposal_status(
     - any -> requires_manual_review
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         if user_role not in ["analyst", "executive", "business_group_lead"]:
@@ -391,7 +391,7 @@ async def trigger_evaluation(
     Queues proposal for AI evaluation job.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         if user_role not in ["analyst", "business_group_lead"]:
@@ -447,7 +447,7 @@ async def add_comment(
     Comments can be internal (default) or vendor_visible.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
 
         if len(payload.comment_text.strip()) > 2000:
             raise HTTPException(
@@ -505,7 +505,7 @@ async def run_duplicate_check(
     Uses Claude embeddings to detect near-duplicate submissions.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
 
         result = await duplicate_check_service.run_duplicate_check(
             user_id=str(user_id),
@@ -553,7 +553,7 @@ async def batch_evaluate_proposals(
     Max 100 proposals per batch.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         if user_role not in ["analyst", "executive"]:
@@ -615,7 +615,7 @@ async def export_proposals(
     Returns temporary download URL with expiration.
     """
     try:
-        user_id = UUID(current_user["sub"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "").strip()
 
         if user_role not in ["analyst", "executive", "compliance_officer"]:
