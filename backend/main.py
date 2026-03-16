@@ -13,6 +13,7 @@ from routes import (
     ai_interaction_routes,
     analyst_routes,
     business_group_routes,
+    business_groups_public_routes,
     chamber_ai_interactions_routes,
     chamber_business_council_routes,
     chamber_business_groups_routes,
@@ -43,6 +44,7 @@ from routes import (
     logout_routes,
     me_routes,
     proposal_routes,
+    proposal_submission_routes,
     refresh_routes,
     report_routes,
     sector_routes,
@@ -178,6 +180,10 @@ async def health_check():
     )
 
 # Register all route modules
+# NOTE: proposal_submission_routes and business_groups_public_routes registered first
+# so their endpoints take priority over legacy routes with matching paths.
+app.include_router(proposal_submission_routes.router, prefix="/api/v1", tags=["Proposal Submission & AI Evaluation"])
+app.include_router(business_groups_public_routes.router, prefix="/api/v1", tags=["Business Groups Public"])
 app.include_router(ai_interaction_routes.router, prefix="/api/v1", tags=["AI Interactions"])
 app.include_router(analyst_routes.router, prefix="/api/v1", tags=["Analyst Dashboard"])
 app.include_router(business_group_routes.router, prefix="/api/v1", tags=["Business Groups"])

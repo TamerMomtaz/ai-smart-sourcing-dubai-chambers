@@ -2,27 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
+const ScoreBadge = ({ score }) => {
+  if (score == null) return <span className="text-gray-500">—</span>;
+  const color = score > 70 ? 'text-emerald-400 bg-emerald-500/20' : score >= 40 ? 'text-amber-400 bg-amber-500/20' : 'text-red-400 bg-red-500/20';
+  return <span className={`${color} px-2 py-0.5 rounded-full text-xs font-bold`}>{score.toFixed(1)}</span>;
+};
+
+const STATUS_COLORS = {
+  evaluated: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  requires_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  approved: 'bg-emerald-600/20 text-emerald-300 border-emerald-600/30',
+  rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+};
+
 const EvaluationsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [evaluations, setEvaluations] = useState([]);
   const [pagination, setPagination] = useState(null);
+  const [sortBy, setSortBy] = useState('evaluated_at');
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 20;
 
-  useEffect(() => {
-    fetchEvaluations();
-  }, [page]);
+  useEffect(() => { fetchEvaluations(); }, [page]);
 
   const fetchEvaluations = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/api/v1/proposals?page=${page}&page_size=${pageSize}&status=evaluated`);
-      const proposalsWithEvals = res.data.proposals || [];
-      setEvaluations(proposalsWithEvals.filter(p => p.composite_score !== null));
+      const res = await api.get(`/api/v1/evaluations?page=${page}&page_size=${pageSize}`);
+      setEvaluations(res.data.evaluations || []);
       setPagination(res.data.pagination);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -35,86 +46,109 @@ const EvaluationsList = () => {
     setSearchParams({ page: newPage.toString() });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-pulse text-teal font-heading text-2xl">Loading evaluations...</div>
-      </div>
-    );
-  }
+  const sortedEvaluations = [...evaluations].sort((a, b) => {
+    if (sortBy === 'composite_score') return (b.composite_score || 0) - (a.composite_score || 0);
+    return new Date(b.evaluated_at || 0) - new Date(a.evaluated_at || 0);
+  });
 
   return (
-    <div className="min-h-screen bg-cream p-8">
+    <div className="min-h-screen bg-[#0F172A] p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-6">
-          <h1 className="font-heading text-4xl text-teal">Evaluations</h1>
+        <header className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white">Evaluations</h1>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-[#1E293B] text-gray-300 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+          >
+            <option value="evaluated_at">Sort by Date</option>
+            <option value="composite_score">Sort by Score</option>
+          </select>
         </header>
 
         {error && (
-          <div className="bg-burgundy/10 border border-burgundy rounded-lg p-4 mb-6">
-            <p className="text-burgundy">{error}</p>
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p className="text-red-400">{error}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-teal text-white">
-              <tr>
-                <th className="text-left p-4">Proposal</th>
-                <th className="text-left p-4">Composite</th>
-                <th className="text-left p-4">Relevance</th>
-                <th className="text-left p-4">Feasibility</th>
-                <th className="text-left p-4">Sector Alignment</th>
-                <th className="text-left p-4">Compliance</th>
-                <th className="text-left p-4">Evaluated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {evaluations.length === 0 ? (
+        <div className="bg-[#1E293B] rounded-xl overflow-hidden shadow-xl">
+          {loading ? (
+            <div className="p-12 text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#3B82F6] mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading evaluations...</p>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-[#0F172A] border-b border-gray-700">
                 <tr>
-                  <td colSpan={7} className="text-center p-8 text-ink/60">
-                    No evaluations found
-                  </td>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Proposal</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Composite</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Relevance</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Feasibility</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Compliance</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Status</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Evaluated</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Actions</th>
                 </tr>
-              ) : (
-                evaluations.map((e) => (
-                  <tr key={e.id} className="border-b border-cream hover:bg-cream/50">
-                    <td className="p-4">
-                      <Link to={`/proposals/${e.id}`} className="text-teal hover:underline font-medium">
-                        {e.title}
-                      </Link>
-                    </td>
-                    <td className="p-4 font-bold text-teal">{e.composite_score?.toFixed(1) || 'N/A'}</td>
-                    <td className="p-4">{e.relevance_score?.toFixed(1) || 'N/A'}</td>
-                    <td className="p-4">{e.feasibility_score?.toFixed(1) || 'N/A'}</td>
-                    <td className="p-4">{e.sector_alignment_score?.toFixed(1) || 'N/A'}</td>
-                    <td className="p-4">{e.compliance_score?.toFixed(1) || 'N/A'}</td>
-                    <td className="p-4">
-                      {e.evaluation_timestamp ? new Date(e.evaluation_timestamp).toLocaleDateString() : 'N/A'}
-                    </td>
+              </thead>
+              <tbody>
+                {sortedEvaluations.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="text-center p-12 text-gray-500">No evaluations found</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  sortedEvaluations.map((ev) => (
+                    <tr key={ev.id} className="border-b border-gray-700/50 hover:bg-[#0F172A]/50 transition-colors">
+                      <td className="p-4">
+                        <Link to={`/proposals/${ev.proposal_id}`} className="text-[#3B82F6] hover:text-blue-300 font-medium">
+                          {ev.proposal_title || 'Untitled'}
+                        </Link>
+                      </td>
+                      <td className="p-4"><ScoreBadge score={ev.composite_score} /></td>
+                      <td className="p-4"><ScoreBadge score={ev.relevance_score} /></td>
+                      <td className="p-4"><ScoreBadge score={ev.feasibility_score} /></td>
+                      <td className="p-4"><ScoreBadge score={ev.sector_alignment_score} /></td>
+                      <td className="p-4"><ScoreBadge score={ev.compliance_score} /></td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[ev.proposal_status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                          {ev.proposal_status?.replace(/_/g, ' ') || '—'}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-400 text-sm">
+                        {ev.evaluated_at ? new Date(ev.evaluated_at).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="p-4">
+                        <Link
+                          to={`/proposals/${ev.proposal_id}`}
+                          className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium px-3 py-1 rounded border border-[#3B82F6]/30 hover:bg-[#3B82F6]/10 transition"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {pagination && pagination.total_pages > 1 && (
-          <div className="flex items-center justify-center space-x-2 mt-6">
+          <div className="flex items-center justify-center space-x-3 mt-6">
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg bg-white border border-cream disabled:opacity-50 hover:bg-cream transition"
+              className="px-4 py-2 rounded-lg bg-[#1E293B] text-gray-300 border border-gray-700 disabled:opacity-40 hover:bg-gray-700 transition"
             >
               Previous
             </button>
-            <span className="text-ink">
-              Page {page} of {pagination.total_pages}
-            </span>
+            <span className="text-gray-400">Page {page} of {pagination.total_pages}</span>
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === pagination.total_pages}
-              className="px-4 py-2 rounded-lg bg-white border border-cream disabled:opacity-50 hover:bg-cream transition"
+              className="px-4 py-2 rounded-lg bg-[#1E293B] text-gray-300 border border-gray-700 disabled:opacity-40 hover:bg-gray-700 transition"
             >
               Next
             </button>
