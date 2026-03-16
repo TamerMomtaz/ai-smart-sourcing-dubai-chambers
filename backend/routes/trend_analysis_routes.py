@@ -158,11 +158,11 @@ async def generate_trend_analysis(
         user_id = UUID(current_user["user_id"])
         user_role = current_user.get("role")
         
-        # Verify executive role
-        if user_role != "executive":
+        # Verify executive or admin role
+        if user_role not in ["executive", "admin"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={"error": "Forbidden", "detail": "Executive role required to trigger trend analysis", "code": "ROLE_REQUIRED"},
+                detail={"error": "Forbidden", "detail": "Executive or admin role required to trigger trend analysis", "code": "ROLE_REQUIRED"},
             )
         
         # Validate date range

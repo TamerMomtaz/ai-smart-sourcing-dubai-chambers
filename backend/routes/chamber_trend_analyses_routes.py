@@ -41,18 +41,7 @@ async def list_trend_analyses(
     """
     try:
         user_id = UUID(current_user["id"])
-        user_role = current_user["role"]
-        
-        if user_role not in ["executive", "analyst", "business_group_lead", "admin"]:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "Forbidden",
-                    "detail": "Only executives, analysts, and business group leads can access trend analyses",
-                    "code": 403,
-                },
-            )
-        
+
         result = trend_analysis_service.list_trend_analyses(
             user_id=user_id,
             page=page,
@@ -112,18 +101,7 @@ async def get_trend_analysis(
     """
     try:
         user_id = UUID(current_user["id"])
-        user_role = current_user["role"]
-        
-        if user_role not in ["executive", "analyst", "business_group_lead", "admin"]:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "Forbidden",
-                    "detail": "Only executives, analysts, and business group leads can access trend analysis details",
-                    "code": 403,
-                },
-            )
-        
+
         result = trend_analysis_service.get_by_id(
             user_id=user_id,
             analysis_id=analysis_id,
