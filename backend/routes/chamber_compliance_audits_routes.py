@@ -118,7 +118,7 @@ async def list_compliance_audits(
                 },
             )
 
-        result = compliance_service.list_audits(
+        audits, total = compliance_service.list_audits(
             user_id=user_id,
             user_role=user_role,
             page=page,
@@ -127,18 +127,9 @@ async def list_compliance_audits(
             audit_type=audit_type,
         )
 
-        if result is None:
-            raise HTTPException(
-                status_code=500,
-                detail={
-                    "error": "Internal Server Error",
-                    "detail": "Failed to retrieve compliance audits",
-                    "code": 500,
-                },
-            )
-
-        total = result.get("total", 0)
-        audits = result.get("audits", [])
+        if audits is None:
+            audits = []
+            total = 0
 
         total_pages = (total + page_size - 1) // page_size
 

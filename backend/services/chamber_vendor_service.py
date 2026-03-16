@@ -66,7 +66,7 @@ async def list_vendors(
 
     response = query.execute()
     total = response.count if response.count else 0
-    return response.data, total
+    return response.data or [], total
 
 
 async def get_vendor_by_id(vendor_id: UUID, **kwargs) -> Optional[Dict[str, Any]]:
