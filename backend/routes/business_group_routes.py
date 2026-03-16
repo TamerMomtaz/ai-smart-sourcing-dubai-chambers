@@ -49,15 +49,12 @@ async def list_business_groups(
                 detail={"error": "Unauthorized", "detail": "User ID not found in token", "code": "AUTH_001"},
             )
 
-        business_groups = business_group_service.list_business_groups(user_id)
-        
-        if business_groups is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "Database Error", "detail": "Failed to retrieve business groups", "code": "DB_001"},
-            )
+        result = business_group_service.list_business_groups()
 
-        return {"business_groups": business_groups}
+        if result is None:
+            return {"business_groups": []}
+
+        return {"business_groups": result.get("data", [])}
 
     except HTTPException:
         raise
@@ -104,7 +101,7 @@ async def get_business_group_detail(
                 detail={"error": "Unauthorized", "detail": "User ID not found in token", "code": "AUTH_001"},
             )
 
-        group_detail = business_group_service.get_business_group_detail(user_id, group_id)
+        group_detail = business_group_service.get_business_group_detail(group_id=group_id)
         
         if group_detail is None:
             raise HTTPException(

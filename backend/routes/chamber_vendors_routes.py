@@ -124,15 +124,17 @@ async def list_vendors(
         user_id = UUID(current_user["id"])
         user_role = current_user["role"]
 
+        # Vendor role gets empty list (they access their own profile via /vendors/{id})
         if user_role not in ["admin", "analyst", "executive", "business_group_lead", "compliance_officer"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "error": "Forbidden",
-                    "detail": "Insufficient permissions to list vendors",
-                    "code": "INSUFFICIENT_PERMISSIONS",
-                },
-            )
+            return {
+                "vendors": [],
+                "pagination": PaginationResponse(
+                    total=0,
+                    page=page,
+                    page_size=page_size,
+                    total_pages=0,
+                ),
+            }
 
         vendor_data, total = await chamber_vendor_service.list_vendors(
             user_id=user_id,
