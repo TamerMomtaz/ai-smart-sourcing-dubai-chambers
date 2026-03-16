@@ -47,14 +47,19 @@ async def list_trend_analyses(
     try:
         user_id = UUID(current_user["user_id"])
         user_role = current_user.get("role")
-        
-        # Verify user has permission to view trend analyses
-        if user_role not in ["analyst", "executive", "business_group_lead", "compliance_officer"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={"error": "Forbidden", "detail": "Insufficient permissions to view trend analyses", "code": "FORBIDDEN"},
-            )
-        
+
+        # Vendor role gets empty list (no access to trend analysis data)
+        if user_role not in ["analyst", "executive", "business_group_lead", "compliance_officer", "admin"]:
+            return {
+                "analyses": [],
+                "pagination": {
+                    "total": 0,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": 0,
+                }
+            }
+
         # Build query
         offset = (page - 1) * page_size
         query = supabase.table("trend_analyses").select(

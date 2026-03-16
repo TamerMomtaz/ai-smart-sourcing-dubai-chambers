@@ -107,16 +107,17 @@ async def list_compliance_audits(
         user_id = UUID(current_user["id"])
         user_role = current_user.get("role", "")
 
-        # Only compliance officers, analysts, and executives can list audits
+        # Vendor role gets empty list (no access to compliance audit data)
         if user_role not in ["compliance_officer", "analyst", "executive", "business_group_lead", "admin"]:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "Forbidden",
-                    "detail": "Insufficient permissions to view compliance audits",
-                    "code": 403,
-                },
-            )
+            return {
+                "audits": [],
+                "pagination": PaginationResponse(
+                    total=0,
+                    page=page,
+                    page_size=page_size,
+                    total_pages=0,
+                ),
+            }
 
         audits, total = compliance_service.list_audits(
             user_id=user_id,
