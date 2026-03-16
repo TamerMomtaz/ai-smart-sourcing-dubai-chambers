@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import { getErrorMessage } from './api';
 
-const AuthContext = createContext({});
+const AuthContext = createContext({ user: null, session: null, loading: true });
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch(() => {
       setLoading(false);
     });
 
