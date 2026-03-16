@@ -190,6 +190,27 @@ def generate_trend_analysis(
         return None
 
 
+def get_by_id(user_id: UUID, analysis_id: UUID) -> Optional[Dict[str, Any]]:
+    """Alias for get_trend_analysis_by_id."""
+    return get_trend_analysis_by_id(user_id, analysis_id)
+
+
+def trigger_generation(
+    user_id: UUID,
+    sector: Optional[str] = None,
+    date_range_start: Optional[date] = None,
+    date_range_end: Optional[date] = None,
+    **kwargs,
+) -> Optional[Dict[str, Any]]:
+    """Alias for create_trend_analysis_job."""
+    return create_trend_analysis_job(user_id, sector, date_range_start, date_range_end)
+
+
+def delete(user_id: UUID, analysis_id: UUID) -> bool:
+    """Alias for delete_trend_analysis."""
+    return delete_trend_analysis(user_id, analysis_id)
+
+
 def delete_trend_analysis(user_id: UUID, analysis_id: UUID) -> bool:
     """
     Soft delete a trend analysis (executive only, enforced at route level).

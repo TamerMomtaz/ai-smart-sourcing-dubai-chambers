@@ -45,6 +45,7 @@ async def list_vendors(
     is_desc_approved: Optional[bool] = None,
     country: Optional[str] = None,
     search: Optional[str] = None,
+    **kwargs,
 ) -> tuple[List[Dict[str, Any]], int]:
     """List chamber vendors with pagination and filters."""
     offset = (page - 1) * page_size
@@ -68,7 +69,7 @@ async def list_vendors(
     return response.data, total
 
 
-async def get_vendor_by_id(vendor_id: UUID) -> Optional[Dict[str, Any]]:
+async def get_vendor_by_id(vendor_id: UUID, **kwargs) -> Optional[Dict[str, Any]]:
     """Get chamber vendor by ID."""
     response = (
         supabase.table("chamber_vendors")
@@ -122,6 +123,7 @@ async def update_vendor(
     average_compliance_score: Optional[float] = None,
     api_access_enabled: Optional[bool] = None,
     api_key_hash: Optional[str] = None,
+    **kwargs,
 ) -> Optional[Dict[str, Any]]:
     """Update chamber vendor."""
     data = {"updated_at": datetime.now(timezone.utc).isoformat()}
@@ -164,7 +166,7 @@ async def update_vendor(
     return None
 
 
-async def delete_vendor(vendor_id: UUID) -> bool:
+async def delete_vendor(vendor_id: UUID, **kwargs) -> bool:
     """Soft delete chamber vendor by setting is_active=false (if column exists) or hard delete."""
     response = (
         supabase.table("chamber_vendors")

@@ -32,6 +32,7 @@ def list_business_groups(
     page: int = 1,
     page_size: int = 20,
     chamber: Optional[str] = None,
+    **kwargs,
 ) -> Dict[str, Any]:
     """List business groups with pagination and optional chamber filter."""
     offset = (page - 1) * page_size
@@ -151,6 +152,51 @@ def get_business_group_with_stats(group_id: UUID) -> Optional[Dict[str, Any]]:
         "proposal_count": proposal_count,
         "average_composite_score": average_composite_score,
     }
+
+
+def get_business_group_detail(group_id: UUID = None, **kwargs) -> Optional[Dict[str, Any]]:
+    """Alias for get_business_group_with_stats, accepts extra kwargs."""
+    if group_id is None:
+        group_id = kwargs.get("group_id")
+    return get_business_group_with_stats(group_id)
+
+
+def update_evaluation_weight_config(
+    group_id: UUID = None,
+    evaluation_weight_config: Optional[Dict[str, Any]] = None,
+    **kwargs,
+) -> Optional[Dict[str, Any]]:
+    """Alias for update_evaluation_weights, accepts extra kwargs."""
+    lead_user_id = kwargs.get("user_id") or kwargs.get("lead_user_id")
+    config = evaluation_weight_config or kwargs.get("evaluation_weight_config_json")
+    if lead_user_id and config:
+        return update_evaluation_weights(
+            group_id=group_id,
+            lead_user_id=UUID(str(lead_user_id)),
+            evaluation_weight_config_json=config,
+        )
+    return None
+
+
+def get_evaluation_weight_config(group_id: UUID = None, **kwargs) -> Optional[Dict[str, Any]]:
+    """Get evaluation weight config for a business group."""
+    group = get_business_group_by_id(group_id)
+    if not group:
+        return None
+    return group.get("evaluation_weight_config_json")
+
+
+def update_evaluation_config(
+    group_id: UUID = None,
+    evaluation_weight_config: Optional[Dict[str, Any]] = None,
+    **kwargs,
+) -> Optional[Dict[str, Any]]:
+    """Alias for update_evaluation_weight_config, accepts extra kwargs."""
+    return update_evaluation_weight_config(
+        group_id=group_id,
+        evaluation_weight_config=evaluation_weight_config,
+        **kwargs,
+    )
 
 
 def update_evaluation_weights(
