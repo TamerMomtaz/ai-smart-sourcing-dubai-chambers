@@ -177,6 +177,7 @@ const ProposalsList = () => {
           >
             <option value="">All Statuses</option>
             <option value="queued">Queued</option>
+            <option value="submitted">Submitted</option>
             <option value="evaluating">Evaluating</option>
             <option value="evaluated">Evaluated</option>
             <option value="approved">Approved</option>
@@ -241,27 +242,41 @@ const ProposalsList = () => {
                       <td className="p-4 text-gray-400 text-sm">
                         {p.submission_date ? new Date(p.submission_date).toLocaleDateString() : '—'}
                       </td>
-                      <td className="p-4 flex gap-2">
+                      <td className="p-4 flex gap-2 items-center">
                         <Link
                           to={`/proposals/${p.id}`}
                           className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium px-3 py-1 rounded border border-[#3B82F6]/30 hover:bg-[#3B82F6]/10 transition"
                         >
                           View
                         </Link>
-                        {(p.status === 'queued' || p.status === 'requires_review') && (
-                          <button
-                            onClick={() => handleEvaluate(p.id)}
-                            disabled={evaluatingId === p.id}
-                            className="bg-[#3B82F6] hover:bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded disabled:opacity-50 transition"
-                          >
-                            {evaluatingId === p.id ? (
-                              <span className="flex items-center gap-2">
-                                <span className="animate-pulse">🧠</span> Evaluating...
-                              </span>
-                            ) : (
-                              'Evaluate'
-                            )}
-                          </button>
+                        {(p.status === 'queued' || p.status === 'submitted') && (
+                          evaluatingId === p.id ? (
+                            <span className="flex items-center gap-2 text-blue-400 text-sm">
+                              <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></span>
+                              AI is evaluating...
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleEvaluate(p.id)}
+                              className="bg-[#3B82F6] hover:bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded transition"
+                            >
+                              Evaluate
+                            </button>
+                          )
+                        )}
+                        {p.status === 'evaluating' && (
+                          <span className="flex items-center gap-2 text-blue-400 text-sm opacity-70">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></span>
+                            Evaluating...
+                          </span>
+                        )}
+                        {(p.status === 'evaluated' || p.status === 'approved' || p.status === 'rejected') && p.composite_score != null && (
+                          <ScoreBadge score={p.composite_score} />
+                        )}
+                        {(p.status === 'requires_review' || p.status === 'requires_manual_review') && (
+                          <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-medium">
+                            Needs Review
+                          </span>
                         )}
                       </td>
                     </tr>
