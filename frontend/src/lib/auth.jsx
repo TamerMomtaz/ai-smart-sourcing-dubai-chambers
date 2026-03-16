@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 import { getErrorMessage } from './api';
 
@@ -16,16 +16,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const sessionRef = useRef(null);
 
   useEffect(() => {
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (event === 'INITIAL_SESSION') {
-        setLoading(false);
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        sessionRef.current = newSession;
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+      } else if (event === 'INITIAL_SESSION') {
+        if (newSession) {
+          sessionRef.current = newSession;
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+        } else if (!sessionRef.current) {
+          // Only clear if we don't already have a valid session
+          setSession(null);
+          setUser(null);
+        }
+        // If newSession is null but sessionRef.current exists, skip — keep the good session
+      } else if (event === 'SIGNED_OUT') {
+        sessionRef.current = null;
+        setSession(null);
+        setUser(null);
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
