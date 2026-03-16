@@ -27,6 +27,7 @@ import DocumentDetail from './pages/DocumentDetail';
 import DESCCertifiedProvidersList from './pages/DESCCertifiedProvidersList';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import Settings from './pages/Settings';
+import UsersPage from './pages/UsersPage';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -84,6 +85,7 @@ function App() {
             <Route path="documents" element={<DocumentsList />} />
             <Route path="documents/:id" element={<DocumentDetail />} />
             <Route path="desc-certified-providers" element={<DESCCertifiedProvidersList />} />
+            <Route path="users" element={<UsersPage />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
