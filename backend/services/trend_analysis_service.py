@@ -101,7 +101,7 @@ def generate_trend_analysis(
     """
     try:
         query = (
-            supabase.table("proposals")
+            supabase.table("chamber_proposals")
             .select(
                 "id, sector, technology_type, maturity_level, composite_score, "
                 "relevance_score, feasibility_score, sector_alignment_score, compliance_score, "

@@ -375,6 +375,12 @@ const AIInteractionsList = () => {
             — DEVONEERS{' '}
             <SigmaIcon size={14} />
           </p>
+          <p className="mt-4 text-slate-600 text-xs">
+            <SigmaIcon size={12} /> and Intelligence Units (IU) are concepts by DEVONEERS.
+          </p>
+          <p className="text-slate-600 text-xs mt-1">
+            &copy; 2026 DEVONEERS — All rights reserved.
+          </p>
         </footer>
       </div>
     </div>

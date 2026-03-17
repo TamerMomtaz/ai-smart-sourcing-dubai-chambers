@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
 const FILE_TYPE_STYLES = {
@@ -136,8 +136,15 @@ const DocumentsList = () => {
             <tbody>
               {filteredDocs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center p-8 text-ink/60">
-                    No documents found
+                  <td colSpan={6} className="text-center p-12">
+                    <p className="text-ink/60 mb-2">No documents uploaded yet.</p>
+                    <p className="text-ink/50 text-sm mb-4">Upload documents from the Proposal detail view — click 'View' on any proposal to upload supporting files.</p>
+                    <Link
+                      to="/proposals"
+                      className="inline-block bg-teal text-white px-5 py-2 rounded-lg font-semibold hover:bg-teal/90 transition-colors text-sm"
+                    >
+                      Go to Proposals →
+                    </Link>
                   </td>
                 </tr>
               ) : (

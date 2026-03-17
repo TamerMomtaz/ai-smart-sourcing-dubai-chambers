@@ -7,9 +7,10 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
   const [user, setUser] = useState(null);
+  const [authRetrying, setAuthRetrying] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (retryCount = 0) => {
       try {
         setLoading(true);
         const [userRes, statsRes] = await Promise.all([
@@ -18,10 +19,22 @@ const Dashboard = () => {
         ]);
         setUser(userRes.data);
         setStats(statsRes);
+        setAuthRetrying(false);
       } catch (err) {
-        setError(getErrorMessage(err));
+        const is403 = err?.response?.status === 403;
+        if (is403 && retryCount < 3) {
+          setAuthRetrying(true);
+          setTimeout(() => fetchData(retryCount + 1), 2000);
+          return;
+        }
+        setAuthRetrying(false);
+        if (is403) {
+          setError('Session could not be verified. Please refresh the page.');
+        } else {
+          setError(getErrorMessage(err));
+        }
       } finally {
-        setLoading(false);
+        if (!authRetrying) setLoading(false);
       }
     };
     fetchData();
@@ -32,10 +45,12 @@ const Dashboard = () => {
     return res.data;
   };
 
-  if (loading) {
+  if (loading || authRetrying) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-pulse text-teal font-heading text-2xl">Loading dashboard...</div>
+        <div className="animate-pulse text-teal font-heading text-2xl">
+          {authRetrying ? 'Authenticating...' : 'Loading dashboard...'}
+        </div>
       </div>
     );
   }
