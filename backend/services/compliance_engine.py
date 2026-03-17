@@ -1,12 +1,11 @@
-"""DESC compliance audit engine using Claude AI."""
+"""DESC compliance audit engine using Claude AI (with multi-provider fallback)."""
 
 import json
+import os
 import time
 import uuid
 import logging
 from typing import Optional, Dict, Any
-
-import anthropic
 
 from config import ANTHROPIC_API_KEY
 from database import supabase
@@ -48,11 +47,19 @@ SYSTEM_PROMPT = (
 )
 
 
+AI_PROVIDERS = [
+    {"name": "Claude Sonnet 4.5", "type": "anthropic", "model": "claude-sonnet-4-5-20250929"},
+    {"name": "Claude Sonnet 4.5 (retry)", "type": "anthropic", "model": "claude-sonnet-4-5-20250929", "delay": 5},
+    {"name": "GPT-4o", "type": "openai", "model": "gpt-4o"},
+    {"name": "Gemini 2.0 Flash", "type": "google", "model": "gemini-2.0-flash"},
+]
+
+
 class ComplianceEngine:
-    """AI-powered DESC compliance audit engine using Claude."""
+    """AI-powered DESC compliance audit engine with multi-provider fallback."""
 
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        self.system_prompt = SYSTEM_PROMPT
 
     async def run_audit(self, proposal_id: str, user_id: str) -> dict:
         """
@@ -82,11 +89,11 @@ class ComplianceEngine:
         )
 
         start_time = time.time()
-        ai_response = self._call_claude(user_prompt=user_prompt)
+        ai_result = self._call_ai(user_prompt=user_prompt)
         latency_ms = int((time.time() - start_time) * 1000)
 
         # 3. Parse response
-        parsed = self._parse_response(raw_text=ai_response.content[0].text)
+        parsed = self._parse_response(raw_text=ai_result["text"])
 
         # Derive boolean compliance flags from parsed result
         framework_compliance = {}
@@ -132,9 +139,8 @@ class ComplianceEngine:
         )
 
         # 5. Log AI interaction (non-critical — per rule 9b)
-        usage = ai_response.usage
-        prompt_tokens = usage.input_tokens
-        completion_tokens = usage.output_tokens
+        prompt_tokens = ai_result["prompt_tokens"]
+        completion_tokens = ai_result["completion_tokens"]
         total_tokens = prompt_tokens + completion_tokens
         cost_usd = round(
             (prompt_tokens * 3 / 1_000_000) + (completion_tokens * 15 / 1_000_000), 6
@@ -143,11 +149,14 @@ class ComplianceEngine:
         carbon_gco2 = round(energy_kwh * 0.4, 8)
         intelligence_units = round(total_tokens / 1000, 4)
 
+        actual_model = ai_result["model_name"]
+        logger.info(f"[COMPLIANCE] Proposal {proposal_id} audited by {ai_result['provider_name']} ({actual_model})")
+
         try:
             create_ai_interaction(
                 user_id=user_id,
                 session_id=uuid.uuid4(),
-                model_name=CLAUDE_MODEL,
+                model_name=actual_model,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 latency_ms=latency_ms,
@@ -258,19 +267,77 @@ class ComplianceEngine:
         )
         return "\n".join(parts)
 
-    def _call_claude(self, user_prompt: str):
-        try:
-            response = self.client.messages.create(
-                model=CLAUDE_MODEL,
-                max_tokens=4096,
-                timeout=120,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_prompt}],
-            )
-            return response
-        except Exception as e:
-            logger.error(f"Claude API call failed for compliance audit: {e}")
-            raise
+    def _call_ai(self, user_prompt: str) -> Dict[str, Any]:
+        """Try Claude first, then OpenAI, then Gemini as fallbacks."""
+        last_error = None
+        for provider in AI_PROVIDERS:
+            try:
+                if provider.get("delay"):
+                    logger.info(f"[COMPLIANCE] Waiting {provider['delay']}s before retry...")
+                    time.sleep(provider["delay"])
+
+                logger.info(f"[COMPLIANCE] Trying {provider['name']}...")
+
+                if provider["type"] == "anthropic":
+                    import anthropic
+                    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ANTHROPIC_API_KEY))
+                    response = client.messages.create(
+                        model=provider["model"],
+                        max_tokens=4096,
+                        system=self.system_prompt,
+                        messages=[{"role": "user", "content": user_prompt}],
+                    )
+                    return {
+                        "text": response.content[0].text,
+                        "model_name": provider["model"],
+                        "provider_name": provider["name"],
+                        "prompt_tokens": response.usage.input_tokens,
+                        "completion_tokens": response.usage.output_tokens,
+                    }
+
+                elif provider["type"] == "openai":
+                    from openai import OpenAI
+                    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+                    response = client.chat.completions.create(
+                        model=provider["model"],
+                        max_tokens=4096,
+                        messages=[
+                            {"role": "system", "content": self.system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                    )
+                    usage = response.usage
+                    return {
+                        "text": response.choices[0].message.content,
+                        "model_name": provider["model"],
+                        "provider_name": provider["name"],
+                        "prompt_tokens": usage.prompt_tokens if usage else 0,
+                        "completion_tokens": usage.completion_tokens if usage else 0,
+                    }
+
+                elif provider["type"] == "google":
+                    import google.generativeai as genai
+                    genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+                    model = genai.GenerativeModel(
+                        provider["model"],
+                        system_instruction=self.system_prompt,
+                    )
+                    response = model.generate_content(user_prompt)
+                    meta = getattr(response, "usage_metadata", None)
+                    return {
+                        "text": response.text,
+                        "model_name": provider["model"],
+                        "provider_name": provider["name"],
+                        "prompt_tokens": getattr(meta, "prompt_token_count", 0) or 0,
+                        "completion_tokens": getattr(meta, "candidates_token_count", 0) or 0,
+                    }
+
+            except Exception as e:
+                last_error = e
+                logger.warning(f"[COMPLIANCE] {provider['name']} failed: {str(e)[:200]}")
+                continue
+
+        raise Exception(f"All AI providers failed. Last error: {last_error}")
 
     def _parse_response(self, raw_text: str) -> dict:
         """Parse JSON from Claude response, handling markdown fences."""

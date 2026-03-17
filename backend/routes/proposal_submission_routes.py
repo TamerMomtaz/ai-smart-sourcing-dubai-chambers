@@ -440,9 +440,10 @@ async def trigger_ai_evaluation(
         except Exception:
             pass
         logger.error(f"Error evaluating proposal: {e}", exc_info=True)
+        is_ai_failure = "All AI providers failed" in str(e)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Evaluation failed", "detail": str(e), "code": 500},
+            status_code=503 if is_ai_failure else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "AI service temporarily busy. Please try again in 1-2 minutes."} if is_ai_failure else {"error": "Evaluation failed", "detail": str(e), "code": 500},
         )
 
 
