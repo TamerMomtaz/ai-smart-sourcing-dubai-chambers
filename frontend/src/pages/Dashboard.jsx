@@ -28,25 +28,8 @@ const Dashboard = () => {
   }, []);
 
   const fetchDashboardStats = async () => {
-    const userRes = await api.get('/api/v1/users/me');
-    const role = userRes.data.role;
-    
-    if (role === 'executive') {
-      const res = await api.get('/api/v1/dashboard/executive');
-      return res.data;
-    } else if (role === 'analyst') {
-      const res = await api.get('/api/v1/dashboard/analyst');
-      return res.data;
-    } else {
-      const [proposals, vendors] = await Promise.all([
-        api.get('/api/v1/proposals?page=1&page_size=1'),
-        role === 'vendor' ? api.get('/api/v1/vendors/') : Promise.resolve({ data: {} })
-      ]);
-      return {
-        total_proposals: proposals.data.total || 0,
-        my_proposals: proposals.data.total || 0
-      };
-    }
+    const res = await api.get('/api/v1/dashboard/stats');
+    return res.data;
   };
 
   if (loading) {
@@ -76,29 +59,35 @@ const Dashboard = () => {
           <p className="text-ink/70">Welcome back, {user?.full_name || 'User'}</p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard
             title="Total Proposals"
-            value={stats?.pipeline_status?.total_proposals || stats?.total_proposals || 0}
+            value={stats?.total_proposals || 0}
             icon="📋"
             color="teal"
           />
           <StatCard
-            title="Under Review"
-            value={stats?.pipeline_status?.under_review || 0}
-            icon="🔍"
-            color="gold"
-          />
-          <StatCard
-            title="Approved"
-            value={stats?.pipeline_status?.approved || 0}
+            title="Evaluated"
+            value={stats?.evaluated || 0}
             icon="✅"
             color="teal"
           />
           <StatCard
-            title="Evaluating"
-            value={stats?.pipeline_status?.evaluating || 0}
-            icon="⚙️"
+            title="Pending Evaluation"
+            value={stats?.pending_evaluation || 0}
+            icon="⏳"
+            color="gold"
+          />
+          <StatCard
+            title="Compliance Audits"
+            value={stats?.compliance_audits || 0}
+            icon="🔒"
+            color="teal"
+          />
+          <StatCard
+            title="Average Score"
+            value={stats?.average_score != null ? stats.average_score : '—'}
+            icon="📊"
             color="gold"
           />
         </div>
@@ -115,6 +104,7 @@ const Dashboard = () => {
                     </Link>
                     <div className="text-sm text-ink/60 mt-1">
                       {p.sector} • {p.status}
+                      {p.composite_score != null && ` • Score: ${p.composite_score}`}
                     </div>
                   </li>
                 ))}
@@ -139,17 +129,19 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {stats?.sector_trends && stats.sector_trends.length > 0 && (
+        {/* Approved / Rejected summary */}
+        {(stats?.approved > 0 || stats?.rejected > 0) && (
           <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="font-heading text-2xl text-teal mb-4">Sector Trends</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {stats.sector_trends.map(st => (
-                <div key={st.sector} className="border border-cream rounded-lg p-4">
-                  <div className="text-sm text-ink/60 mb-1">{st.sector}</div>
-                  <div className="font-heading text-xl text-teal">{st.proposal_count}</div>
-                  <div className="text-xs text-ink/50 mt-1">Avg: {st.average_score?.toFixed(1) || 'N/A'}</div>
-                </div>
-              ))}
+            <h2 className="font-heading text-2xl text-teal mb-4">Decision Summary</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-cream rounded-lg p-4 text-center">
+                <div className="font-heading text-3xl text-teal">{stats.approved || 0}</div>
+                <div className="text-sm text-ink/60 mt-1">Approved</div>
+              </div>
+              <div className="border border-cream rounded-lg p-4 text-center">
+                <div className="font-heading text-3xl text-burgundy">{stats.rejected || 0}</div>
+                <div className="text-sm text-ink/60 mt-1">Rejected</div>
+              </div>
             </div>
           </div>
         )}
