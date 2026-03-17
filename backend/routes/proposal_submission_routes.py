@@ -119,6 +119,23 @@ async def create_proposal(
                 detail={"error": "Failed to create proposal", "code": 500},
             )
 
+        # Increment vendor's submission_history_count
+        try:
+            vendor_row = (
+                supabase.table("chamber_vendors")
+                .select("submission_history_count")
+                .eq("id", str(user_id))
+                .maybe_single()
+                .execute()
+            )
+            current_count = (vendor_row.data or {}).get("submission_history_count", 0)
+            supabase.table("chamber_vendors").update({
+                "submission_history_count": current_count + 1,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }).eq("id", str(user_id)).execute()
+        except Exception as inc_err:
+            logger.warning(f"Failed to increment submission count for vendor {user_id}: {inc_err}")
+
         return result.data[0]
 
     except HTTPException:
@@ -238,6 +255,22 @@ async def get_proposal_detail(
             if ai_result.data:
                 ai_cost = ai_result.data[0]
 
+        # Fetch compliance audit if exists
+        compliance_audit = None
+        try:
+            audit_result = (
+                supabase.table("chamber_compliance_audits")
+                .select("*")
+                .eq("proposal_id", str(proposal_id))
+                .order("audit_timestamp", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if audit_result.data:
+                compliance_audit = audit_result.data[0]
+        except Exception as audit_err:
+            logger.warning(f"Failed to fetch compliance audit for proposal {proposal_id}: {audit_err}")
+
         # Fetch business group info
         business_group = None
         if proposal.get("business_group_id"):
@@ -254,6 +287,7 @@ async def get_proposal_detail(
             **proposal,
             "evaluation": evaluation,
             "ai_cost": ai_cost,
+            "compliance_audit": compliance_audit,
             "business_group": business_group,
         }
 

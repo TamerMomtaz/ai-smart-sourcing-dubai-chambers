@@ -245,25 +245,29 @@ const CONTROL_STATUS_STYLE = {
   warning: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
 };
 
-const ComplianceAuditSection = ({ proposalId, userRole, onToast }) => {
+const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit }) => {
   const [auditResult, setAuditResult] = useState(null);
   const [auditLoading, setAuditLoading] = useState(false);
-  const [existingAudit, setExistingAudit] = useState(null);
+  const [existingAudit, setExistingAudit] = useState(initialAudit || null);
   const [expandedFramework, setExpandedFramework] = useState(null);
-  const [loadingExisting, setLoadingExisting] = useState(true);
+  const [loadingExisting, setLoadingExisting] = useState(!initialAudit);
 
   useEffect(() => {
-    fetchExistingAudit();
-  }, [proposalId]);
+    if (initialAudit) {
+      setExistingAudit(initialAudit);
+      setLoadingExisting(false);
+    } else {
+      fetchExistingAudit();
+    }
+  }, [proposalId, initialAudit]);
 
   const fetchExistingAudit = async () => {
     try {
       setLoadingExisting(true);
-      const { data } = await api.get(`/api/v1/compliance-audit-results?page=1&page_size=1`);
+      const { data } = await api.get(`/api/v1/compliance-audit-results?proposal_id=${proposalId}&page=1&page_size=1`);
       const audits = data.audits || [];
       const match = audits.find(a => a.proposal_id === proposalId);
       if (match) {
-        // Fetch full detail
         const { data: detail } = await api.get(`/api/v1/compliance-audit-results/${match.id}`);
         setExistingAudit(detail);
       }
@@ -342,6 +346,26 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast }) => {
             </div>
           </div>
 
+          {/* Quick Compliance Checklist */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+              <span className="text-2xl">{audit.isr_v3_compliance ? '✅' : '❌'}</span>
+              <p className="text-gray-300 text-sm mt-1 font-medium">ISR V3</p>
+            </div>
+            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+              <span className="text-2xl">{audit.ai_security_policy_compliance ? '✅' : '❌'}</span>
+              <p className="text-gray-300 text-sm mt-1 font-medium">AI Security</p>
+            </div>
+            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+              <span className="text-2xl">{audit.csp_standards_compliance ? '✅' : '❌'}</span>
+              <p className="text-gray-300 text-sm mt-1 font-medium">CSP Standards</p>
+            </div>
+            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+              <span className="text-2xl">{audit.data_residency_verified ? '✅' : '❌'}</span>
+              <p className="text-gray-300 text-sm mt-1 font-medium">Data Residency</p>
+            </div>
+          </div>
+
           {/* Summary */}
           {audit.summary && (
             <p className="text-gray-300 text-sm leading-relaxed border-l-2 border-teal-500 pl-4">{audit.summary}</p>
@@ -385,6 +409,24 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast }) => {
               )}
             </div>
           ))}
+
+          {/* Key Findings */}
+          {audit.findings && (
+            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+              <h4 className="text-gray-300 text-sm font-semibold mb-2">Key Findings</h4>
+              {Array.isArray(audit.findings) ? (
+                <ul className="space-y-1">
+                  {audit.findings.map((f, i) => (
+                    <li key={i} className="text-gray-400 text-sm">• {typeof f === 'string' ? f : f.finding || f.description || JSON.stringify(f)}</li>
+                  ))}
+                </ul>
+              ) : typeof audit.findings === 'object' ? (
+                <p className="text-gray-400 text-sm">{JSON.stringify(audit.findings, null, 2)}</p>
+              ) : (
+                <p className="text-gray-400 text-sm">{audit.findings}</p>
+              )}
+            </div>
+          )}
 
           {/* Data Residency & Vendor Certification */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -639,7 +681,7 @@ const ProposalDetail = () => {
         )}
 
         {/* DESC Compliance Audit */}
-        <ComplianceAuditSection proposalId={id} userRole={userRole} onToast={setToast} />
+        <ComplianceAuditSection proposalId={id} userRole={userRole} onToast={setToast} initialAudit={proposal?.compliance_audit} />
 
         {/* AI Cost / ΣI */}
         {aiCost && (
