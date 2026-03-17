@@ -151,9 +151,15 @@ const ProposalsList = () => {
   const handleAudit = async (proposalId) => {
     try {
       setAuditingId(proposalId);
-      await api.post(`/api/v1/proposals/${proposalId}/audit`);
+      const res = await api.post(`/api/v1/proposals/${proposalId}/audit`);
+      const auditScore = res.data?.overall_score ?? null;
+      // Optimistically update the proposal row
+      setProposals((prev) =>
+        prev.map((p) =>
+          p.id === proposalId ? { ...p, has_audit: true, audit_score: auditScore } : p
+        )
+      );
       setToast({ message: 'Audit complete — view results on the Compliance Audits page', type: 'success' });
-      fetchProposals();
     } catch (err) {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
@@ -297,10 +303,14 @@ const ProposalsList = () => {
                             <span className="animate-spin inline-block w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full"></span>
                             Running DESC compliance audit...
                           </span>
+                        ) : p.has_audit ? (
+                          <span className="bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                            {p.audit_score != null ? p.audit_score : 'Audited'}
+                          </span>
                         ) : (
                           <button
                             onClick={() => handleAudit(p.id)}
-                            className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition"
+                            className="text-teal-400 text-sm font-medium px-3 py-1 rounded border border-teal-500/30 hover:bg-teal-500/10 transition"
                           >
                             Audit
                           </button>

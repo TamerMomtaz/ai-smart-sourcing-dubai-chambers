@@ -79,12 +79,52 @@ def list_proposals(
         query = query.range(offset, offset + page_size - 1)
         
         response = query.execute()
-        
+
         total = response.count if hasattr(response, "count") else 0
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
-        
+
+        proposals = response.data or []
+
+        # Enrich proposals with audit data from chamber_compliance_audits
+        if proposals:
+            proposal_ids = [p["id"] for p in proposals]
+            try:
+                audit_response = supabase.table("chamber_compliance_audits").select(
+                    "proposal_id, findings_json"
+                ).in_("proposal_id", proposal_ids).order(
+                    "audit_timestamp", desc=True
+                ).execute()
+
+                # Build map: proposal_id -> latest audit score
+                audit_map = {}
+                for audit in (audit_response.data or []):
+                    pid = audit["proposal_id"]
+                    if pid not in audit_map:
+                        findings = audit.get("findings_json")
+                        if isinstance(findings, str):
+                            import json as _json
+                            try:
+                                findings = _json.loads(findings)
+                            except Exception:
+                                findings = {}
+                        elif findings is None:
+                            findings = {}
+                        audit_map[pid] = findings.get("overall_score")
+
+                for p in proposals:
+                    if p["id"] in audit_map:
+                        p["has_audit"] = True
+                        p["audit_score"] = audit_map[p["id"]]
+                    else:
+                        p["has_audit"] = False
+                        p["audit_score"] = None
+            except Exception:
+                for p in proposals:
+                    p["has_audit"] = False
+                    p["audit_score"] = None
+
         return {
-            "proposals": response.data or [],
+            "proposals": proposals,
             "pagination": {
                 "total": total,
                 "page": page,

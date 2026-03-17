@@ -21,7 +21,6 @@ router = APIRouter(prefix="/chamber-business-groups", tags=["Chamber Business Gr
 
 @router.get(
     "",
-    response_model=List[BusinessGroup],
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         403: {"model": ErrorResponse, "description": "Forbidden"},
@@ -77,7 +76,6 @@ async def list_business_groups(
 
 @router.get(
     "/{group_id}",
-    response_model=BusinessGroupDetail,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         403: {"model": ErrorResponse, "description": "Forbidden"},
@@ -128,7 +126,6 @@ async def get_business_group(
 
 @router.put(
     "/{group_id}/evaluation-config",
-    response_model=EvaluationWeightConfigUpdateResponse,
     responses={
         400: {"model": ErrorResponse, "description": "Invalid evaluation weight configuration"},
         401: {"model": ErrorResponse, "description": "Unauthorized"},
@@ -216,7 +213,6 @@ async def update_evaluation_config(
 
 @router.get(
     "/{group_id}/evaluation-config",
-    response_model=EvaluationWeightConfig,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         403: {"model": ErrorResponse, "description": "Forbidden"},
