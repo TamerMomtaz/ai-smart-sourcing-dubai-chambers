@@ -57,6 +57,10 @@ const VendorForm = () => {
       return;
     }
 
+    if (!window.confirm('This change will be recorded in the audit trail. Continue?')) {
+      return;
+    }
+
     try {
       setLoading(true);
       await api.patch(`/api/v1/vendors/${id}`, formData);

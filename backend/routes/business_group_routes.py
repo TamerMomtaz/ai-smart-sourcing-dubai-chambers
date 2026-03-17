@@ -77,7 +77,7 @@ async def list_business_groups(
 async def get_business_group_detail(
     group_id: UUID,
     current_user: Dict[str, Any] = Depends(get_current_user),
-) -> BusinessGroupDetail:
+):
     """
     Get business group details and evaluation configuration.
     
@@ -107,7 +107,7 @@ async def get_business_group_detail(
                 detail={"error": "Not Found", "detail": "Business group not found", "code": "RES_001"},
             )
 
-        return BusinessGroupDetail(**group_detail)
+        return group_detail
 
     except HTTPException:
         raise
@@ -134,7 +134,7 @@ async def update_evaluation_config(
     group_id: UUID,
     config_update: EvaluationWeightConfigUpdate,
     current_user: Dict[str, Any] = Depends(get_current_user),
-) -> EvaluationWeightConfigUpdateResponse:
+):
     """
     Update evaluation weight configuration for business group.
     

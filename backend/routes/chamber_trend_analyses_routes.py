@@ -209,22 +209,14 @@ async def generate_trend_analysis(
                 },
             )
 
-        # 1. Fetch evaluated proposals
+        # 1. Fetch all proposals with scores (evaluated, approved, rejected, etc.)
         proposals_response = supabase.table("chamber_proposals").select(
             "id, title, sector, technology_type, maturity_level, composite_score, "
             "relevance_score, feasibility_score, sector_alignment_score, compliance_score, "
             "status, submission_date"
-        ).eq("status", "evaluated").execute()
+        ).not_.is_("composite_score", "null").execute()
 
         proposals = proposals_response.data or []
-        if not proposals:
-            # Also try other statuses that have scores
-            proposals_response = supabase.table("chamber_proposals").select(
-                "id, title, sector, technology_type, maturity_level, composite_score, "
-                "relevance_score, feasibility_score, sector_alignment_score, compliance_score, "
-                "status, submission_date"
-            ).not_.is_("composite_score", "null").execute()
-            proposals = proposals_response.data or []
 
         if not proposals:
             raise HTTPException(

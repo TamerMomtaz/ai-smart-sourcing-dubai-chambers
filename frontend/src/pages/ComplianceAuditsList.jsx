@@ -172,9 +172,9 @@ const ComplianceAuditsList = () => {
                     <td className="p-4">
                       <Link
                         to={`/compliance-audits/${a.id}`}
-                        className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+                        className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
                       >
-                        View
+                        View Evidence
                       </Link>
                     </td>
                   </tr>

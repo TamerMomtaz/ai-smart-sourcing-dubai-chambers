@@ -304,13 +304,13 @@ const ProposalsList = () => {
                             Running DESC compliance audit...
                           </span>
                         ) : p.has_audit ? (
-                          <span className="bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                          <span className="bg-[#0D9488] text-white px-2 py-0.5 rounded-full text-xs font-bold">
                             {p.audit_score != null ? p.audit_score : 'Audited'}
                           </span>
                         ) : (
                           <button
                             onClick={() => handleAudit(p.id)}
-                            className="text-teal-400 text-sm font-medium px-3 py-1 rounded border border-teal-500/30 hover:bg-teal-500/10 transition"
+                            className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition"
                           >
                             Audit
                           </button>

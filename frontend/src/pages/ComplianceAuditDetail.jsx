@@ -15,6 +15,7 @@ const ComplianceAuditDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedFramework, setExpandedFramework] = useState(null);
+  const [expandedEvidence, setExpandedEvidence] = useState({});
 
   useEffect(() => {
     fetchAudit();
@@ -94,6 +95,11 @@ const ComplianceAuditDetail = () => {
           </div>
         )}
 
+        {/* AI Disclaimer */}
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
+          <p className="text-amber-300 text-sm">This audit was generated automatically by AI. Review the evidence below for each compliance control.</p>
+        </div>
+
         {/* Overall Score */}
         <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
           <div className="flex items-center gap-8">
@@ -129,10 +135,10 @@ const ComplianceAuditDetail = () => {
           </div>
         )}
 
-        {/* Framework Controls */}
+        {/* Framework Controls — Evidence & Findings */}
         {frameworks.length > 0 && (
           <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
-            <h3 className="text-lg font-bold text-white mb-4">Framework Assessments</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Evidence &amp; Findings</h3>
             <div className="space-y-3">
               {frameworks.map((fw, idx) => {
                 const controls = fw.controls || [];
@@ -156,25 +162,47 @@ const ComplianceAuditDetail = () => {
                     </button>
                     {expandedFramework === idx && (
                       <div className="px-4 pb-4 space-y-3">
-                        {controls.map((ctrl, ci) => (
-                          <div key={ci} className="bg-[#1E293B] rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <span className="text-gray-500 font-mono text-xs mr-2">{ctrl.control_id}</span>
-                                <span className="text-gray-200 text-sm font-medium">{ctrl.control_name}</span>
+                        {controls.map((ctrl, ci) => {
+                          const evidenceKey = `${idx}-${ci}`;
+                          const isEvidenceExpanded = expandedEvidence[evidenceKey];
+                          return (
+                            <div key={ci} className="bg-[#1E293B] rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <span className="text-gray-500 font-mono text-xs mr-2">{ctrl.control_id}</span>
+                                  <span className="text-gray-200 text-sm font-medium">{ctrl.control_name}</span>
+                                </div>
+                                <span className={`px-2 py-0.5 rounded text-xs font-bold border ${CONTROL_STATUS_STYLE[ctrl.status] || CONTROL_STATUS_STYLE.warning}`}>
+                                  {ctrl.status?.toUpperCase()}
+                                </span>
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-xs font-bold border ${CONTROL_STATUS_STYLE[ctrl.status] || CONTROL_STATUS_STYLE.warning}`}>
-                                {ctrl.status?.toUpperCase()}
-                              </span>
+                              {(ctrl.finding || ctrl.recommendation) && (
+                                <button
+                                  onClick={() => setExpandedEvidence(prev => ({ ...prev, [evidenceKey]: !prev[evidenceKey] }))}
+                                  className="text-teal-400 hover:text-teal-300 text-xs font-medium mt-1 flex items-center gap-1"
+                                >
+                                  {isEvidenceExpanded ? '▾ Hide evidence' : '▸ Show evidence'}
+                                </button>
+                              )}
+                              {isEvidenceExpanded && (
+                                <div className="mt-3 pl-3 border-l-2 border-gray-700 space-y-2">
+                                  {ctrl.finding && (
+                                    <div>
+                                      <span className="text-gray-500 text-xs font-medium uppercase">Finding</span>
+                                      <p className="text-gray-300 text-sm mt-0.5">{ctrl.finding}</p>
+                                    </div>
+                                  )}
+                                  {ctrl.recommendation && (
+                                    <div>
+                                      <span className="text-gray-500 text-xs font-medium uppercase">Recommendation</span>
+                                      <p className="text-teal-400 text-sm mt-0.5">{ctrl.recommendation}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            <p className="text-gray-400 text-sm">{ctrl.finding}</p>
-                            {ctrl.recommendation && (
-                              <p className="text-teal-400 text-sm mt-2">
-                                <span className="font-medium">Recommendation:</span> {ctrl.recommendation}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
