@@ -165,16 +165,25 @@ CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
 
 
 def _parse_json_response(raw_text: str) -> dict:
-    """Parse JSON from Claude response, handling markdown fences."""
+    """Parse JSON from Claude response, handling markdown fences and edge cases."""
+    import re
     text = raw_text.strip()
-    if text.startswith("```json"):
-        text = text[7:]
-    elif text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
+    text = re.sub(r'^```(?:json)?\s*', '', text)
+    text = re.sub(r'\s*```\s*$', '', text)
     text = text.strip()
-    return json.loads(text)
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: extract first { to last }
+    first_brace = text.find('{')
+    last_brace = text.rfind('}')
+    if first_brace != -1 and last_brace > first_brace:
+        return json.loads(text[first_brace:last_brace + 1])
+
+    raise json.JSONDecodeError("No valid JSON found", text, 0)
 
 
 @router.post(
@@ -285,19 +294,36 @@ async def generate_trend_analysis(
                 label = key.replace("_score", "")
                 average_scores[label] = round(total / count_with_scores, 2)
 
-        # 5. Save to chamber_trend_analyses
+        # 5. Save to chamber_trend_analyses — include ALL required NOT NULL fields
         analysis_data = {
             "analysis_date": date.today().isoformat(),
             "sector": None,
+            "technology_trends": report,
             "technology_trends_json": report,
             "submission_volume": len(proposals),
             "average_scores": average_scores,
             "emerging_technologies": report.get("top_technologies", []),
             "generated_by": str(user_id),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
-        insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
-        saved = insert_response.data[0] if insert_response.data else {}
+        try:
+            insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
+            saved = insert_response.data[0] if insert_response.data else {}
+        except Exception as insert_err:
+            import traceback as tb
+            logger.error(f"TREND INSERT ERROR: {tb.format_exc()}")
+            # Retry without technology_trends_json in case only one column exists
+            analysis_data.pop("technology_trends_json", None)
+            try:
+                insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
+                saved = insert_response.data[0] if insert_response.data else {}
+            except Exception as retry_err:
+                # Retry without technology_trends in case only technology_trends_json exists
+                analysis_data.pop("technology_trends", None)
+                analysis_data["technology_trends_json"] = report
+                insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
+                saved = insert_response.data[0] if insert_response.data else {}
 
         # 6. Log AI interaction (non-critical — per rule 9b)
         try:

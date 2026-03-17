@@ -45,7 +45,7 @@ async def list_trend_analyses(
     Requires authentication.
     """
     try:
-        user_id = UUID(current_user["user_id"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role")
 
         # Vendor role gets empty list (no access to trend analysis data)
@@ -155,7 +155,7 @@ async def generate_trend_analysis(
     Returns job_id for tracking the async generation process.
     """
     try:
-        user_id = UUID(current_user["user_id"])
+        user_id = UUID(current_user["id"])
         user_role = current_user.get("role")
         
         # Verify executive or admin role
