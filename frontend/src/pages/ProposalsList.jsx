@@ -50,6 +50,7 @@ const ProposalsList = () => {
   const [businessGroups, setBusinessGroups] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [evaluatingId, setEvaluatingId] = useState(null);
+  const [auditingId, setAuditingId] = useState(null);
   const [toast, setToast] = useState(null);
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
@@ -144,6 +145,19 @@ const ProposalsList = () => {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
       setEvaluatingId(null);
+    }
+  };
+
+  const handleAudit = async (proposalId) => {
+    try {
+      setAuditingId(proposalId);
+      await api.post(`/api/v1/proposals/${proposalId}/audit`);
+      setToast({ message: 'Audit complete — view results on the Compliance Audits page', type: 'success' });
+      fetchProposals();
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setAuditingId(null);
     }
   };
 
@@ -277,6 +291,19 @@ const ProposalsList = () => {
                           <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-medium">
                             Needs Review
                           </span>
+                        )}
+                        {auditingId === p.id ? (
+                          <span className="flex items-center gap-2 text-teal-400 text-sm">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full"></span>
+                            Running DESC compliance audit...
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleAudit(p.id)}
+                            className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition"
+                          >
+                            Audit
+                          </button>
                         )}
                       </td>
                     </tr>

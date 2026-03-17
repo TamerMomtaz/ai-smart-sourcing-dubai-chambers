@@ -81,6 +81,12 @@ const ComplianceAuditsList = () => {
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Compliance Audits</h1>
           <div className="flex items-center gap-3">
+            <Link
+              to="/proposals"
+              className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+            >
+              Run Audit on Proposal
+            </Link>
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setSearchParams({ page: '1' }); }}

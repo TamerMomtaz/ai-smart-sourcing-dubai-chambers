@@ -252,6 +252,8 @@ async def list_proposals(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(f"PROPOSALS ERROR: {traceback.format_exc()}")
         logger.error(f"Error listing proposals: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -261,7 +263,6 @@ async def list_proposals(
 
 @router.get(
     "/{proposal_id}",
-    response_model=ProposalDetail,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
@@ -597,7 +598,6 @@ async def batch_evaluate_proposals(
 
 @router.get(
     "/export",
-    response_model=ExportResponse,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
