@@ -64,9 +64,10 @@ async def run_compliance_audit(
         )
     except Exception as e:
         logger.error(f"Error running compliance audit for proposal {proposal_id}: {e}")
+        is_ai_failure = "All AI providers failed" in str(e)
         raise HTTPException(
-            status_code=500,
-            detail={
+            status_code=503 if is_ai_failure else 500,
+            detail={"error": "AI service temporarily busy. Please try again in 1-2 minutes."} if is_ai_failure else {
                 "error": "Internal Server Error",
                 "detail": "Failed to run compliance audit",
                 "code": 500,
