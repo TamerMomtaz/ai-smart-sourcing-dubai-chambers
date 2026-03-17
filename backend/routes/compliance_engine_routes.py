@@ -32,12 +32,13 @@ async def run_compliance_audit(
         user_id = str(current_user["id"])
         user_role = current_user.get("role", "")
 
-        if user_role not in ["compliance_officer", "admin"]:
+        allowed_roles = ["compliance_officer", "analyst", "executive", "business_group_lead", "admin"]
+        if user_role not in allowed_roles:
             raise HTTPException(
                 status_code=403,
                 detail={
                     "error": "Forbidden",
-                    "detail": "Only compliance officers and admins can run compliance audits",
+                    "detail": "Insufficient permissions to run compliance audits",
                     "code": 403,
                 },
             )

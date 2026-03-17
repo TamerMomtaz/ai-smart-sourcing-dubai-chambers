@@ -86,7 +86,6 @@ async def create_chamber_proposal(
 
 @router.get(
     "",
-    response_model=ProposalListResponse,
     status_code=status.HTTP_200_OK,
     responses={
         200: {"description": "Proposals retrieved successfully"},
@@ -161,7 +160,6 @@ async def list_chamber_proposals(
 
 @router.get(
     "/{proposal_id}",
-    response_model=ProposalDetail,
     status_code=status.HTTP_200_OK,
     responses={
         200: {"description": "Proposal detail retrieved successfully"},

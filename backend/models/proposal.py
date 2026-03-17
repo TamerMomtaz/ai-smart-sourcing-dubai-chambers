@@ -60,16 +60,7 @@ class ProposalListItem(BaseModel):
     title: str = Field(..., description="Proposal title")
     submitter_id: UUID = Field(..., description="Vendor ID")
     submission_date: datetime = Field(..., description="Submission timestamp")
-    status: Literal[
-        "submitted",
-        "queued_for_evaluation",
-        "evaluating",
-        "evaluated",
-        "under_review",
-        "approved",
-        "rejected",
-        "requires_manual_review",
-    ] = Field(..., description="Proposal status")
+    status: str = Field(..., description="Proposal status")
     sector: str = Field(..., description="Industry sector")
     technology_type: str = Field(..., description="Technology category")
     maturity_level: str = Field(..., description="Maturity stage")
@@ -126,7 +117,7 @@ class CommentInfo(BaseModel):
     user_name: str = Field(..., description="User name")
     comment_text: str = Field(..., description="Comment text")
     created_at: datetime = Field(..., description="Creation timestamp")
-    visibility: Literal["internal", "vendor_visible"] = Field(..., description="Comment visibility")
+    visibility: str = Field(..., description="Comment visibility")
 
 
 class ProposalDetail(BaseModel):

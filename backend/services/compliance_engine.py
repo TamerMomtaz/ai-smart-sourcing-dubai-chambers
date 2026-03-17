@@ -126,7 +126,7 @@ class ComplianceEngine:
             ai_security_policy_compliance=framework_compliance.get("ai_security", False),
             csp_standards_compliance=framework_compliance.get("csp", False),
             data_residency_verified=data_residency.get("compliant", False),
-            auditor_user_id=user_id,
+            auditor_user_id=None,
             findings_json=findings_json,
             remediation_required=remediation_needed,
         )
