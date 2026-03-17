@@ -34,9 +34,7 @@ async def list_business_groups(
 ):
     """
     List all business groups visible to the current user.
-    Analysts and executives see all groups.
-    Business group leads see their own group.
-    Vendors see groups relevant to their proposals.
+    Includes proposal counts and evaluation weight config for each group.
     """
     try:
         user_id = current_user.get("id")
@@ -48,21 +46,45 @@ async def list_business_groups(
                 detail={"error": "Unauthorized", "detail": "Invalid user context", "code": 401},
             )
 
-        groups = business_group_service.list_business_groups(user_id=str(user_id))
+        result = business_group_service.list_business_groups(user_id=str(user_id))
 
-        if groups is None:
+        if result is None:
             raise HTTPException(
                 status_code=500,
                 detail={"error": "Internal Server Error", "detail": "Failed to retrieve business groups", "code": 500},
             )
 
+        groups_data = result.get("data", []) if isinstance(result, dict) else result
+
+        # Enrich each group with proposal_count
+        from database import supabase as _sb
+        for g in groups_data:
+            try:
+                proposals_resp = (
+                    _sb.table("chamber_proposals")
+                    .select("id", count="exact")
+                    .eq("business_group_id", str(g["id"]))
+                    .execute()
+                )
+                g["proposal_count"] = proposals_resp.count if proposals_resp.count is not None else 0
+            except Exception:
+                g["proposal_count"] = 0
+
         # Apply pagination
-        total = len(groups)
+        total = len(groups_data)
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-        paginated_groups = groups[start_idx:end_idx]
+        paginated_groups = groups_data[start_idx:end_idx]
 
-        return paginated_groups
+        return {
+            "business_groups": paginated_groups,
+            "pagination": {
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size if total > 0 else 0,
+            },
+        }
 
     except HTTPException:
         raise

@@ -249,8 +249,15 @@ async def generate_trend_analysis(
         except Exception:
             pass
 
+        # Compute current quarter period
+        today = date.today()
+        current_quarter = (today.month - 1) // 3 + 1
+        period_label = f"Q{current_quarter} {today.year}"
+
         # 2. Build user prompt
-        lines = ["Proposals summary for trend analysis:\n"]
+        lines = [f"Proposals summary for {period_label} trend analysis:\n"]
+        lines.append(f"Report Period: {period_label}")
+        lines.append(f"Analysis Date: {today.isoformat()}\n")
         for p in proposals:
             has_audit = p["id"] in audit_map
             lines.append(
@@ -283,6 +290,8 @@ async def generate_trend_analysis(
 
         raw_text = ai_response.content[0].text
         report = _parse_json_response(raw_text)
+        # Ensure period is set to the computed quarter
+        report["period"] = period_label
 
         # 4. Calculate averages for the record
         count_with_scores = sum(1 for p in proposals if p.get("composite_score") is not None)
