@@ -93,7 +93,6 @@ async def get_ai_interactions_summary(
 
 @router.get(
     "",
-    response_model=AIInteractionResponse,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
