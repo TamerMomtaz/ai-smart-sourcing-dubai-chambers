@@ -161,7 +161,13 @@ const ProposalsList = () => {
       );
       setToast({ message: 'Audit complete — view results on the Compliance Audits page', type: 'success' });
     } catch (err) {
-      setToast({ message: getErrorMessage(err), type: 'error' });
+      const msg = getErrorMessage(err);
+      if (msg && (msg.includes('already audited') || (err.response && err.response.status === 400))) {
+        setToast({ message: 'This proposal has already been audited', type: 'success' });
+        fetchProposals();
+      } else {
+        setToast({ message: msg, type: 'error' });
+      }
     } finally {
       setAuditingId(null);
     }
@@ -303,10 +309,14 @@ const ProposalsList = () => {
                             <span className="animate-spin inline-block w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full"></span>
                             Running DESC compliance audit...
                           </span>
-                        ) : p.has_audit ? (
-                          <span className="bg-[#0D9488] text-white px-2 py-0.5 rounded-full text-xs font-bold">
+                        ) : p.has_audit === true ? (
+                          <button
+                            onClick={() => handleAudit(p.id)}
+                            title="Click to re-audit"
+                            className="bg-[#0D9488] text-white px-2 py-0.5 rounded-full text-xs font-bold hover:bg-teal-700 transition cursor-pointer"
+                          >
                             {p.audit_score != null ? p.audit_score : 'Audited'}
-                          </span>
+                          </button>
                         ) : (
                           <button
                             onClick={() => handleAudit(p.id)}

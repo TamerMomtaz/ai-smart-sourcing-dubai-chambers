@@ -147,19 +147,20 @@ async def list_documents(
             proposal_ids = [p["id"] for p in vendor_proposals_response.data]
             query = query.in_("proposal_id", proposal_ids)
 
-        response = query.range(offset, offset + page_size - 1).execute()
+        response = query.order("uploaded_at", desc=True).range(offset, offset + page_size - 1).execute()
 
         total = response.count if hasattr(response, "count") else len(response.data)
         total_pages = (total + page_size - 1) // page_size
 
         documents = [
-            DocumentResponse(
-                id=doc["id"],
-                file_name=doc["file_name"],
-                file_type=doc["file_type"],
-                file_size=doc["file_size"],
-                uploaded_at=doc["uploaded_at"],
-            )
+            {
+                "id": doc["id"],
+                "proposal_id": doc.get("proposal_id"),
+                "file_name": doc["file_name"],
+                "file_type": doc["file_type"],
+                "file_size": doc["file_size"],
+                "uploaded_at": doc["uploaded_at"],
+            }
             for doc in response.data
         ]
 
