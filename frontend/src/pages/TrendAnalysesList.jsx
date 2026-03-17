@@ -143,6 +143,21 @@ const TrendReportCard = ({ report, analysisDate, submissionVolume, averageScores
   );
 };
 
+const PrintReportButton = () => {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <button
+      onClick={handlePrint}
+      className="bg-[#F59E0B] hover:bg-[#D97706] text-black font-semibold px-6 py-2.5 rounded-lg transition-colors flex items-center gap-2"
+    >
+      Export as PDF
+    </button>
+  );
+};
+
 const TrendAnalysesList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -195,22 +210,39 @@ const TrendAnalysesList = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="max-w-7xl mx-auto">
-        <header className="mb-6 flex items-center justify-between">
+        {/* Print-specific CSS */}
+        <style>{`
+          @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+            .print-area { background: white !important; color: black !important; }
+            .print-area h1, .print-area h3, .print-area h4 { color: black !important; }
+            .print-area p, .print-area span, .print-area td, .print-area th, .print-area li { color: #333 !important; }
+            .print-area .bg-\\[\\#1E293B\\], .print-area .bg-\\[\\#0F172A\\] { background: white !important; border: 1px solid #ddd !important; }
+          }
+        `}</style>
+
+        <header className="mb-6 flex items-center justify-between no-print">
           <h1 className="text-3xl font-bold text-white">Trend Analyses</h1>
-          <button
-            onClick={handleGenerate}
-            disabled={generating}
-            className="bg-[#3B82F6] hover:bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {generating ? (
-              <>
-                <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                Generating Report...
-              </>
-            ) : (
-              'Generate Trend Report'
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            {analyses.length > 0 && <PrintReportButton />}
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="bg-[#3B82F6] hover:bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {generating ? (
+                <>
+                  <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                  Generating Report...
+                </>
+              ) : (
+                'Generate Trend Report'
+              )}
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -225,12 +257,13 @@ const TrendAnalysesList = () => {
             <p className="text-gray-400">Loading trend analyses...</p>
           </div>
         ) : analyses.length === 0 ? (
+          /* empty state - no print-area wrapper needed */
           <div className="bg-[#1E293B] rounded-xl shadow-xl p-12 text-center border border-gray-700">
             <p className="text-gray-500 mb-4">No trend analyses found</p>
             <p className="text-gray-600 text-sm">Click "Generate Trend Report" to create your first AI-powered trend analysis.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 print-area">
             {analyses.map((a) => {
               const report = a.technology_trends_json || a.technology_trends || null;
               return (
@@ -247,7 +280,7 @@ const TrendAnalysesList = () => {
         )}
 
         {pagination && pagination.total_pages > 1 && (
-          <div className="flex items-center justify-center space-x-3 mt-6">
+          <div className="flex items-center justify-center space-x-3 mt-6 no-print">
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}

@@ -124,7 +124,21 @@ class ComplianceEngine:
             "summary": parsed.get("summary", ""),
         }
 
-        # 4. Save to chamber_compliance_audits
+        # 4. Delete any existing audit for this proposal (allow re-audit)
+        try:
+            existing_audits = (
+                supabase.table("chamber_compliance_audits")
+                .select("id")
+                .eq("proposal_id", str(proposal_id))
+                .execute()
+            )
+            for old_audit in (existing_audits.data or []):
+                supabase.table("chamber_compliance_audits").delete().eq("id", old_audit["id"]).execute()
+                logger.info(f"[COMPLIANCE] Deleted old audit {old_audit['id']} for proposal {proposal_id}")
+        except Exception as del_err:
+            logger.warning(f"[COMPLIANCE] Failed to delete old audits for proposal {proposal_id}: {del_err}")
+
+        # Save new audit to chamber_compliance_audits
         audit = compliance_service.create(
             user_id=user_id,
             proposal_id=proposal_id,

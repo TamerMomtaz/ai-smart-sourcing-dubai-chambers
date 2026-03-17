@@ -186,8 +186,46 @@ async def list_proposals(
         total = result.count if result.count is not None else 0
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
 
+        proposals = result.data or []
+
+        # Enrich proposals with audit data (has_audit + audit_score)
+        if proposals:
+            proposal_ids = [p["id"] for p in proposals]
+            audit_result = (
+                supabase.table("chamber_compliance_audits")
+                .select("proposal_id, findings_json")
+                .in_("proposal_id", proposal_ids)
+                .order("audit_timestamp", desc=True)
+                .execute()
+            )
+            # Build map: proposal_id -> latest audit score
+            audit_map = {}
+            for a in (audit_result.data or []):
+                pid = a["proposal_id"]
+                if pid not in audit_map:
+                    findings = a.get("findings_json")
+                    if isinstance(findings, str):
+                        try:
+                            findings = __import__("json").loads(findings)
+                        except Exception:
+                            findings = {}
+                    elif findings is None:
+                        findings = {}
+                    audit_map[pid] = findings.get("overall_score")
+
+            for p in proposals:
+                if p["id"] in audit_map:
+                    p["has_audit"] = True
+                    p["audit_score"] = audit_map[p["id"]]
+                else:
+                    p["has_audit"] = False
+                    p["audit_score"] = None
+
+            for p in proposals:
+                print(f"Proposal {p['id']}: has_audit={p.get('has_audit')}, audit_score={p.get('audit_score')}")
+
         return {
-            "proposals": result.data or [],
+            "proposals": proposals,
             "pagination": {
                 "total": total,
                 "page": page,
