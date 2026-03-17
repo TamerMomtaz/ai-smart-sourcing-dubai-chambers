@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from typing import Dict, Any, List, Optional
 from uuid import UUID
 from datetime import datetime, timezone
@@ -105,7 +107,7 @@ async def get_ai_interactions(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Page size"),
     current_user: Dict[str, Any] = Depends(get_current_user),
-) -> Dict[str, Any]:
+):
     """
     Retrieve paginated AI interactions list for the ΣI Transparency Dashboard table.
     """
@@ -115,12 +117,12 @@ async def get_ai_interactions(
 
         allowed_roles = ["analyst", "executive", "compliance_officer", "admin"]
         if user_role not in allowed_roles:
-            return {"interactions": [], "pagination": {"page": page, "page_size": page_size, "total": 0, "total_pages": 0}}
+            return JSONResponse(content={"interactions": [], "pagination": {"page": page, "page_size": page_size, "total": 0, "total_pages": 0}})
 
         interactions, total = list_interactions(user_id=user_id, page=page, page_size=page_size)
         total_pages = math.ceil(total / page_size) if total > 0 else 0
 
-        return {
+        return JSONResponse(content=jsonable_encoder({
             "interactions": interactions,
             "pagination": {
                 "page": page,
@@ -128,7 +130,7 @@ async def get_ai_interactions(
                 "total": total,
                 "total_pages": total_pages,
             },
-        }
+        }))
 
     except HTTPException:
         raise

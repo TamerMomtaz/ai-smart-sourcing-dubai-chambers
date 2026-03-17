@@ -208,7 +208,6 @@ async def submit_proposal(
 
 @router.get(
     "",
-    response_model=ProposalListResponse,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
