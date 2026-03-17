@@ -21,7 +21,6 @@ router = APIRouter(prefix="/business-groups", tags=["business-groups"])
 
 @router.get(
     "",
-    response_model=Dict[str, Any],
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
@@ -68,7 +67,6 @@ async def list_business_groups(
 
 @router.get(
     "/{group_id}",
-    response_model=BusinessGroupDetail,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
@@ -123,7 +121,6 @@ async def get_business_group_detail(
 
 @router.patch(
     "/{group_id}/evaluation-config",
-    response_model=EvaluationWeightConfigUpdateResponse,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
