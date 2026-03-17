@@ -1,9 +1,11 @@
 """AI-powered proposal evaluation engine using Claude."""
 
 import json
+import re
 import time
 import uuid
 import logging
+import traceback
 from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 
@@ -61,6 +63,22 @@ class EvaluationEngine:
         7. Log to chamber_ai_interactions
         8. Return the evaluation result
         """
+        try:
+            return await self._evaluate_proposal_inner(proposal_id=proposal_id, user_id=user_id)
+        except Exception as e:
+            # Revert status to "queued" so the proposal isn't stuck on "evaluating"
+            logger.error(f"EVALUATION ERROR for proposal {proposal_id}: {traceback.format_exc()}")
+            try:
+                supabase.table("chamber_proposals").update({
+                    "status": "queued",
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }).eq("id", str(proposal_id)).execute()
+            except Exception as revert_err:
+                logger.error(f"Failed to revert proposal {proposal_id} status: {revert_err}")
+            raise
+
+    async def _evaluate_proposal_inner(self, proposal_id: str, user_id: str) -> dict:
+        """Inner evaluation logic — exceptions bubble up to evaluate_proposal for status revert."""
         # 1. Fetch proposal
         proposal = self._fetch_proposal(proposal_id=proposal_id)
         if not proposal:
@@ -287,30 +305,55 @@ class EvaluationEngine:
             raise
 
     def _parse_response(self, raw_text: str) -> dict:
-        """Parse JSON from Claude response, handling markdown fences."""
+        """Parse JSON from Claude response, handling markdown fences and edge cases."""
         text = raw_text.strip()
-        # Strip markdown code fences
-        if text.startswith("```json"):
-            text = text[7:]
-        elif text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
+        # Strip markdown code fences (```json ... ``` or ``` ... ```)
+        text = re.sub(r'^```(?:json)?\s*', '', text)
+        text = re.sub(r'\s*```\s*$', '', text)
         text = text.strip()
 
+        parsed = None
+        # Attempt 1: direct JSON parse
         try:
             parsed = json.loads(text)
         except json.JSONDecodeError:
+            pass
+
+        # Attempt 2: extract JSON object using first { and last }
+        if parsed is None:
+            first_brace = text.find('{')
+            last_brace = text.rfind('}')
+            if first_brace != -1 and last_brace > first_brace:
+                try:
+                    parsed = json.loads(text[first_brace:last_brace + 1])
+                except json.JSONDecodeError:
+                    pass
+
+        if parsed is None:
             logger.error(f"Failed to parse Claude response: {text[:500]}")
             raise ValueError("Failed to parse AI evaluation response as JSON")
 
-        # Validate required keys
+        # Validate required keys and coerce score types
         for key in ["relevance", "feasibility", "sector_alignment", "compliance"]:
             if key not in parsed:
                 raise ValueError(f"Missing required key '{key}' in evaluation response")
-            if "score" not in parsed[key]:
-                raise ValueError(f"Missing 'score' in '{key}' evaluation")
-            if "reasoning" not in parsed[key]:
-                parsed[key]["reasoning"] = "No reasoning provided"
+            if isinstance(parsed[key], dict):
+                if "score" not in parsed[key]:
+                    raise ValueError(f"Missing 'score' in '{key}' evaluation")
+                # Convert string scores to float
+                try:
+                    parsed[key]["score"] = float(parsed[key]["score"])
+                except (ValueError, TypeError):
+                    parsed[key]["score"] = 0.0
+                if "reasoning" not in parsed[key]:
+                    parsed[key]["reasoning"] = "No reasoning provided"
+            else:
+                # Handle case where dimension is a score number directly
+                score_val = 0.0
+                try:
+                    score_val = float(parsed[key])
+                except (ValueError, TypeError):
+                    pass
+                parsed[key] = {"score": score_val, "reasoning": "No reasoning provided"}
 
         return parsed

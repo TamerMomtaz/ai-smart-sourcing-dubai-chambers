@@ -126,36 +126,26 @@ async def list_chamber_proposals(
         response = query.execute()
 
         if not response.data:
-            return ProposalListResponse(
-                proposals=[],
-                pagination=PaginationResponse(
-                    total=0,
-                    page=page,
-                    page_size=page_size,
-                    total_pages=0,
-                ),
-            )
+            return {
+                "proposals": [],
+                "pagination": {"total": 0, "page": page, "page_size": page_size, "total_pages": 0},
+            }
 
         total = response.count if response.count else 0
         total_pages = (total + page_size - 1) // page_size
 
-        return ProposalListResponse(
-            proposals=response.data,
-            pagination=PaginationResponse(
-                total=total,
-                page=page,
-                page_size=page_size,
-                total_pages=total_pages,
-            ),
-        )
+        return {
+            "proposals": response.data,
+            "pagination": {"total": total, "page": page, "page_size": page_size, "total_pages": total_pages},
+        }
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "InternalServerError", "detail": str(e), "code": 500},
-        )
+        import traceback
+        print(f"ENDPOINT ERROR: {traceback.format_exc()}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @router.get(

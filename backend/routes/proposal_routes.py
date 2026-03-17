@@ -239,26 +239,21 @@ async def list_proposals(
         )
 
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "InternalError", "detail": "Failed to retrieve proposals", "code": "PROPOSAL_LIST_FAILED"},
-            )
+            return {"proposals": [], "pagination": {"total": 0, "page": page, "page_size": page_size, "total_pages": 0}}
 
-        return ProposalListResponse(
-            proposals=result["proposals"],
-            pagination=result["pagination"],
-        )
+        return {
+            "proposals": result.get("proposals", []),
+            "pagination": result.get("pagination", {"total": 0, "page": page, "page_size": page_size, "total_pages": 0}),
+        }
 
     except HTTPException:
         raise
     except Exception as e:
         import traceback
-        print(f"PROPOSALS ERROR: {traceback.format_exc()}")
+        print(f"ENDPOINT ERROR: {traceback.format_exc()}")
         logger.error(f"Error listing proposals: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "InternalError", "detail": "An unexpected error occurred", "code": "INTERNAL_ERROR"},
-        )
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @router.get(

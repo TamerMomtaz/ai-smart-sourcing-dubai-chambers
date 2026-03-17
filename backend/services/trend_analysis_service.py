@@ -173,14 +173,20 @@ def generate_trend_analysis(
             "analysis_date": date.today().isoformat(),
             "sector": sector,
             "technology_trends": technology_trends,
+            "technology_trends_json": technology_trends,
             "submission_volume": submission_volume,
             "average_scores": average_scores,
             "emerging_technologies": emerging_technologies,
             "generated_by": str(user_id),
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        
-        insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
+
+        try:
+            insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
+        except Exception:
+            # Retry without technology_trends_json in case column doesn't exist
+            analysis_data.pop("technology_trends_json", None)
+            insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
         
         if not insert_response.data:
             return None
