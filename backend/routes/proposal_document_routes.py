@@ -126,7 +126,7 @@ async def upload_proposal_document(
             "storage_path": storage_path,
         }
         print(f"UPLOAD: Inserting into chamber_documents: {doc_data}")
-        result = supabase.table("chamber_documents").insert(doc_data).select("id, file_name, file_type, file_size, storage_path, proposal_id, uploaded_at").execute()
+        result = supabase.table("chamber_documents").insert(doc_data).execute()
         print(f"UPLOAD: DB result: {result}")
         if not result.data:
             raise Exception("Insert returned no data")
@@ -135,13 +135,13 @@ async def upload_proposal_document(
             status_code=status.HTTP_201_CREATED,
             content={
                 "document": {
-                    "id": str(doc["id"]),
-                    "file_name": doc["file_name"],
-                    "file_type": doc["file_type"],
-                    "file_size": doc["file_size"],
-                    "storage_path": doc["storage_path"],
-                    "proposal_id": str(doc["proposal_id"]),
-                    "uploaded_at": str(doc["uploaded_at"]),
+                    "id": str(doc.get("id", "")),
+                    "file_name": doc.get("file_name", ""),
+                    "file_type": doc.get("file_type", ""),
+                    "file_size": doc.get("file_size", 0),
+                    "storage_path": doc.get("storage_path", ""),
+                    "proposal_id": str(doc.get("proposal_id", "")),
+                    "uploaded_at": str(doc.get("uploaded_at", "")),
                 },
                 "message": "Document uploaded successfully",
             },
