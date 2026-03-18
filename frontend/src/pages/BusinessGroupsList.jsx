@@ -65,8 +65,8 @@ const BusinessGroupsList = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.length === 0 ? (
             <div className="col-span-full bg-[#1E293B] rounded-xl shadow-xl p-12 text-center border border-gray-700">
-              <p className="text-gray-500 mb-2">No business groups found</p>
-              <p className="text-gray-600 text-sm">Business groups will appear here once configured.</p>
+              <p className="text-[#94A3B8] mb-2">No business groups found</p>
+              <p className="text-[#94A3B8] text-sm">Business groups will appear here once configured.</p>
             </div>
           ) : (
             groups.map((g) => {
@@ -98,7 +98,7 @@ const BusinessGroupsList = () => {
                         {g.proposal_count != null ? g.proposal_count : '—'} proposals
                       </span>
                       {g.lead_name && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-[#94A3B8]">
                           Lead: {g.lead_name}
                         </span>
                       )}
@@ -115,7 +115,7 @@ const BusinessGroupsList = () => {
                       </div>
                     ) : (
                       <div className="border-t border-gray-700 pt-4">
-                        <p className="text-xs text-gray-600">Default evaluation weights</p>
+                        <p className="text-xs text-[#94A3B8]">Default evaluation weights</p>
                       </div>
                     )}
                   </div>

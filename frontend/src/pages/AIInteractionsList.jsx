@@ -157,7 +157,7 @@ const AIInteractionsList = () => {
               </h1>
               <p className="text-slate-400 text-sm mt-1">
                 Added Intelligence — Awareness Implemented |{' '}
-                <span style={{ color: TEAL, fontWeight: 600 }}>DEVONEERS</span>
+                <span style={{ color: TEAL, fontWeight: 600 }}>Tamer Momtaz</span>
               </p>
             </div>
           </div>
@@ -372,14 +372,14 @@ const AIInteractionsList = () => {
             Every interaction has a cost. Knowing it is the first step to responsible AI.
           </p>
           <p className="mt-2 text-slate-600 text-xs">
-            — DEVONEERS{' '}
-            <SigmaIcon size={14} />
+            σI is a concept by Tamer Momtaz — Every interaction has a cost.{' '}
+            Knowing it is the first step to responsible AI.
           </p>
           <p className="mt-4 text-slate-600 text-xs">
-            <SigmaIcon size={12} /> and Intelligence Units (IU) are concepts by DEVONEERS.
+            <SigmaIcon size={12} /> and Intelligence Units (IU) are concepts by Tamer Momtaz.
           </p>
           <p className="text-slate-600 text-xs mt-1">
-            &copy; 2026 DEVONEERS — All rights reserved.
+            &copy; 2026 Tamer Momtaz. All rights reserved.
           </p>
         </footer>
       </div>

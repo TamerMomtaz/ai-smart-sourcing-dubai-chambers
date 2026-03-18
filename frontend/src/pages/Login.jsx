@@ -50,7 +50,7 @@ function Login() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="font-heading text-4xl text-teal mb-2">AI Smart Sourcing</h1>
-          <p className="font-body text-ink/70">Dubai Chambers</p>
+          <p className="font-body text-ink/70">Dubai Chambers Smart Sourcing Platform</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8">
@@ -111,6 +111,10 @@ function Login() {
             </p>
           </div>
         </div>
+
+        <p className="text-center text-sm font-body text-ink/50 mt-6">
+          Built by Tamer Momtaz | Powered by σI
+        </p>
       </div>
     </div>
   );

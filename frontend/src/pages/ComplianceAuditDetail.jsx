@@ -107,7 +107,7 @@ const ComplianceAuditDetail = () => {
               <div className="text-6xl font-black" style={{ color: scoreColor }}>
                 {overallScore ?? '—'}
               </div>
-              <p className="text-gray-400 text-sm mt-1">Overall Score</p>
+              <p className="text-[#94A3B8] text-sm mt-1">Overall Score</p>
             </div>
             <div className="space-y-2">
               {overallStatus && (
@@ -120,8 +120,8 @@ const ComplianceAuditDetail = () => {
                 </span>
               )}
               <div className="flex gap-3 mt-2">
-                <span className="text-gray-500 text-xs">Type: <span className="text-gray-300">{audit?.audit_type}</span></span>
-                <span className="text-gray-500 text-xs">Date: <span className="text-gray-300">{audit?.audit_timestamp ? new Date(audit.audit_timestamp).toLocaleString() : 'N/A'}</span></span>
+                <span className="text-[#94A3B8] text-xs">Type: <span className="text-[#F1F5F9]">{audit?.audit_type}</span></span>
+                <span className="text-[#94A3B8] text-xs">Date: <span className="text-[#F1F5F9]">{audit?.audit_timestamp ? new Date(audit.audit_timestamp).toLocaleString() : 'N/A'}</span></span>
               </div>
             </div>
           </div>
@@ -131,7 +131,7 @@ const ComplianceAuditDetail = () => {
         {summary && (
           <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
             <h3 className="text-lg font-bold text-white mb-3">Summary</h3>
-            <p className="text-gray-300 leading-relaxed">{summary}</p>
+            <p className="text-[#E2E8F0] leading-relaxed">{summary}</p>
           </div>
         )}
 
@@ -169,8 +169,8 @@ const ComplianceAuditDetail = () => {
                             <div key={ci} className="bg-[#1E293B] rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
                                 <div>
-                                  <span className="text-gray-500 font-mono text-xs mr-2">{ctrl.control_id}</span>
-                                  <span className="text-gray-200 text-sm font-medium">{ctrl.control_name}</span>
+                                  <span className="text-[#94A3B8] font-mono text-xs mr-2">{ctrl.control_id}</span>
+                                  <span className="text-[#F1F5F9] text-sm font-medium">{ctrl.control_name}</span>
                                 </div>
                                 <span className={`px-2 py-0.5 rounded text-xs font-bold border ${CONTROL_STATUS_STYLE[ctrl.status] || CONTROL_STATUS_STYLE.warning}`}>
                                   {ctrl.status?.toUpperCase()}
@@ -188,13 +188,13 @@ const ComplianceAuditDetail = () => {
                                 <div className="mt-3 pl-3 border-l-2 border-gray-700 space-y-2">
                                   {ctrl.finding && (
                                     <div>
-                                      <span className="text-gray-500 text-xs font-medium uppercase">Finding</span>
-                                      <p className="text-gray-300 text-sm mt-0.5">{ctrl.finding}</p>
+                                      <span className="text-[#94A3B8] text-xs font-medium uppercase">Finding</span>
+                                      <p className="text-[#E2E8F0] text-sm mt-0.5">{ctrl.finding}</p>
                                     </div>
                                   )}
                                   {ctrl.recommendation && (
                                     <div>
-                                      <span className="text-gray-500 text-xs font-medium uppercase">Recommendation</span>
+                                      <span className="text-[#94A3B8] text-xs font-medium uppercase">Recommendation</span>
                                       <p className="text-teal-400 text-sm mt-0.5">{ctrl.recommendation}</p>
                                     </div>
                                   )}
@@ -224,7 +224,7 @@ const ComplianceAuditDetail = () => {
               {audit?.data_residency_verified || dataResidency?.compliant ? 'UAE Compliant' : 'Not Verified'}
             </span>
             {dataResidency?.finding && (
-              <p className="text-gray-400 text-sm mt-3">{dataResidency.finding}</p>
+              <p className="text-[#CBD5E1] text-sm mt-3">{dataResidency.finding}</p>
             )}
             {dataResidency?.recommendation && (
               <p className="text-teal-400 text-sm mt-2">Rec: {dataResidency.recommendation}</p>
@@ -240,7 +240,7 @@ const ComplianceAuditDetail = () => {
               {vendorCert?.desc_approved ? 'DESC Approved' : 'Not DESC Approved'}
             </span>
             {vendorCert?.finding && (
-              <p className="text-gray-400 text-sm mt-3">{vendorCert.finding}</p>
+              <p className="text-[#CBD5E1] text-sm mt-3">{vendorCert.finding}</p>
             )}
           </div>
         </div>
@@ -253,25 +253,25 @@ const ComplianceAuditDetail = () => {
               <p className={`text-2xl font-bold ${audit?.isr_v3_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.isr_v3_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-gray-500 text-xs mt-1">ISR V3</p>
+              <p className="text-[#94A3B8] text-xs mt-1">ISR V3</p>
             </div>
             <div className="bg-[#0F172A] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.ai_security_policy_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.ai_security_policy_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-gray-500 text-xs mt-1">AI Security</p>
+              <p className="text-[#94A3B8] text-xs mt-1">AI Security</p>
             </div>
             <div className="bg-[#0F172A] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.csp_standards_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.csp_standards_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-gray-500 text-xs mt-1">CSP Standards</p>
+              <p className="text-[#94A3B8] text-xs mt-1">CSP Standards</p>
             </div>
             <div className="bg-[#0F172A] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.remediation_required ? 'text-amber-400' : 'text-emerald-400'}`}>
                 {audit?.remediation_required ? 'Yes' : 'No'}
               </p>
-              <p className="text-gray-500 text-xs mt-1">Remediation</p>
+              <p className="text-[#94A3B8] text-xs mt-1">Remediation</p>
             </div>
           </div>
         </div>

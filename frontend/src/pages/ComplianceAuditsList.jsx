@@ -132,7 +132,7 @@ const ComplianceAuditsList = () => {
             <tbody>
               {audits.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center p-8 text-gray-500">
+                  <td colSpan={9} className="text-center p-8 text-[#94A3B8]">
                     No compliance audits found
                   </td>
                 </tr>

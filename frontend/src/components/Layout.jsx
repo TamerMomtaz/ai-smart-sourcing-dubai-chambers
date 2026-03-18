@@ -57,7 +57,7 @@ function Layout() {
           {/* Logo */}
           <div className="p-6 border-b border-ink/10">
             <h1 className="font-heading text-2xl text-teal">AI Smart Sourcing</h1>
-            <p className="font-body text-xs text-ink/60 mt-1">Dubai Chambers</p>
+            <p className="font-body text-xs text-ink/60 mt-1">Dubai Chambers | by Tamer Momtaz</p>
           </div>
 
           {/* Navigation */}
@@ -129,6 +129,11 @@ function Layout() {
 
         {/* Page content */}
         <main className="p-6"><Outlet /></main>
+
+        {/* Footer */}
+        <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
+          Created by Tamer Momtaz | Powered by σI (Added Intelligence)
+        </footer>
       </div>
     </div>
   );
