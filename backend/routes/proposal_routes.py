@@ -20,13 +20,10 @@ from models import (
     BatchEvaluateRequest,
     BatchJobResponse,
     ExportResponse,
-    DocumentCreate,
-    DocumentUploadResponse,
     ErrorResponse,
 )
 from services import (
     proposal_service,
-    document_service,
     submit_service,
     status_service,
     evaluate_service,
@@ -94,64 +91,6 @@ async def create_proposal(
         raise
     except Exception as e:
         logger.error(f"Error creating proposal: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "InternalError", "detail": "An unexpected error occurred", "code": "INTERNAL_ERROR"},
-        )
-
-
-@router.post(
-    "/{proposal_id}/documents",
-    response_model=DocumentUploadResponse,
-    status_code=status.HTTP_201_CREATED,
-    responses={
-        401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {"model": ErrorResponse, "description": "Proposal not found"},
-        413: {"model": ErrorResponse, "description": "File too large - max 50MB"},
-    },
-)
-async def upload_document(
-    proposal_id: UUID,
-    payload: DocumentCreate,
-    current_user: dict = Depends(get_current_user),
-):
-    """
-    Upload document to existing proposal.
-    Returns pre-signed upload URL for direct S3/Storage upload.
-    """
-    try:
-        user_id = UUID(current_user["id"])
-
-        if payload.file_size and payload.file_size > 50 * 1024 * 1024:
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail={"error": "FileTooLarge", "detail": "File size exceeds 50MB limit", "code": "FILE_TOO_LARGE"},
-            )
-
-        result = document_service.create_document(
-            user_id=user_id,
-            proposal_id=proposal_id,
-            file_name=payload.file_name.strip(),
-            file_type=payload.file_type,
-            file_size=payload.file_size,
-        )
-
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"error": "NotFound", "detail": "Proposal not found or access denied", "code": "PROPOSAL_NOT_FOUND"},
-            )
-
-        return DocumentUploadResponse(
-            document_id=UUID(result["document_id"]),
-            upload_url=result["upload_url"],
-            expires_at=result["expires_at"],
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error uploading document: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "InternalError", "detail": "An unexpected error occurred", "code": "INTERNAL_ERROR"},

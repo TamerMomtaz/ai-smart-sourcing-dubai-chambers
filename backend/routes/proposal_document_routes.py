@@ -85,30 +85,34 @@ async def upload_proposal_document(
     storage_path = f"{proposal_id}/{file.filename}"
 
     # Upload to Supabase Storage
+    content_type = file.content_type or "application/octet-stream"
     try:
-        supabase.storage.from_("proposal-documents").upload(
+        print(f"UPLOAD: Uploading {file.filename} to proposal-documents/{storage_path}")
+        storage_result = supabase.storage.from_("proposal-documents").upload(
             path=storage_path,
             file=file_bytes,
-            file_options={"content-type": file.content_type or "application/octet-stream"},
+            file_options={"content-type": content_type},
         )
+        print(f"UPLOAD: Storage result: {storage_result}")
     except Exception as e:
         import traceback as tb
-        logger.error(f"UPLOAD ERROR (storage): {tb.format_exc()}")
+        print(f"UPLOAD STORAGE ERROR: {tb.format_exc()}")
         error_msg = str(e)
         # If file already exists, remove and re-upload
         if "Duplicate" in error_msg or "already exists" in error_msg:
             try:
                 supabase.storage.from_("proposal-documents").remove([storage_path])
-                supabase.storage.from_("proposal-documents").upload(
+                storage_result = supabase.storage.from_("proposal-documents").upload(
                     path=storage_path,
                     file=file_bytes,
-                    file_options={"content-type": file.content_type or "application/octet-stream"},
+                    file_options={"content-type": content_type},
                 )
+                print(f"UPLOAD: Re-upload storage result: {storage_result}")
             except Exception as retry_err:
-                logger.error(f"Storage re-upload failed: {retry_err}")
+                import traceback as tb2
+                print(f"UPLOAD STORAGE RE-UPLOAD ERROR: {tb2.format_exc()}")
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Storage upload failed")
         else:
-            logger.error(f"Storage upload failed: {e}")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Storage upload failed")
 
     # Insert into chamber_documents
@@ -119,15 +123,16 @@ async def upload_proposal_document(
             "file_type": ext,
             "file_size": len(file_bytes),
             "storage_path": storage_path,
-            "language_detected": None,
         }
+        print(f"UPLOAD: Inserting into chamber_documents: {doc_data}")
         result = supabase.table("chamber_documents").insert(doc_data).select("id, file_name, file_type, file_size, storage_path, proposal_id, uploaded_at").execute()
+        print(f"UPLOAD: DB result: {result}")
         if not result.data:
             raise Exception("Insert returned no data")
         return result.data[0]
     except Exception as e:
         import traceback as tb
-        logger.error(f"UPLOAD ERROR (db insert): {tb.format_exc()}")
+        print(f"UPLOAD DB ERROR: {tb.format_exc()}")
         # Clean up storage on DB failure
         try:
             supabase.storage.from_("proposal-documents").remove([storage_path])
