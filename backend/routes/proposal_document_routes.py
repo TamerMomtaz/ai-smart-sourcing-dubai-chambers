@@ -92,6 +92,8 @@ async def upload_proposal_document(
             file_options={"content-type": file.content_type or "application/octet-stream"},
         )
     except Exception as e:
+        import traceback as tb
+        logger.error(f"UPLOAD ERROR (storage): {tb.format_exc()}")
         error_msg = str(e)
         # If file already exists, remove and re-upload
         if "Duplicate" in error_msg or "already exists" in error_msg:
@@ -124,7 +126,8 @@ async def upload_proposal_document(
             raise Exception("Insert returned no data")
         return result.data[0]
     except Exception as e:
-        logger.error(f"Error inserting document record: {e}")
+        import traceback as tb
+        logger.error(f"UPLOAD ERROR (db insert): {tb.format_exc()}")
         # Clean up storage on DB failure
         try:
             supabase.storage.from_("proposal-documents").remove([storage_path])
