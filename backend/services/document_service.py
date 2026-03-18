@@ -30,7 +30,6 @@ def create_document(
         .select("id, created_by")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
-        .is_("deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -55,7 +54,6 @@ def create_document(
         "file_size": file_size or 0,
         "uploaded_at": now.isoformat(),
         "storage_path": f"{proposal_id}/{uuid4().hex}.{file_type}",
-        "created_by": str(user_id),
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
     }
@@ -85,7 +83,7 @@ def create_document(
     except Exception as e:
         logger.error(f"UPLOAD ERROR: {traceback.format_exc()}")
         # Cleanup document record if URL generation fails
-        supabase.table("chamber_documents").update({"deleted_at": now.isoformat()}).eq(
+        supabase.table("chamber_documents").delete().eq(
             "id", document_id
         ).execute()
         return None
@@ -103,9 +101,7 @@ def get_document_by_id(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
             "extraction_status, extracted_at, chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
-        .is_("deleted_at", "null")
         .eq("chamber_proposals.created_by", str(user_id))
-        .is_("chamber_proposals.deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -159,9 +155,7 @@ def get_extracted_data(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
             "chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
-        .is_("deleted_at", "null")
         .eq("chamber_proposals.created_by", str(user_id))
-        .is_("chamber_proposals.deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -201,7 +195,6 @@ def list_documents_by_proposal(
         .select("id")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
-        .is_("deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -216,7 +209,6 @@ def list_documents_by_proposal(
         supabase.table("chamber_documents")
         .select("id", count="exact")
         .eq("proposal_id", str(proposal_id))
-        .is_("deleted_at", "null")
         .execute()
     )
 
@@ -227,7 +219,6 @@ def list_documents_by_proposal(
         supabase.table("chamber_documents")
         .select("id, file_name, file_type, file_size, uploaded_at, extraction_status")
         .eq("proposal_id", str(proposal_id))
-        .is_("deleted_at", "null")
         .order("uploaded_at", desc=True)
         .range(offset, offset + page_size - 1)
         .execute()
@@ -307,10 +298,9 @@ def delete_document(user_id: UUID, document_id: UUID) -> bool:
     if not document:
         return False
 
-    now = datetime.now(timezone.utc)
     response = (
         supabase.table("chamber_documents")
-        .update({"deleted_at": now.isoformat(), "updated_at": now.isoformat()})
+        .delete()
         .eq("id", str(document_id))
         .execute()
     )
