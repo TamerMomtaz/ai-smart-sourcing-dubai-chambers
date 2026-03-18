@@ -1,8 +1,12 @@
 from typing import Optional, Dict, Any, List
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime, timezone, timedelta
-from database import supabase
 import os
+import traceback
+import logging
+from database import supabase
+
+logger = logging.getLogger(__name__)
 
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 ALLOWED_FILE_TYPES = ["pdf", "docx", "pptx", "xlsx"]
@@ -26,7 +30,7 @@ def create_document(
         .select("id, created_by")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -50,7 +54,7 @@ def create_document(
         "file_type": file_type,
         "file_size": file_size or 0,
         "uploaded_at": now.isoformat(),
-        "storage_path": f"{proposal_id}/{UUID.__new__(UUID).hex}.{file_type}",
+        "storage_path": f"{proposal_id}/{uuid4().hex}.{file_type}",
         "created_by": str(user_id),
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
@@ -78,7 +82,8 @@ def create_document(
             "expires_at": expires_at.isoformat(),
             "storage_path": storage_path,
         }
-    except Exception:
+    except Exception as e:
+        logger.error(f"UPLOAD ERROR: {traceback.format_exc()}")
         # Cleanup document record if URL generation fails
         supabase.table("chamber_documents").update({"deleted_at": now.isoformat()}).eq(
             "id", document_id
@@ -98,9 +103,9 @@ def get_document_by_id(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
             "extraction_status, extracted_at, chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .eq("chamber_proposals.created_by", str(user_id))
-        .eq("chamber_proposals.deleted_at", None)
+        .is_("chamber_proposals.deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -154,9 +159,9 @@ def get_extracted_data(user_id: UUID, document_id: UUID) -> Optional[Dict[str, A
             "chamber_proposals!inner(id, created_by)"
         )
         .eq("id", str(document_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .eq("chamber_proposals.created_by", str(user_id))
-        .eq("chamber_proposals.deleted_at", None)
+        .is_("chamber_proposals.deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -196,7 +201,7 @@ def list_documents_by_proposal(
         .select("id")
         .eq("id", str(proposal_id))
         .eq("created_by", str(user_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .maybe_single()
         .execute()
     )
@@ -211,7 +216,7 @@ def list_documents_by_proposal(
         supabase.table("chamber_documents")
         .select("id", count="exact")
         .eq("proposal_id", str(proposal_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .execute()
     )
 
@@ -222,7 +227,7 @@ def list_documents_by_proposal(
         supabase.table("chamber_documents")
         .select("id, file_name, file_type, file_size, uploaded_at, extraction_status")
         .eq("proposal_id", str(proposal_id))
-        .eq("deleted_at", None)
+        .is_("deleted_at", "null")
         .order("uploaded_at", desc=True)
         .range(offset, offset + page_size - 1)
         .execute()
