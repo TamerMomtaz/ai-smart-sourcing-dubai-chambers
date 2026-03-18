@@ -5,16 +5,14 @@ from datetime import datetime, timezone, timedelta
 import logging
 
 from models import (
-    DocumentCreate,
     DocumentResponse,
-    DocumentUploadResponse,
     DocumentDownloadResponse,
     ExtractedDocumentData,
     ErrorResponse,
     PaginationResponse,
 )
 from auth import get_current_user
-from services import document_service, download_service, extracted_data_service
+from services import download_service, extracted_data_service
 from database import supabase
 
 logger = logging.getLogger(__name__)
@@ -176,92 +174,6 @@ async def get_document(
             detail={
                 "error": "Internal server error",
                 "detail": "Failed to retrieve document",
-                "code": 500,
-            },
-        )
-
-
-@router.post(
-    "/proposals/{proposal_id}/documents",
-    response_model=DocumentUploadResponse,
-    status_code=status.HTTP_201_CREATED,
-    responses={
-        401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {"model": ErrorResponse, "description": "Proposal not found"},
-        413: {"model": ErrorResponse, "description": "File too large - max 50MB"},
-    },
-)
-async def upload_document_to_proposal(
-    proposal_id: UUID,
-    body: DocumentCreate,
-    current_user: Dict[str, Any] = Depends(get_current_user),
-) -> DocumentUploadResponse:
-    """
-    Upload document to existing proposal.
-    Generates pre-signed upload URL for direct client upload to Supabase Storage.
-    Validates file type and size limits.
-    """
-    try:
-        user_id = current_user["id"]
-        user_role = current_user["role"]
-
-        # Validate file type
-        if body.file_type not in ["pdf", "docx", "pptx", "xlsx"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "error": "Invalid file type",
-                    "detail": f"File type {body.file_type} not allowed. Allowed types: pdf, docx, pptx, xlsx",
-                    "code": 400,
-                },
-            )
-
-        # Validate file size (max 50MB)
-        max_file_size = 50 * 1024 * 1024  # 50MB in bytes
-        if body.file_size and body.file_size > max_file_size:
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail={
-                    "error": "File too large",
-                    "detail": f"File size {body.file_size} bytes exceeds maximum allowed size of 50MB",
-                    "code": 413,
-                },
-            )
-
-        # Create document record and generate upload URL
-        result = document_service.create_document(
-            user_id=UUID(user_id),
-            proposal_id=proposal_id,
-            file_name=body.file_name,
-            file_type=body.file_type,
-            file_size=body.file_size or 0,
-        )
-
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "error": "Proposal not found",
-                    "detail": f"Proposal {proposal_id} not found or you do not have permission to upload documents",
-                    "code": 404,
-                },
-            )
-
-        return DocumentUploadResponse(
-            document_id=result["document_id"],
-            upload_url=result["upload_url"],
-            expires_at=result["expires_at"],
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error uploading document to proposal {proposal_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "Internal server error",
-                "detail": "Failed to create document upload URL",
                 "code": 500,
             },
         )
