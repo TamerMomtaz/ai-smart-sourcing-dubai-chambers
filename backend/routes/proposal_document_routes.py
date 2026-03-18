@@ -121,7 +121,7 @@ async def upload_proposal_document(
             "storage_path": storage_path,
             "language_detected": None,
         }
-        result = supabase.table("chamber_documents").insert(doc_data).execute()
+        result = supabase.table("chamber_documents").insert(doc_data).select("id, file_name, file_type, file_size, storage_path, proposal_id, uploaded_at").execute()
         if not result.data:
             raise Exception("Insert returned no data")
         return result.data[0]
