@@ -129,7 +129,7 @@ async def upload_proposal_document(
         print(f"UPLOAD: DB result: {result}")
         if not result.data:
             raise Exception("Insert returned no data")
-        return result.data[0]
+        return {"document": result.data[0], "message": "Document uploaded successfully"}
     except Exception as e:
         import traceback as tb
         print(f"UPLOAD DB ERROR: {tb.format_exc()}")
