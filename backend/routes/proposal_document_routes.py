@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi.responses import JSONResponse
 from uuid import UUID
 import logging
 
@@ -129,7 +130,22 @@ async def upload_proposal_document(
         print(f"UPLOAD: DB result: {result}")
         if not result.data:
             raise Exception("Insert returned no data")
-        return {"document": result.data[0], "message": "Document uploaded successfully"}
+        doc = result.data[0]
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "document": {
+                    "id": str(doc["id"]),
+                    "file_name": doc["file_name"],
+                    "file_type": doc["file_type"],
+                    "file_size": doc["file_size"],
+                    "storage_path": doc["storage_path"],
+                    "proposal_id": str(doc["proposal_id"]),
+                    "uploaded_at": str(doc["uploaded_at"]),
+                },
+                "message": "Document uploaded successfully",
+            },
+        )
     except Exception as e:
         import traceback as tb
         print(f"UPLOAD DB ERROR: {tb.format_exc()}")
