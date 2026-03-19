@@ -307,7 +307,6 @@ async def generate_trend_analysis(
         analysis_data = {
             "analysis_date": date.today().isoformat(),
             "sector": None,
-            "technology_trends": report,
             "technology_trends_json": report,
             "submission_volume": len(proposals),
             "average_scores": average_scores,
@@ -322,17 +321,7 @@ async def generate_trend_analysis(
         except Exception as insert_err:
             import traceback as tb
             logger.error(f"TREND INSERT ERROR: {tb.format_exc()}")
-            # Retry without technology_trends_json in case only one column exists
-            analysis_data.pop("technology_trends_json", None)
-            try:
-                insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
-                saved = insert_response.data[0] if insert_response.data else {}
-            except Exception as retry_err:
-                # Retry without technology_trends in case only technology_trends_json exists
-                analysis_data.pop("technology_trends", None)
-                analysis_data["technology_trends_json"] = report
-                insert_response = supabase.table("chamber_trend_analyses").insert(analysis_data).execute()
-                saved = insert_response.data[0] if insert_response.data else {}
+            raise
 
         # 6. Log AI interaction (non-critical — per rule 9b)
         try:

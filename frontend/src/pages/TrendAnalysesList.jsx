@@ -33,6 +33,9 @@ function getReportPeriod(analysisDate) {
 
 const PRINT_STYLES = `
 @media print {
+  /* Prevent blank pages from scrollable height */
+  html, body { height: auto !important; overflow: visible !important; }
+
   /* Hide everything by default */
   body * { visibility: hidden !important; }
 
@@ -46,6 +49,7 @@ const PRINT_STYLES = `
     padding: 24px !important;
     background: white !important;
     color: #1a1a1a !important;
+    page-break-after: avoid;
   }
 
   /* White background overrides */
@@ -70,8 +74,11 @@ const PRINT_STYLES = `
   /* Print footer */
   .print-footer { display: block !important; visibility: visible !important; }
 
-  /* Hide buttons, nav, sidebar */
+  /* Hide buttons, nav, sidebar, and non-printing content */
   .no-print, nav, aside, [role="navigation"] { display: none !important; }
+
+  /* Collapse empty containers that are not part of the report */
+  .min-h-screen { min-height: 0 !important; height: auto !important; }
 
   /* D33 score prominent */
   .d33-print-score { font-size: 28px !important; font-weight: bold !important; color: #016764 !important; }
