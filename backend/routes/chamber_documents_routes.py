@@ -254,7 +254,6 @@ async def get_document(
 
 @router.get(
     "/{document_id}/download",
-    response_model=DocumentDownloadResponse,
     responses={
         200: {"description": "Pre-signed download URL"},
         403: {"model": ErrorResponse, "description": "Access denied"},

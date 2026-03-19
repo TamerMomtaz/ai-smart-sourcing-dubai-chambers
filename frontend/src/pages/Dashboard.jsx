@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async (retryCount = 0) => {
       try {
-        setLoading(true);
+        if (retryCount === 0) setLoading(true);
         const [userRes, statsRes] = await Promise.all([
           api.get('/api/v1/users/me'),
           fetchDashboardStats()
@@ -20,6 +20,7 @@ const Dashboard = () => {
         setUser(userRes.data);
         setStats(statsRes);
         setAuthRetrying(false);
+        setLoading(false);
       } catch (err) {
         const is403 = err?.response?.status === 403;
         if (is403 && retryCount < 3) {
@@ -33,8 +34,7 @@ const Dashboard = () => {
         } else {
           setError(getErrorMessage(err));
         }
-      } finally {
-        if (!authRetrying) setLoading(false);
+        setLoading(false);
       }
     };
     fetchData();
