@@ -55,7 +55,8 @@ from routes import (
     user_routes,
     vendor_routes,
     verify_routes,
-    proposal_document_routes
+    proposal_document_routes,
+    proposal_ingest_routes
 )
 
 # Configure logging
@@ -231,6 +232,7 @@ app.include_router(user_routes.router, prefix="/api/v1", tags=["Users"])
 app.include_router(vendor_routes.router, prefix="/api/v1", tags=["Vendors"])
 app.include_router(verify_routes.router, prefix="/api/v1", tags=["Verify"])
 app.include_router(proposal_document_routes.router, prefix="/api/v1", tags=["Proposal Documents"])
+app.include_router(proposal_ingest_routes.router, prefix="/api/v1", tags=["Proposal Document Ingestion"])
 app.include_router(compliance_engine_routes.router, prefix="/api/v1", tags=["Compliance Audit Engine"])
 app.include_router(compliance_engine_routes.list_router, prefix="/api/v1", tags=["Compliance Audit Results"])
 

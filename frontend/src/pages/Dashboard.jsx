@@ -23,14 +23,14 @@ const Dashboard = () => {
         setLoading(false);
       } catch (err) {
         const is403 = err?.response?.status === 403;
-        if (is403 && retryCount < 5) {
+        if (is403 && retryCount < 3) {
           setAuthRetrying(true);
-          setTimeout(() => fetchData(retryCount + 1), 3000);
+          setTimeout(() => fetchData(retryCount + 1), 2000);
           return;
         }
         setAuthRetrying(false);
         if (is403) {
-          setError('Session could not be verified. Please refresh the page.');
+          setError('Could not load dashboard. Please refresh.');
         } else {
           setError(getErrorMessage(err));
         }

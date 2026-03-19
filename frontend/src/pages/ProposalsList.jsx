@@ -65,6 +65,14 @@ const ProposalsList = () => {
     description: '',
   });
 
+  // PDF upload state
+  const [showIngestModal, setShowIngestModal] = useState(false);
+  const [ingesting, setIngesting] = useState(false);
+  const [ingestStep, setIngestStep] = useState('upload'); // upload | extracting | review
+  const [ingestData, setIngestData] = useState(null);
+  const [ingestFile, setIngestFile] = useState(null);
+  const [confirmingIngestion, setConfirmingIngestion] = useState(false);
+
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 20;
 
@@ -173,6 +181,60 @@ const ProposalsList = () => {
     }
   };
 
+  const handleUploadPDF = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIngestFile(file);
+    setShowIngestModal(true);
+    setIngestStep('extracting');
+    setIngesting(true);
+
+    try {
+      const formPayload = new FormData();
+      formPayload.append('file', file);
+      const res = await api.post('/api/v1/proposals/ingest-document', formPayload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setIngestData(res.data.extracted);
+      setIngestStep('review');
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+      setShowIngestModal(false);
+      setIngestStep('upload');
+    } finally {
+      setIngesting(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const handleConfirmIngestion = async () => {
+    if (!ingestData) return;
+    try {
+      setConfirmingIngestion(true);
+      const payload = {
+        ...ingestData,
+        file_name: ingestFile?.name,
+        file_size: ingestFile?.size || 0,
+      };
+      await api.post('/api/v1/proposals/confirm-ingestion', payload);
+      setToast({ message: 'Proposal created from uploaded document!', type: 'success' });
+      setShowIngestModal(false);
+      setIngestData(null);
+      setIngestFile(null);
+      setIngestStep('upload');
+      fetchProposals();
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setConfirmingIngestion(false);
+    }
+  };
+
+  const handleIngestFieldChange = (key, value) => {
+    setIngestData(prev => ({ ...prev, [key]: value }));
+  };
+
   return (
     <div className="min-h-screen bg-[#0F172A] p-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -180,12 +242,23 @@ const ProposalsList = () => {
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Proposals</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[#F59E0B] hover:bg-[#D97706] text-black font-semibold px-6 py-2.5 rounded-lg transition-colors"
-          >
-            + Submit New Proposal
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="bg-[#0D9488] hover:bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-2">
+              <span>Upload Proposal PDF</span>
+              <input
+                type="file"
+                accept=".pdf,.docx"
+                onChange={handleUploadPDF}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#F59E0B] hover:bg-[#D97706] text-black font-semibold px-6 py-2.5 rounded-lg transition-colors"
+            >
+              + Submit New Proposal
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -357,6 +430,154 @@ const ProposalsList = () => {
           </div>
         )}
       </div>
+
+      {/* Document Ingestion Modal */}
+      {showIngestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1E293B] rounded-2xl shadow-2xl w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto border border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                {ingestStep === 'extracting' ? 'Processing Document...' : 'Review Extracted Details'}
+              </h2>
+              <button
+                onClick={() => { setShowIngestModal(false); setIngestStep('upload'); setIngestData(null); }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {ingestStep === 'extracting' && (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0D9488] mx-auto mb-4"></div>
+                <p className="text-gray-300 text-lg mb-2">AI is reading your document...</p>
+                <p className="text-gray-500 text-sm">Extracting proposal details from {ingestFile?.name}</p>
+              </div>
+            )}
+
+            {ingestStep === 'review' && ingestData && (
+              <div className="space-y-4">
+                <p className="text-emerald-400 text-sm mb-4">Details extracted successfully. Review and edit before submitting.</p>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={ingestData.title}
+                    onChange={(e) => handleIngestFieldChange('title', e.target.value)}
+                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Sector *</label>
+                  <select
+                    value={ingestData.sector}
+                    onChange={(e) => handleIngestFieldChange('sector', e.target.value)}
+                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  >
+                    {['AI/ML', 'FinTech', 'HealthTech', 'CleanTech', 'EdTech', 'Construction', 'Cybersecurity', 'Supply Chain', 'AgTech', 'SpaceTech', 'Retail'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Technology Type *</label>
+                  <input
+                    type="text"
+                    value={ingestData.technology_type}
+                    onChange={(e) => handleIngestFieldChange('technology_type', e.target.value)}
+                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Maturity Level</label>
+                  <select
+                    value={ingestData.maturity_level}
+                    onChange={(e) => handleIngestFieldChange('maturity_level', e.target.value)}
+                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  >
+                    <option value="concept">Concept</option>
+                    <option value="prototype">Prototype</option>
+                    <option value="mvp">MVP</option>
+                    <option value="production">Production</option>
+                    <option value="scaled">Scaled</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Language</label>
+                  <div className="flex gap-4">
+                    {[{ value: 'en', label: 'English' }, { value: 'ar', label: 'Arabic' }, { value: 'mixed', label: 'Mixed' }].map((opt) => (
+                      <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="ingest_language"
+                          value={opt.value}
+                          checked={ingestData.language === opt.value}
+                          onChange={(e) => handleIngestFieldChange('language', e.target.value)}
+                          className="text-[#0D9488] focus:ring-[#0D9488]"
+                        />
+                        <span className="text-gray-300 text-sm">{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                  <textarea
+                    rows={4}
+                    value={ingestData.description}
+                    onChange={(e) => handleIngestFieldChange('description', e.target.value)}
+                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488] resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Company Name</label>
+                    <input
+                      type="text"
+                      value={ingestData.company_name}
+                      onChange={(e) => handleIngestFieldChange('company_name', e.target.value)}
+                      className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Country</label>
+                    <input
+                      type="text"
+                      value={ingestData.company_country}
+                      onChange={(e) => handleIngestFieldChange('company_country', e.target.value)}
+                      className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleConfirmIngestion}
+                    disabled={confirmingIngestion}
+                    className="flex-1 bg-[#0D9488] hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg disabled:opacity-50 transition-colors"
+                  >
+                    {confirmingIngestion ? 'Creating Proposal...' : 'Confirm Submission'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowIngestModal(false); setIngestStep('upload'); setIngestData(null); }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Submit Proposal Modal */}
       {showModal && (
