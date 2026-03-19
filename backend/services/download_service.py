@@ -23,8 +23,8 @@ def generate_download_url(
     """
     # Fetch document metadata
     doc_response = supabase.table("chamber_documents").select(
-        "id, proposal_id, file_name, storage_path, uploaded_by"
-    ).eq("id", document_id).eq("is_deleted", False).execute()
+        "id, proposal_id, file_name, storage_path"
+    ).eq("id", document_id).execute()
     
     if not doc_response.data or len(doc_response.data) == 0:
         return None
@@ -35,7 +35,7 @@ def generate_download_url(
     # Check if user owns the proposal (vendor) or has analyst/executive/compliance role
     proposal_response = supabase.table("chamber_proposals").select(
         "id, submitter_id"
-    ).eq("id", document["proposal_id"]).eq("is_deleted", False).execute()
+    ).eq("id", document["proposal_id"]).execute()
     
     if not proposal_response.data or len(proposal_response.data) == 0:
         return None
