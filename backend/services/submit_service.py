@@ -19,7 +19,7 @@ def submit_proposal(user_id: UUID, proposal_id: UUID) -> Optional[dict]:
     proposal = proposal_response.data[0]
     
     # Check if proposal has attached documents
-    documents_response = supabase.table("chamber_documents").select("id").eq("proposal_id", str(proposal_id)).eq("is_deleted", False).execute()
+    documents_response = supabase.table("chamber_documents").select("id").eq("proposal_id", str(proposal_id)).execute()
     
     if not documents_response.data or len(documents_response.data) == 0:
         # Return error indicator - route handler will raise 400

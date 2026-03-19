@@ -277,24 +277,24 @@ async def download_document(
         )
 
         if not result:
-            return {
-                "error": "not_found",
-                "detail": "Document not found or access denied",
-                "code": status.HTTP_404_NOT_FOUND,
-            }
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document not found or access denied",
+            )
 
         return DocumentDownloadResponse(
             download_url=result["download_url"],
             expires_at=result["expires_at"],
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating download URL: {str(e)}")
-        return {
-            "error": "internal_error",
-            "detail": "An error occurred while generating download URL",
-            "code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        }
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while generating download URL",
+        )
 
 
 @router.get(
