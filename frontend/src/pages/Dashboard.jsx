@@ -23,9 +23,9 @@ const Dashboard = () => {
         setLoading(false);
       } catch (err) {
         const is403 = err?.response?.status === 403;
-        if (is403 && retryCount < 3) {
+        if (is403 && retryCount < 5) {
           setAuthRetrying(true);
-          setTimeout(() => fetchData(retryCount + 1), 2000);
+          setTimeout(() => fetchData(retryCount + 1), 3000);
           return;
         }
         setAuthRetrying(false);
@@ -49,7 +49,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="animate-pulse text-teal font-heading text-2xl">
-          {authRetrying ? 'Authenticating...' : 'Loading dashboard...'}
+          Loading dashboard...
         </div>
       </div>
     );

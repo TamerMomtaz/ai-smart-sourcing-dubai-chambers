@@ -44,7 +44,7 @@ def generate_download_url(
     
     # Authorization check
     is_owner = str(proposal["submitter_id"]) == str(user_id)
-    is_staff = user_role in ["analyst", "executive", "compliance_officer", "business_group_lead"]
+    is_staff = user_role in ["admin", "analyst", "executive", "compliance_officer", "business_group_lead"]
     
     if not (is_owner or is_staff):
         return None
@@ -61,10 +61,11 @@ def generate_download_url(
             3600  # 1 hour expiry
         )
         
-        if not signed_url_response or "signedURL" not in signed_url_response:
+        download_url = None
+        if signed_url_response:
+            download_url = signed_url_response.get("signedURL") or signed_url_response.get("signedUrl")
+        if not download_url:
             return None
-        
-        download_url = signed_url_response["signedURL"]
         expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
         
         return {

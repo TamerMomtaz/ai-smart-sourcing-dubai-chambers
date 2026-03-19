@@ -35,7 +35,7 @@ const DocumentsList = () => {
 
   useEffect(() => {
     // Fetch proposals for title mapping
-    api.get('/api/v1/proposals?page_size=200').then(({ data }) => {
+    api.get('/api/v1/proposals?page_size=100').then(({ data }) => {
       const map = {};
       const items = data.proposals || data.data || [];
       items.forEach((p) => { map[p.id] = p.title; });
