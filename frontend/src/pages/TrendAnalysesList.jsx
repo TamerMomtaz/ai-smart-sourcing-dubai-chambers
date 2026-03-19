@@ -33,13 +33,8 @@ function getReportPeriod(analysisDate) {
 
 const PRINT_STYLES = `
 @media print {
-  /* Prevent blank pages from scrollable height */
-  html, body { height: auto !important; overflow: visible !important; }
-
-  /* Hide everything by default */
+  /* Hide everything except the printing report */
   body * { visibility: hidden !important; }
-
-  /* Show only the printing report */
   .printing-report, .printing-report * { visibility: visible !important; }
   .printing-report {
     position: absolute !important;
@@ -49,7 +44,26 @@ const PRINT_STYLES = `
     padding: 24px !important;
     background: white !important;
     color: #1a1a1a !important;
+  }
+
+  /* Force page to end after content — prevent blank pages */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Prevent empty pages */
+  .printing-report::after {
+    content: '';
+    display: block;
     page-break-after: avoid;
+  }
+
+  /* Hide non-printing report cards completely so they take no space */
+  .space-y-6 > div:not(.printing-report) {
+    display: none !important;
   }
 
   /* White background overrides */
