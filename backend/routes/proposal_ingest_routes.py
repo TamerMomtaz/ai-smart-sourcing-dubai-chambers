@@ -301,35 +301,58 @@ async def confirm_ingestion(
             detail={"error": "Missing required fields", "detail": "title, sector, and technology_type are required", "code": 400},
         )
 
-    # Ensure vendor record exists (per rule 9a)
-    vendor_check = (
-        supabase.table("chamber_vendors")
-        .select("id")
-        .eq("id", str(user_id))
-        .maybe_single()
-        .execute()
-    )
-    if not vendor_check.data:
-        vendor_data = {
-            "id": str(user_id),
-            "name": company_name or (user_email.split("@")[0] if user_email else "unknown"),
-            "country": company_country,
-            "contact_email": user_email,
-            "is_desc_approved": False,
-            "onboarding_status": "submitted",
-            "submission_history_count": 0,
-        }
-        supabase.table("chamber_vendors").insert(vendor_data).execute()
-        logger.info(f"Auto-created vendor record for user {user_id}")
-    elif company_name:
-        # Update vendor name if provided
-        try:
-            supabase.table("chamber_vendors").update({
+    # Look up or create vendor by company_name (not current user)
+    vendor_id_for_proposal = None
+    if company_name:
+        vendor_check = (
+            supabase.table("chamber_vendors")
+            .select("id")
+            .eq("name", company_name)
+            .maybe_single()
+            .execute()
+        )
+        if vendor_check.data:
+            vendor_id_for_proposal = vendor_check.data["id"]
+        else:
+            # Extract contact_email from payload if available
+            contact_email = payload.get("contact_email", "pending@review.com")
+            new_vendor_id = str(uuid_mod.uuid4())
+            vendor_data = {
+                "id": new_vendor_id,
                 "name": company_name,
                 "country": company_country,
-            }).eq("id", str(user_id)).execute()
-        except Exception:
-            pass
+                "contact_email": contact_email,
+                "is_desc_approved": False,
+                "onboarding_status": "submitted",
+                "submission_history_count": 0,
+            }
+            supabase.table("chamber_vendors").insert(vendor_data).execute()
+            vendor_id_for_proposal = new_vendor_id
+            logger.info(f"Auto-created vendor '{company_name}' with id {new_vendor_id}")
+    else:
+        # Fallback: ensure current user has a vendor record
+        vendor_check = (
+            supabase.table("chamber_vendors")
+            .select("id")
+            .eq("id", str(user_id))
+            .maybe_single()
+            .execute()
+        )
+        if vendor_check.data:
+            vendor_id_for_proposal = vendor_check.data["id"]
+        else:
+            vendor_data = {
+                "id": str(user_id),
+                "name": user_email.split("@")[0] if user_email else "unknown",
+                "country": company_country,
+                "contact_email": user_email or "pending@review.com",
+                "is_desc_approved": False,
+                "onboarding_status": "submitted",
+                "submission_history_count": 0,
+            }
+            supabase.table("chamber_vendors").insert(vendor_data).execute()
+            vendor_id_for_proposal = str(user_id)
+            logger.info(f"Auto-created vendor record for user {user_id}")
 
     # Auto-assign business_group_id
     business_group_id = None
@@ -351,7 +374,7 @@ async def confirm_ingestion(
         "maturity_level": maturity_level,
         "language": language,
         "description": description or None,
-        "submitter_id": str(user_id),
+        "submitter_id": str(vendor_id_for_proposal),
         "status": "queued",
         "submission_date": datetime.now(timezone.utc).isoformat(),
         "is_duplicate": False,
@@ -390,7 +413,7 @@ async def confirm_ingestion(
         vendor_row = (
             supabase.table("chamber_vendors")
             .select("submission_history_count")
-            .eq("id", str(user_id))
+            .eq("id", str(vendor_id_for_proposal))
             .maybe_single()
             .execute()
         )
@@ -398,7 +421,7 @@ async def confirm_ingestion(
         supabase.table("chamber_vendors").update({
             "submission_history_count": current_count + 1,
             "updated_at": datetime.now(timezone.utc).isoformat(),
-        }).eq("id", str(user_id)).execute()
+        }).eq("id", str(vendor_id_for_proposal)).execute()
     except Exception as inc_err:
         logger.warning(f"Failed to increment submission count: {inc_err}")
 
