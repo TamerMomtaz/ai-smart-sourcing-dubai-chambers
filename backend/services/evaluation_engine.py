@@ -104,9 +104,13 @@ class EvaluationEngine:
                     bg_weights = json.loads(bg_weights)
                 weights.update(bg_weights)
 
+        # 2b. Fetch uploaded document texts for this proposal
+        document_texts = self._fetch_document_texts(proposal_id=proposal_id)
+
         # 3. Build user prompt and call Claude
         user_prompt = self._build_user_prompt(
-            proposal=proposal, business_group=business_group
+            proposal=proposal, business_group=business_group,
+            document_texts=document_texts,
         )
 
         start_time = time.time()
@@ -262,8 +266,27 @@ class EvaluationEngine:
         )
         return result.data
 
+    def _fetch_document_texts(self, proposal_id: str) -> list:
+        """Fetch extracted_text from all documents linked to this proposal."""
+        try:
+            docs_result = (
+                supabase.table("chamber_documents")
+                .select("file_name, extracted_text")
+                .eq("proposal_id", str(proposal_id))
+                .execute()
+            )
+            if docs_result.data:
+                return [
+                    doc for doc in docs_result.data
+                    if doc.get("extracted_text")
+                ]
+        except Exception as e:
+            logger.warning(f"[EVAL] Failed to fetch document texts for proposal {proposal_id}: {e}")
+        return []
+
     def _build_user_prompt(
-        self, proposal: Dict[str, Any], business_group: Optional[Dict[str, Any]]
+        self, proposal: Dict[str, Any], business_group: Optional[Dict[str, Any]],
+        document_texts: Optional[list] = None,
     ) -> str:
         parts = [
             f"Proposal Title: {proposal.get('title', 'N/A')}",
@@ -274,6 +297,20 @@ class EvaluationEngine:
         ]
         if proposal.get("description"):
             parts.append(f"Description: {proposal['description']}")
+
+        # Append uploaded document texts (truncated to keep within token limits)
+        if document_texts:
+            remaining_chars = 8000 - len("\n".join(parts))
+            if remaining_chars > 500:
+                parts.append("\n--- Uploaded Documents ---")
+                for doc in document_texts:
+                    doc_text = doc.get("extracted_text", "")
+                    if doc_text and remaining_chars > 200:
+                        chunk = doc_text[:remaining_chars]
+                        parts.append(f"Document: {doc.get('file_name', 'unknown')}\n{chunk}")
+                        remaining_chars -= len(chunk) + 50
+                        if remaining_chars <= 200:
+                            break
 
         if business_group:
             parts.append(f"\nBusiness Group: {business_group.get('name', 'N/A')}")

@@ -262,6 +262,7 @@ async def ingest_document(
         "file_size": len(file_bytes),
         "storage_path": storage_path if file_url else None,
         "text_extracted": bool(extracted_text.strip()),
+        "extracted_text": extracted_text if extracted_text.strip() else None,
         "message": "Document processed successfully. Review the extracted details and confirm submission.",
     }
 
@@ -404,6 +405,10 @@ async def confirm_ingestion(
                 "storage_path": storage_path,
                 "uploaded_at": datetime.now(timezone.utc).isoformat(),
             }
+            # Store extracted text from the ingestion step for Shield and evaluation use
+            extracted_text_val = payload.get("extracted_text")
+            if extracted_text_val:
+                doc_data["extracted_text"] = extracted_text_val
             supabase.table("chamber_documents").insert(doc_data).execute()
         except Exception as doc_err:
             logger.warning(f"Failed to create document record: {doc_err}")

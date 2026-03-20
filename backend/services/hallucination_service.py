@@ -61,11 +61,17 @@ class HallucinationShield:
         total_completion_tokens = 0
         total_latency_ms = 0
 
+        # Build comprehensive source text from proposal + all uploaded documents
+        full_source_text = self._build_full_source_text(
+            proposal_text=proposal_text,
+            proposal_id=proposal_id,
+        )
+
         # Step 1: Extract and verify claims
         start_time = time.time()
         claims_result, claims_tokens = await self._verify_claims(
             evaluation_reasoning=evaluation_reasoning,
-            proposal_text=proposal_text,
+            proposal_text=full_source_text,
         )
         claims_latency = int((time.time() - start_time) * 1000)
         total_prompt_tokens += claims_tokens.get("prompt", 0)
@@ -78,7 +84,7 @@ class HallucinationShield:
         # Step 3: Cross-model verification (quick score check)
         start_time = time.time()
         cross_check, cross_tokens = await self._cross_model_verify(
-            proposal_text=proposal_text,
+            proposal_text=full_source_text,
             original_scores=evaluation_scores,
         )
         cross_latency = int((time.time() - start_time) * 1000)
@@ -154,6 +160,28 @@ class HallucinationShield:
                 logger.error(f"[SHIELD] Failed to log AI interaction: {e}")
 
         return report
+
+    def _build_full_source_text(self, proposal_text, proposal_id):
+        """Build comprehensive source text from proposal description + all uploaded documents."""
+        source_parts = [proposal_text or ""]
+
+        try:
+            docs_result = (
+                self.db.table("chamber_documents")
+                .select("file_name, extracted_text")
+                .eq("proposal_id", str(proposal_id))
+                .execute()
+            )
+            if docs_result.data:
+                for doc in docs_result.data:
+                    if doc.get("extracted_text"):
+                        source_parts.append(
+                            f"\n\n--- Document: {doc['file_name']} ---\n{doc['extracted_text']}"
+                        )
+        except Exception as e:
+            logger.warning(f"[SHIELD] Failed to fetch document texts for proposal {proposal_id}: {e}")
+
+        return "\n".join(source_parts)
 
     async def _verify_claims(self, evaluation_reasoning, proposal_text):
         """
