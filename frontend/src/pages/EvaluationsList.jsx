@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
+const TEAL = '#0D9488';
+
+const ShieldIcon = ({ size = 14, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+
 const ScoreBadge = ({ score }) => {
   if (score == null) return <span className="text-gray-500">—</span>;
   const color = score > 70 ? 'text-emerald-400 bg-emerald-500/20' : score >= 40 ? 'text-amber-400 bg-amber-500/20' : 'text-red-400 bg-red-500/20';
@@ -13,6 +21,69 @@ const STATUS_COLORS = {
   requires_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   approved: 'bg-emerald-600/20 text-emerald-300 border-emerald-600/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+};
+
+const ShieldBadge = ({ evaluationId }) => {
+  const [shieldData, setShieldData] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+
+  useEffect(() => {
+    if (evaluationId) fetchShield();
+  }, [evaluationId]);
+
+  const fetchShield = async () => {
+    try {
+      const { data } = await api.get(`/api/v1/evaluations/${evaluationId}/shield`);
+      setShieldData(data);
+    } catch (err) {
+      // Not verified yet — that's fine
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      setVerifying(true);
+      const { data } = await api.post(`/api/v1/evaluations/${evaluationId}/verify`);
+      setShieldData(data);
+    } catch (err) {
+      console.error('Shield verify failed:', err);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  if (verifying) {
+    return (
+      <span className="flex items-center gap-1 text-xs" style={{ color: TEAL }}>
+        <span className="animate-spin inline-block w-3 h-3 border-2 border-teal-400 border-t-transparent rounded-full" />
+        Verifying...
+      </span>
+    );
+  }
+
+  if (shieldData) {
+    const gs = parseFloat(shieldData.grounding_score) || 0;
+    const gsColor = gs >= 85 ? '#10B981' : gs >= 65 ? '#F59E0B' : '#EF4444';
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: `${gsColor}20`, color: gsColor }}>
+        <ShieldIcon size={12} color={gsColor} />
+        {gs}%
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleVerify}
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border transition-colors hover:bg-teal-500/10"
+      style={{ borderColor: `${TEAL}50`, color: TEAL }}
+    >
+      <ShieldIcon size={12} />
+      Verify
+    </button>
+  );
 };
 
 const EvaluationsList = () => {
@@ -89,6 +160,7 @@ const EvaluationsList = () => {
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Compliance</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Status</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Shield</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Evaluated</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Actions</th>
                 </tr>
@@ -96,7 +168,7 @@ const EvaluationsList = () => {
               <tbody>
                 {sortedEvaluations.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center p-12 text-gray-500">No evaluations found</td>
+                    <td colSpan={10} className="text-center p-12 text-gray-500">No evaluations found</td>
                   </tr>
                 ) : (
                   sortedEvaluations.map((ev) => (
@@ -116,12 +188,15 @@ const EvaluationsList = () => {
                           {ev.proposal_status?.replace(/_/g, ' ') || '—'}
                         </span>
                       </td>
+                      <td className="p-4">
+                        <ShieldBadge evaluationId={ev.id} />
+                      </td>
                       <td className="p-4 text-gray-400 text-sm">
                         {ev.evaluated_at ? new Date(ev.evaluated_at).toLocaleDateString() : '—'}
                       </td>
                       <td className="p-4">
                         <Link
-                          to={`/proposals/${ev.proposal_id}`}
+                          to={`/evaluations/${ev.id}`}
                           className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium px-3 py-1 rounded border border-[#3B82F6]/30 hover:bg-[#3B82F6]/10 transition"
                         >
                           View

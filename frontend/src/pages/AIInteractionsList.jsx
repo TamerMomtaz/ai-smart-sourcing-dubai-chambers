@@ -52,6 +52,72 @@ const getCostColor = (cost) => {
   return '#EF4444';
 };
 
+const ShieldIcon = ({ size = 20, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+
+const ShieldStatsSection = ({ stats }) => {
+  if (!stats || stats.total_checks === 0) return null;
+
+  const avgScore = stats.average_grounding_score || 0;
+  const scoreColor = avgScore >= 85 ? '#10B981' : avgScore >= 65 ? '#F59E0B' : '#EF4444';
+  const dist = stats.risk_distribution || {};
+
+  return (
+    <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: DARK_SURFACE, borderTop: `3px solid ${TEAL}` }}>
+      <div className="flex items-center gap-3 mb-6">
+        <ShieldIcon size={24} color={TEAL} />
+        <h3 className="text-white text-xl font-bold">Hallucination Shield — Aggregate Integrity</h3>
+        {stats.all_verified && (
+          <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            All evaluations verified
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+          <p className="text-3xl font-bold" style={{ color: scoreColor, fontFamily: '"JetBrains Mono", monospace' }}>
+            {avgScore}%
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Avg Grounding Score</p>
+        </div>
+        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+          <p className="text-3xl font-bold text-white" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+            {stats.total_checks}
+            <span className="text-slate-500 text-sm">/{stats.total_evaluations || '?'}</span>
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Checks Run</p>
+        </div>
+        <div className="bg-[#0F172A] rounded-lg p-4">
+          <p className="text-slate-400 text-xs mb-2">Risk Distribution</p>
+          <div className="flex items-end gap-2">
+            <div className="flex-1 text-center">
+              <p className="text-emerald-400 font-bold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>{dist.low || 0}</p>
+              <p className="text-slate-500 text-xs">Low</p>
+            </div>
+            <div className="flex-1 text-center">
+              <p className="text-amber-400 font-bold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>{dist.medium || 0}</p>
+              <p className="text-slate-500 text-xs">Med</p>
+            </div>
+            <div className="flex-1 text-center">
+              <p className="text-red-400 font-bold" style={{ fontFamily: '"JetBrains Mono", monospace' }}>{dist.high || 0}</p>
+              <p className="text-slate-500 text-xs">High</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+          <p className="text-3xl font-bold" style={{ color: TEAL, fontFamily: '"JetBrains Mono", monospace' }}>
+            {(stats.total_verification_iu || 0).toFixed(2)}
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Shield IU Consumed</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AIInteractionsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -60,6 +126,7 @@ const AIInteractionsList = () => {
   const [pagination, setPagination] = useState(null);
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
+  const [shieldStats, setShieldStats] = useState(null);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 50;
@@ -70,6 +137,7 @@ const AIInteractionsList = () => {
 
   useEffect(() => {
     fetchSummary();
+    fetchShieldStats();
   }, []);
 
   const fetchSummary = async () => {
@@ -81,6 +149,15 @@ const AIInteractionsList = () => {
       console.error('Failed to load summary:', getErrorMessage(err));
     } finally {
       setSummaryLoading(false);
+    }
+  };
+
+  const fetchShieldStats = async () => {
+    try {
+      const res = await api.get('/api/v1/hallucination/stats');
+      setShieldStats(res.data);
+    } catch (err) {
+      console.error('Failed to load shield stats:', err);
     }
   };
 
@@ -199,6 +276,9 @@ const AIInteractionsList = () => {
             />
           </div>
         )}
+
+        {/* Hallucination Shield Stats */}
+        {shieldStats && <ShieldStatsSection stats={shieldStats} />}
 
         {/* Interactions Table */}
         <div className="rounded-xl overflow-hidden shadow-2xl" style={{ backgroundColor: DARK_SURFACE }}>

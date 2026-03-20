@@ -56,7 +56,8 @@ from routes import (
     vendor_routes,
     verify_routes,
     proposal_document_routes,
-    proposal_ingest_routes
+    proposal_ingest_routes,
+    hallucination_routes
 )
 
 # Configure logging
@@ -235,6 +236,7 @@ app.include_router(proposal_document_routes.router, prefix="/api/v1", tags=["Pro
 app.include_router(proposal_ingest_routes.router, prefix="/api/v1", tags=["Proposal Document Ingestion"])
 app.include_router(compliance_engine_routes.router, prefix="/api/v1", tags=["Compliance Audit Engine"])
 app.include_router(compliance_engine_routes.list_router, prefix="/api/v1", tags=["Compliance Audit Results"])
+app.include_router(hallucination_routes.router, prefix="/api/v1", tags=["Hallucination Shield"])
 
 if __name__ == "__main__":
     import uvicorn

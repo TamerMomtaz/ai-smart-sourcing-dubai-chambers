@@ -2,6 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
+const TEAL = '#0D9488';
+
+const ShieldIconSvg = ({ size = 12, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+
+const ProposalShieldBadge = ({ proposalId }) => {
+  const [gs, setGs] = useState(null);
+
+  useEffect(() => {
+    if (!proposalId) return;
+    const fetchShield = async () => {
+      try {
+        // Fetch evaluation for this proposal, then check shield
+        const evalRes = await api.get(`/api/v1/chamber-evaluations/proposal/${proposalId}`);
+        const evaluation = evalRes.data;
+        if (!evaluation?.id) return;
+        const shieldRes = await api.get(`/api/v1/evaluations/${evaluation.id}/shield`);
+        if (shieldRes.data?.grounding_score != null) {
+          setGs(parseFloat(shieldRes.data.grounding_score));
+        }
+      } catch (err) {
+        // Not verified or no evaluation — that's fine
+      }
+    };
+    fetchShield();
+  }, [proposalId]);
+
+  if (gs == null) return null;
+  const color = gs >= 85 ? '#10B981' : gs >= 65 ? '#F59E0B' : '#EF4444';
+
+  return (
+    <span className="inline-flex items-center gap-0.5 ml-1.5 text-xs font-bold" style={{ color }}>
+      <ShieldIconSvg size={11} color={color} />
+      {gs}%
+    </span>
+  );
+};
+
 const STATUS_COLORS = {
   queued: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   evaluating: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -336,7 +377,10 @@ const ProposalsList = () => {
                         </span>
                       </td>
                       <td className="p-4">
-                        <ScoreBadge score={p.composite_score} />
+                        <span className="inline-flex items-center">
+                          <ScoreBadge score={p.composite_score} />
+                          {p.composite_score != null && <ProposalShieldBadge proposalId={p.id} />}
+                        </span>
                       </td>
                       <td className="p-4 text-gray-400 text-sm">
                         {p.submission_date ? new Date(p.submission_date).toLocaleDateString() : '—'}
