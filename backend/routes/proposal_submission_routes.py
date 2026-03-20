@@ -10,6 +10,7 @@ import logging
 from auth import get_current_user
 from database import supabase
 from services.evaluation_engine import EvaluationEngine
+from services.hallucination_service import HallucinationShield
 
 logger = logging.getLogger(__name__)
 
@@ -463,6 +464,49 @@ async def trigger_ai_evaluation(
             proposal_id=str(proposal_id),
             user_id=str(current_user["id"]),
         )
+
+        # Auto-trigger σI Hallucination Shield (non-blocking)
+        try:
+            shield = HallucinationShield()
+            # Build reasoning text from result
+            reasoning_parts = []
+            for dim in ["relevance", "feasibility", "sector_alignment", "compliance"]:
+                dim_data = result.get(dim, {})
+                if isinstance(dim_data, dict) and dim_data.get("reasoning"):
+                    reasoning_parts.append(f"{dim.title()}: {dim_data['reasoning']}")
+            if result.get("summary_en"):
+                reasoning_parts.append(f"Summary: {result['summary_en']}")
+            eval_reasoning = "\n".join(reasoning_parts)
+
+            # Get proposal text
+            proposal_for_shield = (
+                supabase.table("chamber_proposals")
+                .select("description")
+                .eq("id", str(proposal_id))
+                .maybe_single()
+                .execute()
+            )
+            proposal_text = (proposal_for_shield.data or {}).get("description", "") or ""
+
+            eval_scores = {
+                "composite_score": result.get("composite_score"),
+                "relevance_score": result.get("relevance", {}).get("score") if isinstance(result.get("relevance"), dict) else None,
+                "feasibility_score": result.get("feasibility", {}).get("score") if isinstance(result.get("feasibility"), dict) else None,
+                "sector_alignment_score": result.get("sector_alignment", {}).get("score") if isinstance(result.get("sector_alignment"), dict) else None,
+                "compliance_score": result.get("compliance", {}).get("score") if isinstance(result.get("compliance"), dict) else None,
+            }
+
+            shield_report = await shield.verify_evaluation(
+                evaluation_id=result.get("evaluation_id"),
+                proposal_id=str(proposal_id),
+                evaluation_reasoning=eval_reasoning,
+                proposal_text=proposal_text,
+                evaluation_scores=eval_scores,
+                user_id=str(current_user["id"]),
+            )
+            logger.info(f"[SHIELD] Auto-verification complete for evaluation {result.get('evaluation_id')}: grounding={shield_report.get('grounding_score')}%")
+        except Exception as shield_err:
+            logger.error(f"[SHIELD] Verification failed (non-blocking): {shield_err}")
 
         return result
 
