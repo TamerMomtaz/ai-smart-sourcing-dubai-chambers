@@ -1,55 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
 const Dashboard = () => {
+  const { session, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
   const [user, setUser] = useState(null);
-  const [authRetrying, setAuthRetrying] = useState(false);
 
   useEffect(() => {
+    // Don't fetch until auth has settled
+    if (authLoading) return;
+
+    // No session after auth settled — redirect to login
+    if (!session) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     const fetchData = async (retryCount = 0) => {
       try {
         if (retryCount === 0) setLoading(true);
         const [userRes, statsRes] = await Promise.all([
           api.get('/api/v1/users/me'),
-          fetchDashboardStats()
+          api.get('/api/v1/dashboard/stats')
         ]);
         setUser(userRes.data);
-        setStats(statsRes);
-        setAuthRetrying(false);
+        setStats(statsRes.data);
         setLoading(false);
       } catch (err) {
         const is403 = err?.response?.status === 403;
-        if (is403 && retryCount < 3) {
-          setAuthRetrying(true);
-          setTimeout(() => fetchData(retryCount + 1), 2000);
+        if (is403 && retryCount < 1) {
+          // Single retry after 1s for token propagation race
+          setTimeout(() => fetchData(retryCount + 1), 1000);
           return;
         }
-        setAuthRetrying(false);
         if (is403) {
-          setError('Could not load dashboard. Please refresh.');
+          setError('Session expired, redirecting to login...');
+          setLoading(false);
+          setTimeout(() => navigate('/login', { replace: true }), 2000);
         } else {
           setError(getErrorMessage(err));
+          setLoading(false);
         }
-        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [authLoading, session, navigate]);
 
-  const fetchDashboardStats = async () => {
-    const res = await api.get('/api/v1/dashboard/stats');
-    return res.data;
-  };
-
-  if (loading || authRetrying) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-pulse text-teal font-heading text-2xl">
-          Loading dashboard...
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#0D9488]"></div>
+          <span className="text-teal font-heading text-lg">Loading dashboard...</span>
         </div>
       </div>
     );
