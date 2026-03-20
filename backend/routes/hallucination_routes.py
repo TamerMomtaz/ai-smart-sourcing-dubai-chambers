@@ -69,20 +69,20 @@ async def verify_evaluation(
         proposal = proposal_result.data
         proposal_text = proposal.get("description", "") or ""
 
-        # Also fetch any uploaded document text
+        # Fetch extracted text from ALL uploaded documents for this proposal
         try:
             doc_result = (
                 supabase.table("chamber_documents")
-                .select("extracted_text")
+                .select("file_name, extracted_text")
                 .eq("proposal_id", str(proposal_id))
-                .order("created_at", desc=True)
-                .limit(1)
                 .execute()
             )
-            if doc_result.data and doc_result.data[0].get("extracted_text"):
-                proposal_text += "\n\n" + doc_result.data[0]["extracted_text"]
+            if doc_result.data:
+                for doc in doc_result.data:
+                    if doc.get("extracted_text"):
+                        proposal_text += f"\n\n--- Document: {doc['file_name']} ---\n{doc['extracted_text']}"
         except Exception as doc_err:
-            logger.warning(f"[SHIELD] Failed to fetch document text: {doc_err}")
+            logger.warning(f"[SHIELD] Failed to fetch document texts: {doc_err}")
 
         # Build combined reasoning text from all dimensions
         reasoning_parts = []

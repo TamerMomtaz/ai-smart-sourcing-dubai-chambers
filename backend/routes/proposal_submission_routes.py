@@ -478,7 +478,7 @@ async def trigger_ai_evaluation(
                 reasoning_parts.append(f"Summary: {result['summary_en']}")
             eval_reasoning = "\n".join(reasoning_parts)
 
-            # Get proposal text
+            # Get proposal text (description + all uploaded document texts)
             proposal_for_shield = (
                 supabase.table("chamber_proposals")
                 .select("description")
@@ -487,6 +487,21 @@ async def trigger_ai_evaluation(
                 .execute()
             )
             proposal_text = (proposal_for_shield.data or {}).get("description", "") or ""
+
+            # Append extracted text from all uploaded documents
+            try:
+                docs_for_shield = (
+                    supabase.table("chamber_documents")
+                    .select("file_name, extracted_text")
+                    .eq("proposal_id", str(proposal_id))
+                    .execute()
+                )
+                if docs_for_shield.data:
+                    for doc in docs_for_shield.data:
+                        if doc.get("extracted_text"):
+                            proposal_text += f"\n\n--- Document: {doc['file_name']} ---\n{doc['extracted_text']}"
+            except Exception as doc_err:
+                logger.warning(f"[SHIELD] Failed to fetch document texts: {doc_err}")
 
             eval_scores = {
                 "composite_score": result.get("composite_score"),
