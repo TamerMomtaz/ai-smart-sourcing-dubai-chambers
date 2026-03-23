@@ -534,12 +534,12 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '16px 24px', borderTop: '0.5px solid rgba(255,255,255,0.1)',
-      background: 'rgba(15,23,42,0.5)', backdropFilter: 'none'
+      padding: '16px 24px', borderTop: '0.5px solid var(--color-border-tertiary, #E2E8F0)',
+      background: 'var(--color-background-secondary, #F1F5F9)'
     }}>
       <button onClick={onBack} disabled={current <= 1}
         style={{
-          background: 'none', border: 'none', color: current <= 1 ? '#334155' : '#94A3B8',
+          background: 'none', border: 'none', color: current <= 1 ? 'var(--color-text-tertiary, #94A3B8)' : 'var(--color-text-secondary, #475569)',
           cursor: current <= 1 ? 'default' : 'pointer', fontSize: '14px', padding: '8px 16px'
         }}>
         ← Back
@@ -552,13 +552,13 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
               width: current === i + 1 ? '24px' : '8px',
               height: '8px',
               borderRadius: '4px',
-              background: i + 1 <= current ? '#0D9488' : '#334155',
+              background: i + 1 <= current ? '#0D9488' : 'var(--color-border-tertiary, #CBD5E1)',
               cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
           />
         ))}
-        <span style={{ color: '#64748B', fontSize: '12px', marginLeft: '12px' }}>
+        <span style={{ color: 'var(--color-text-secondary, #64748B)', fontSize: '12px', marginLeft: '12px' }}>
           {current}/12 — {stageName}
         </span>
       </div>
@@ -715,7 +715,7 @@ function FinaleSection({ impact, onReplay, onExplore, onBack }) {
           AI Smart Sourcing — Dubai Chambers | by Tamer Momtaz
         </p>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px' }}>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px', position: 'relative', zIndex: 10 }}>
           <button onClick={onExplore} style={{
             background: '#0D9488', border: 'none', color: '#fff',
             padding: '12px 28px', borderRadius: '8px', fontSize: '14px',
@@ -802,12 +802,14 @@ export default function HowItWorks() {
   // Stage 12 gets the dark cinematic treatment (like the hero)
   if (currentStage === 12) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', minHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 50 }}>
+      <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, padding: '2rem' }}>
           <RevealSection impact={impactData} />
         </div>
-        <NavigationBar current={12} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+        <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
+          <NavigationBar current={12} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+        </div>
       </div>
     );
   }
@@ -815,7 +817,7 @@ export default function HowItWorks() {
   // Render finale if stage 13
   if (currentStage === 13) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', minHeight: '100vh', overflow: 'hidden', zIndex: 50 }}>
+      <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
         <FinaleSection
           impact={impactData}
