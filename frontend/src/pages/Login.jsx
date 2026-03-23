@@ -102,11 +102,17 @@ function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-sm font-body text-ink/70">
               Don't have an account?{' '}
               <Link to="/register" className="text-teal hover:underline">
                 Register here
+              </Link>
+            </p>
+            <p className="text-sm font-body text-ink/50">
+              New here?{' '}
+              <Link to="/how-it-works" className="text-teal hover:underline">
+                See how it works &rarr;
               </Link>
             </p>
           </div>

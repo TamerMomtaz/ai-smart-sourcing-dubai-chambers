@@ -23,6 +23,7 @@ function Layout() {
   };
 
   const navigation = [
+    { name: 'How It Works', href: '/guide', icon: '💡' },
     { name: 'Dashboard', href: '/', icon: '📊' },
     { name: 'Proposals', href: '/proposals', icon: '📝' },
     { name: 'Vendors', href: '/vendors', icon: '🏢' },
