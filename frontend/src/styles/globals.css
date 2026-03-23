@@ -95,3 +95,55 @@
     margin: -1.5rem;
   }
 }
+
+/* ─── Sidebar highlight for experience walkthrough ─── */
+.sidebar-highlight {
+  background: rgba(1, 103, 100, 0.12) !important;
+  border-left: 3px solid var(--color-teal) !important;
+  transition: all 0.5s ease-out;
+  animation: sidebarPulse 2s ease-in-out infinite;
+}
+
+@keyframes sidebarPulse {
+  0%, 100% { background: rgba(1, 103, 100, 0.12); }
+  50% { background: rgba(1, 103, 100, 0.22); }
+}
+
+/* Respect prefers-reduced-motion — static highlight only */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-highlight {
+    animation: none !important;
+  }
+}
+
+/* Tooltip pill next to highlighted sidebar item */
+.sidebar-highlight-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-teal);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 60;
+  animation: tooltipFadeIn 0.5s ease-out both;
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(-6px); }
+  to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-highlight-tooltip {
+    animation: none !important;
+    opacity: 1;
+  }
+}
