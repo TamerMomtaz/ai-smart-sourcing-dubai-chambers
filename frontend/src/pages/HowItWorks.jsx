@@ -1,551 +1,348 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import api from '../lib/api';
 
-/* ─── Animated counter hook ─── */
-function useCountUp(target, duration = 1200, start = true) {
-  const [value, setValue] = useState(0);
-  const rafRef = useRef(null);
-  const startRef = useRef(null);
+const STAGES = [
+  { id: 0, name: 'Welcome', sidebar: null },
+  { id: 1, name: 'Submit a Proposal', sidebar: 'Proposals' },
+  { id: 2, name: 'AI Evaluation', sidebar: 'Evaluations' },
+  { id: 3, name: 'Hallucination Shield', sidebar: 'Evaluations' },
+  { id: 4, name: 'DESC Compliance', sidebar: 'Compliance Audits' },
+  { id: 5, name: 'Market Intelligence', sidebar: 'Trend Analyses' },
+  { id: 6, name: 'Compare Proposals', sidebar: 'Compare' },
+  { id: 7, name: 'Dashboard', sidebar: 'Dashboard' },
+  { id: 8, name: 'Vendors', sidebar: 'Vendors' },
+  { id: 9, name: 'Documents', sidebar: 'Documents' },
+  { id: 10, name: 'Business Groups', sidebar: 'Business Groups' },
+  { id: 11, name: 'Users', sidebar: 'Users' },
+  { id: 12, name: '\u03C3I Transparency', sidebar: '\u03A3I Transparency' },
+  { id: 13, name: 'Finale', sidebar: null },
+];
 
-  useEffect(() => {
-    if (!start || target == null || target === 0) { setValue(0); return; }
-    const t = Number(target);
-    startRef.current = performance.now();
-    const animate = (now) => {
-      const elapsed = now - startRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(eased * t);
-      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
-      else setValue(t);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [target, duration, start]);
+const TOOLTIPS = {
+  1: 'Proposals \u2014 submit via PDF upload or manual form',
+  2: 'Evaluations \u2014 AI-powered scoring with full reasoning',
+  3: 'Evaluations \u2014 Shield verification inside each evaluation',
+  4: 'Compliance Audits \u2014 automated DESC framework assessment',
+  5: 'Trend Analyses \u2014 on-demand market intelligence with PDF export',
+  6: 'Compare \u2014 side-by-side decision-making tool',
+  7: 'Dashboard \u2014 live metrics with Impact Meter and Board Brief',
+  8: 'Vendors \u2014 profiles with DESC certification status',
+  9: 'Documents \u2014 source of truth powering AI accuracy',
+  10: 'Business Groups \u2014 sector-specific evaluation configuration',
+  11: 'Users \u2014 role-based access management',
+  12: '\u03A3I Transparency \u2014 full AI cost and environmental accountability',
+};
 
-  return value;
-}
-
-/* ─── Reduced motion detection ─── */
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const handler = (e) => setReduced(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+/* ─── Particle Field ─── */
+function ParticleField() {
+  const particles = useMemo(() => {
+    return Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: 1 + Math.random() * 2,
+      opacity: 0.15 + Math.random() * 0.35,
+      duration: 15 + Math.random() * 25,
+      delay: -(Math.random() * 40),
+      z: -100 + Math.random() * 200,
+    }));
   }, []);
-  return reduced;
-}
-
-/* ─── Pipeline SVG ─── */
-const STAGE_LABELS = ['Submit', 'Evaluate', 'Verify', 'Audit', 'Report'];
-
-function PipelineViz({ currentStage, onNodeClick, reducedMotion }) {
-  const nodeSpacing = 140;
-  const nodeR = 20;
-  const svgWidth = 4 * nodeSpacing + 2 * nodeR + 60;
-  const svgHeight = 60;
 
   return (
-    <div className="w-full overflow-x-auto pb-2">
-      <svg
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="mx-auto block"
-        style={{ minWidth: 600, maxWidth: 780 }}
-        aria-label="Pipeline stages"
-      >
-        {/* Connecting lines */}
-        {[0, 1, 2, 3].map((i) => {
-          const x1 = 30 + i * nodeSpacing + nodeR;
-          const x2 = 30 + (i + 1) * nodeSpacing - nodeR;
-          const active = currentStage > i + 1;
-          const animating = currentStage === i + 2 && !reducedMotion;
-          return (
-            <line
-              key={`line-${i}`}
-              x1={x1} y1={svgHeight / 2}
-              x2={x2} y2={svgHeight / 2}
-              stroke={active || animating ? '#0D9488' : '#334155'}
-              strokeWidth={2}
-              strokeDasharray={animating ? '6 4' : 'none'}
-              style={animating ? {
-                animation: 'lineDash 0.8s linear forwards',
-              } : {
-                transition: 'stroke 0.5s ease-out',
-              }}
-            />
-          );
-        })}
-        {/* Nodes */}
-        {STAGE_LABELS.map((label, i) => {
-          const cx = 30 + i * nodeSpacing;
-          const active = currentStage >= i + 1;
-          return (
-            <g
-              key={label}
-              onClick={() => onNodeClick(i + 1)}
-              style={{ cursor: 'pointer' }}
-              role="button"
-              aria-label={`Stage ${i + 1}: ${label}`}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && onNodeClick(i + 1)}
-            >
-              <circle
-                cx={cx} cy={svgHeight / 2} r={nodeR}
-                fill={active ? '#0D9488' : '#1E293B'}
-                stroke={active ? '#0D9488' : '#334155'}
-                strokeWidth={2}
-                style={{ transition: reducedMotion ? 'none' : 'fill 0.5s ease-out, stroke 0.5s ease-out' }}
-              />
-              <text
-                x={cx} y={svgHeight / 2 + 1}
-                textAnchor="middle" dominantBaseline="central"
-                fill="white" fontSize="13" fontWeight="bold"
-                style={{ pointerEvents: 'none', fontFamily: 'var(--font-body)' }}
-              >
-                {i + 1}
-              </text>
-              <text
-                x={cx} y={svgHeight / 2 + nodeR + 14}
-                textAnchor="middle"
-                fill={active ? '#0D9488' : '#94A3B8'}
-                fontSize="11"
-                style={{ pointerEvents: 'none', fontFamily: 'var(--font-body)', transition: 'fill 0.3s' }}
-              >
-                {label}
-              </text>
-            </g>
-          );
-        })}
-        {/* PDF icon before first node */}
-        {currentStage >= 1 && (
-          <g style={reducedMotion ? {} : { animation: 'fadeSlideRight 0.5s ease-out' }}>
-            <rect x={-6} y={svgHeight / 2 - 10} width={20} height={20} rx={3} fill="#1E293B" stroke="#0D9488" strokeWidth={1.5} />
-            <text x={4} y={svgHeight / 2 + 1} textAnchor="middle" dominantBaseline="central" fill="#0D9488" fontSize="7" fontWeight="bold" style={{ fontFamily: 'var(--font-mono)' }}>
-              PDF
-            </text>
-          </g>
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      perspective: '600px', zIndex: 1
+    }}>
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          left: `${p.left}%`,
+          bottom: '-5%',
+          width: `${p.size}px`,
+          height: `${p.size}px`,
+          borderRadius: '50%',
+          background: `rgba(255,255,255,${p.opacity})`,
+          animation: `particleDrift ${p.duration}s linear infinite`,
+          animationDelay: `${p.delay}s`,
+          transform: `translateZ(${p.z}px)`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Hero Section (Stage 0) ─── */
+function HeroSection({ onStart, impact, session }) {
+  const [phase, setPhase] = useState(0);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setPhase(5);
+      return;
+    }
+    const timers = [
+      setTimeout(() => setPhase(1), 1500),
+      setTimeout(() => setPhase(2), 3500),
+      setTimeout(() => setPhase(3), 5000),
+      setTimeout(() => setPhase(4), 7000),
+      setTimeout(() => setPhase(5), 9000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [reducedMotion]);
+
+  const show = (minPhase) => reducedMotion || phase >= minPhase;
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0F172A', display: 'flex',
+      flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      position: 'relative', overflow: 'hidden'
+    }}>
+      <ParticleField />
+
+      <div style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
+        {/* "AI Smart Sourcing" */}
+        <h1 style={{
+          fontSize: '42px', fontWeight: 500, color: '#fff',
+          letterSpacing: '2px', marginBottom: '16px',
+          opacity: show(1) ? 1 : 0,
+          transform: show(1) ? 'scale(1)' : 'scale(0.95)',
+          transition: 'opacity 2s ease-out, transform 2s ease-out'
+        }}>
+          AI Smart Sourcing
+        </h1>
+
+        {/* "powered by \u03C3I" */}
+        <div style={{
+          fontSize: '18px', color: '#94A3B8', marginBottom: '24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+        }}>
+          <span style={{
+            opacity: show(2) ? 1 : 0,
+            transition: 'opacity 1s ease-out'
+          }}>powered by</span>
+          <span style={{
+            fontSize: '28px', fontWeight: 700, color: '#0D9488',
+            opacity: show(3) ? 1 : 0,
+            transform: show(3) ? 'translateX(0)' : 'translateX(120px)',
+            transition: 'opacity 0.8s ease-out, transform 2s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}>\u03C3I</span>
+        </div>
+
+        {/* Subtitle */}
+        <p style={{
+          fontSize: '14px', color: '#64748B', marginBottom: '40px',
+          opacity: show(4) ? 1 : 0,
+          transition: 'opacity 1s ease-out'
+        }}>
+          Dubai Chambers | by Tamer Momtaz
+        </p>
+
+        {/* Live stats */}
+        {show(5) && impact && (
+          <div style={{
+            display: 'flex', gap: '24px', justifyContent: 'center',
+            marginBottom: '32px', fontSize: '13px', color: '#64748B',
+            opacity: show(5) ? 1 : 0, transition: 'opacity 1s ease-out',
+            flexWrap: 'wrap'
+          }}>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.summary?.total_proposals || '\u2014'}</span> proposals processed</span>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.time_saved?.total_hours || '\u2014'}</span> analyst-hours saved</span>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>${impact.ai_performance?.total_cost_usd || '\u2014'}</span> total AI cost</span>
+          </div>
         )}
-      </svg>
-    </div>
-  );
-}
 
-/* ─── Score Bar ─── */
-function ScoreBar({ label, score, delay, active, reducedMotion }) {
-  return (
-    <div className="flex items-center gap-3 text-sm" style={!reducedMotion && active ? { animation: `typeIn 0.5s ease-out ${delay}s both` } : {}}>
-      <span className="text-gray-400 w-24 text-right font-body text-xs">{label}</span>
-      <div className="flex-1 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-[#0D9488] rounded-full"
-          style={{
-            width: active ? `${score}%` : '0%',
-            transition: reducedMotion ? 'none' : `width 1.5s ease-out ${delay}s`,
-          }}
-        />
+        {/* CTA button */}
+        {show(5) && (
+          <div style={{ opacity: show(5) ? 1 : 0, transition: 'opacity 1s ease-out' }}>
+            <button onClick={onStart} style={{
+              background: 'transparent', border: '1.5px solid #0D9488',
+              color: '#0D9488', padding: '14px 40px', borderRadius: '8px',
+              fontSize: '16px', cursor: 'pointer', letterSpacing: '0.5px',
+              transition: 'background 0.3s, color 0.3s'
+            }}
+            onMouseEnter={e => { e.target.style.background = '#0D9488'; e.target.style.color = '#fff'; }}
+            onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#0D9488'; }}
+            >
+              Explore the platform \u2192
+            </button>
+            {!session && (
+              <p style={{ marginTop: '16px', fontSize: '13px', color: '#64748B' }}>
+                <a href="/login" style={{ color: '#0D9488', textDecoration: 'none' }}>
+                  Sign in to explore the full platform
+                </a>
+              </p>
+            )}
+          </div>
+        )}
       </div>
-      <span className="text-[#0D9488] font-mono text-xs w-8">{active ? score : 0}</span>
     </div>
   );
 }
 
-/* ─── Stage Card ─── */
-function StageCard({ stage, active, reducedMotion }) {
-  if (!active) return null;
-
-  const animClass = reducedMotion ? '' : 'animate-slideUp';
-
+/* ─── Stage Card (placeholder for Part 2) ─── */
+function StageCard({ stage }) {
+  const stageData = STAGES[stage];
   return (
-    <div className={`bg-[#1E293B]/80 backdrop-blur-sm rounded-xl border border-[#334155] p-6 sm:p-8 ${animClass}`}>
-      {stage}
+    <div style={{
+      maxWidth: '700px', width: '100%', padding: '40px',
+      animation: 'slideUp 0.6s ease-out'
+    }}>
+      <div style={{
+        width: '48px', height: '48px', borderRadius: '50%',
+        background: '#0D9488', color: '#fff', display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        fontSize: '18px', fontWeight: 500, marginBottom: '20px'
+      }}>
+        {stage}
+      </div>
+      <h2 style={{ fontSize: '24px', fontWeight: 500, marginBottom: '8px', color: '#fff' }}>
+        {stageData?.name}
+      </h2>
+      <p style={{ color: '#94A3B8' }}>Content coming in Part 2...</p>
     </div>
   );
 }
 
-/* ─── Claim item ─── */
-function ClaimItem({ icon, text, status, color, delay, active, reducedMotion }) {
-  const colors = { green: 'text-green-400', amber: 'text-amber-400', red: 'text-red-400' };
+/* ─── Navigation Bar ─── */
+function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLast }) {
   return (
-    <div
-      className="flex items-start gap-2 text-sm"
-      style={!reducedMotion && active ? { animation: `typeIn 0.4s ease-out ${delay}s both` } : {}}
-    >
-      <span className={colors[color]}>{icon}</span>
-      <span className="text-gray-300 font-body">{text}</span>
-      <span className={`ml-auto text-xs font-mono ${colors[color]}`}>{status}</span>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '16px 24px', borderTop: '0.5px solid rgba(255,255,255,0.1)',
+      background: 'rgba(15,23,42,0.5)', backdropFilter: 'none'
+    }}>
+      <button onClick={onBack} disabled={current <= 1}
+        style={{
+          background: 'none', border: 'none', color: current <= 1 ? '#334155' : '#94A3B8',
+          cursor: current <= 1 ? 'default' : 'pointer', fontSize: '14px', padding: '8px 16px'
+        }}>
+        \u2190 Back
+      </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {Array.from({ length: total }, (_, i) => (
+          <div key={i + 1} onClick={() => onJump(i + 1)}
+            style={{
+              width: current === i + 1 ? '24px' : '8px',
+              height: '8px',
+              borderRadius: '4px',
+              background: i + 1 <= current ? '#0D9488' : '#334155',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          />
+        ))}
+        <span style={{ color: '#64748B', fontSize: '12px', marginLeft: '12px' }}>
+          {current}/12 \u2014 {stageName}
+        </span>
+      </div>
+
+      <button onClick={onNext}
+        style={{
+          background: 'none', border: '1px solid #0D9488', color: '#0D9488',
+          cursor: 'pointer', fontSize: '14px', padding: '8px 20px', borderRadius: '6px'
+        }}>
+        {isLast ? 'See the reveal \u2192' : 'Next \u2192'}
+      </button>
+    </div>
+  );
+}
+
+/* ─── Finale Section (placeholder for Part 3) ─── */
+function FinaleSection({ impact, onReplay, onExplore }) {
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0F172A',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: '24px'
+    }}>
+      <p style={{ color: '#94A3B8' }}>Finale coming in Part 3...</p>
+      <button onClick={onReplay} style={{
+        background: 'none', border: '1px solid #334155', color: '#94A3B8',
+        padding: '8px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px'
+      }}>
+        Replay
+      </button>
     </div>
   );
 }
 
 /* ─── Main Component ─── */
-function HowItWorks() {
-  const [currentStage, setCurrentStage] = useState(0); // 0=hero, 1-5=stages, 6=reveal
-  const [impact, setImpact] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const reducedMotion = usePrefersReducedMotion();
-  const pipelineRef = useRef(null);
+export default function HowItWorks() {
+  const [currentStage, setCurrentStage] = useState(0);
+  const [impactData, setImpactData] = useState(null);
+  const navigate = useNavigate();
 
-  // Try to get auth context - will be null for public visitors
-  let user = null;
+  let session = null;
   try {
     const auth = useAuth();
-    user = auth?.user ?? null;
+    session = auth?.session ?? null;
   } catch {
-    // Outside AuthProvider (shouldn't happen, but safe fallback)
+    // Outside AuthProvider — public route
   }
 
-  // Fetch impact data
+  // Fetch live impact data for hero + finale
   useEffect(() => {
     api.get('/api/v1/dashboard/impact')
-      .then((res) => setImpact(res.data))
-      .catch(() => setImpact(null))
-      .finally(() => setLoading(false));
+      .then(res => setImpactData(res.data))
+      .catch(() => null);
   }, []);
 
-  // Auto-advance stages (5s per stage for judges to absorb content)
+  // Sidebar highlighting
   useEffect(() => {
-    if (reducedMotion) {
-      if (currentStage >= 1 && currentStage <= 5) setCurrentStage(6);
-      return;
+    const stage = STAGES[currentStage];
+    if (stage?.sidebar) {
+      window.dispatchEvent(new CustomEvent('highlight-sidebar', {
+        detail: { item: stage.sidebar, tooltip: TOOLTIPS[currentStage] || '' }
+      }));
     }
-    if (currentStage >= 1 && currentStage <= 5) {
-      const timer = setTimeout(() => setCurrentStage((prev) => prev + 1), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentStage, reducedMotion]);
-
-  // Sidebar highlighting — dispatch custom event for Layout to pick up
-  useEffect(() => {
-    const sidebarMap = {
-      1: 'Proposals',
-      2: 'Evaluations',
-      3: 'Evaluations',
-      4: 'Compliance Audits',
-      5: 'Trend Analyses',
+    return () => {
+      window.dispatchEvent(new CustomEvent('highlight-sidebar', {
+        detail: { item: null, tooltip: '' }
+      }));
     };
-    const target = sidebarMap[currentStage];
-    if (target) {
-      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: target } }));
-    }
   }, [currentStage]);
 
-  const startJourney = useCallback(() => {
-    setCurrentStage(1);
-    setTimeout(() => {
-      pipelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  }, []);
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 13));
+  const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
+  const jumpTo = (stage) => setCurrentStage(stage);
+  const startJourney = () => { setCurrentStage(1); };
 
-  const jumpToStage = useCallback((stage) => {
-    setCurrentStage(stage);
-  }, []);
+  // Render hero if stage 0
+  if (currentStage === 0) {
+    return <HeroSection onStart={startJourney} impact={impactData} session={session} />;
+  }
 
-  const replay = useCallback(() => {
-    setCurrentStage(0);
-  }, []);
+  // Render finale if stage 13
+  if (currentStage === 13) {
+    return (
+      <FinaleSection
+        impact={impactData}
+        onReplay={() => setCurrentStage(0)}
+        onExplore={() => navigate('/dashboard')}
+      />
+    );
+  }
 
-  // Impact numbers
-  const proposals = impact?.total_operations ?? 15;
-  const hoursSaved = impact?.total_hours_saved ?? 355;
-  const totalCost = impact?.total_cost ?? 2.15;
-  const totalMinutes = impact?.total_processing_minutes ?? 39;
-
-  // Animated reveal counters
-  const revealActive = currentStage === 6;
-  const animMinutes = useCountUp(totalMinutes, 2000, revealActive);
-  const animHours = useCountUp(hoursSaved, 2000, revealActive);
-  const animCost = useCountUp(totalCost, 2000, revealActive);
-
-  // Sidebar highlights for reveal and post-reveal stages
-  useEffect(() => {
-    if (currentStage !== 6) return;
-    // 1.5s initial pause before reveal starts, then highlight ΣI Transparency
-    const revealTimer = setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: 'ΣI Transparency' } }));
-    }, 1500);
-    // After reveal completes, briefly highlight Dashboard
-    const dashTimer = setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: 'Dashboard' } }));
-    }, 10000);
-    return () => { clearTimeout(revealTimer); clearTimeout(dashTimer); };
-  }, [currentStage]);
-
-  /* ─── STAGE CONTENT ─── */
-
-  const stageContent = {
-    1: (
-      <div className="space-y-4">
-        <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 1</p>
-        <p className="text-white font-heading text-xl sm:text-2xl">A vendor submits a proposal PDF</p>
-        <div className="space-y-2 mt-4">
-          <p className="text-[#0D9488] font-mono text-sm" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 0.3s both' }}>
-            CyberShield — Zero-Trust Endpoint Protection Suite
-          </p>
-          <p className="text-gray-400 font-body text-sm" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 0.8s both' }}>
-            AI extracted: <span className="text-[#0D9488]">Cybersecurity</span> | <span className="text-[#0D9488]">Production</span> | <span className="text-[#0D9488]">Dubai</span> | <span className="text-[#0D9488]">DESC Certified</span>
-          </p>
-        </div>
-      </div>
-    ),
-    2: (
-      <div className="space-y-4">
-        <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 2</p>
-        <p className="text-white font-heading text-xl sm:text-2xl">Multi-model AI evaluates across 4 dimensions</p>
-        <div className="space-y-3 mt-4">
-          <ScoreBar label="Relevance" score={92} delay={0.3} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Feasibility" score={88} delay={0.9} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Sector" score={95} delay={1.5} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Compliance" score={94} delay={2.1} active={currentStage >= 2} reducedMotion={reducedMotion} />
-        </div>
-        <p className="text-gray-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1.5s both' }}>
-          Composite: <span className="text-[#0D9488] font-mono font-medium">92.3</span> — evaluated in <span className="text-[#0D9488] font-mono">23 seconds</span>
-        </p>
-      </div>
-    ),
-    3: (
-      <div className="space-y-4">
-        <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 3</p>
-        <p className="text-white font-heading text-xl sm:text-2xl">Hallucination Shield verifies every AI claim</p>
-        <div className="space-y-2 mt-4">
-          <ClaimItem icon="✓" text={'"ISO 27001 certified"'} status="Grounded" color="green" delay={0.3} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="✓" text={'"12,000 endpoints protected"'} status="Grounded" color="green" delay={0.9} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="~" text={'"50+ professionals"'} status="Partial" color="amber" delay={1.5} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="✗" text={'"Dubai Police deployment"'} status="Ungrounded" color="red" delay={2.1} active={currentStage >= 3} reducedMotion={reducedMotion} />
-        </div>
-        <p className="text-gray-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1.5s both' }}>
-          Grounding score: <span className="text-[#0D9488] font-mono font-medium">61.4%</span> — 2 claims flagged for review
-        </p>
-      </div>
-    ),
-    4: (
-      <div className="space-y-4">
-        <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 4</p>
-        <p className="text-white font-heading text-xl sm:text-2xl">DESC compliance audit runs automatically</p>
-        <div className="flex flex-wrap gap-3 mt-4">
-          {[
-            { label: 'ISR V3', status: 'Pass', icon: '✓', color: 'border-green-500 text-green-400' },
-            { label: 'AI Security', status: 'Pass', icon: '✓', color: 'border-green-500 text-green-400' },
-            { label: 'CSP', status: 'Warning', icon: '⚠', color: 'border-amber-500 text-amber-400' },
-          ].map((badge, i) => (
-            <span
-              key={badge.label}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-mono ${badge.color} bg-[#0F172A]/50`}
-              style={reducedMotion ? {} : { animation: `typeIn 0.5s ease-out ${0.3 + i * 0.8}s both` }}
-            >
-              {badge.label}: {badge.status} {badge.icon}
-            </span>
-          ))}
-        </div>
-        <p className="text-amber-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1.5s both' }}>
-          Data residency: <span className="font-mono">Flagged</span> — vendor data outside UAE
-        </p>
-      </div>
-    ),
-    5: (
-      <div className="space-y-4">
-        <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 5</p>
-        <p className="text-white font-heading text-xl sm:text-2xl">Intelligence report generated</p>
-        <div
-          className="mt-4 bg-[#0F172A] rounded-lg border border-[#334155] p-5"
-          style={reducedMotion ? {} : { animation: 'typeIn 0.6s ease-out 0.3s both' }}
-        >
-          <p className="text-white font-heading text-base">Q1 2026 Smart Sourcing Report</p>
-          <p className="text-gray-400 font-body text-sm mt-1">15 proposals | 11 sectors | D33 aligned</p>
-        </div>
-        <p className="text-gray-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1s both' }}>
-          Executive Board Brief ready for download
-        </p>
-      </div>
-    ),
-  };
-
+  // Stages 1-12
   return (
-    <div className="bg-[#0F172A] min-h-screen text-white hiw-container">
-      <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(40px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes typeIn {
-          from { opacity: 0; transform: translateX(-8px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeSlideRight {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes lineDash {
-          from { stroke-dashoffset: 40; }
-          to { stroke-dashoffset: 0; }
-        }
-        @keyframes pulseGlow {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes countReveal {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideUp {
-          animation: slideUp 0.5s ease-out;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-slideUp,
-          [style*="animation"] {
-            animation: none !important;
-            opacity: 1 !important;
-            transform: none !important;
-          }
-        }
-      `}</style>
+    <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', background: '#0F172A' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        <StageCard stage={currentStage} />
+      </div>
 
-      {/* ─── HERO SECTION ─── */}
-      {currentStage === 0 && (
-        <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          {/* σI Symbol */}
-          <div
-            className="text-[#0D9488] text-7xl sm:text-8xl font-heading font-bold mb-6 select-none"
-            style={reducedMotion ? {} : { animation: 'pulseGlow 3s ease-in-out infinite' }}
-          >
-            &sigma;I
-          </div>
-
-          {/* Title */}
-          <h1 className="font-heading text-3xl sm:text-4xl text-white mb-3">
-            AI Smart Sourcing
-          </h1>
-          <p className="text-gray-400 font-body text-base sm:text-lg mb-10">
-            Watch the platform work.
-          </p>
-
-          {/* Start button */}
-          <button
-            onClick={startJourney}
-            className="px-8 py-3 bg-[#0D9488] text-white font-body font-medium rounded-lg hover:bg-[#0D9488]/90 transition-colors text-base"
-          >
-            Start the journey &rarr;
-          </button>
-
-          {/* Live stats */}
-          <p className="text-gray-500 font-mono text-xs mt-8">
-            {loading ? (
-              <span className="inline-block w-48 h-4 bg-[#1E293B] rounded animate-pulse" />
-            ) : (
-              <>
-                {proposals} proposals processed &middot; {Math.round(hoursSaved)} hours saved &middot; ${totalCost.toFixed(2)} total cost
-              </>
-            )}
-          </p>
-
-          {/* Auth-dependent link */}
-          {!user && (
-            <Link to="/login" className="text-[#0D9488] font-body text-sm mt-4 hover:underline">
-              Sign in to explore the full platform
-            </Link>
-          )}
-        </section>
-      )}
-
-      {/* ─── PIPELINE SECTION ─── */}
-      {currentStage >= 1 && (
-        <section ref={pipelineRef} className="min-h-screen px-4 sm:px-6 pt-12 pb-20 max-w-3xl mx-auto">
-          {/* Pipeline visualization */}
-          <div className="mb-10">
-            <PipelineViz
-              currentStage={currentStage}
-              onNodeClick={jumpToStage}
-              reducedMotion={reducedMotion}
-            />
-          </div>
-
-          {/* Stage cards */}
-          {currentStage >= 1 && currentStage <= 5 && (
-            <StageCard
-              key={currentStage}
-              stage={stageContent[currentStage]}
-              active={true}
-              reducedMotion={reducedMotion}
-            />
-          )}
-
-          {/* ─── REVEAL SECTION ─── */}
-          {currentStage === 6 && (
-            <div className="text-center space-y-6 mt-8">
-              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 1.5s both' }}>
-                <p className="text-white font-heading text-xl sm:text-2xl">
-                  All of this took <span className="text-[#0D9488] font-mono font-bold">{Math.round(animMinutes)} minutes</span> of AI time.
-                </p>
-              </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 3s both' }}>
-                <p className="text-white font-heading text-xl sm:text-2xl">
-                  Replacing <span className="text-[#0D9488] font-mono font-bold">{Math.round(animHours)} hours</span> of manual analysis.
-                </p>
-              </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 4.5s both' }}>
-                <p className="text-white font-heading text-xl sm:text-2xl">
-                  At a total cost of <span className="text-[#0D9488] font-mono font-bold">${animCost.toFixed(2)}</span>.
-                </p>
-              </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 6.5s both' }}>
-                <p className="text-[#0D9488] font-heading text-lg sm:text-xl mt-4">
-                  Added Intelligence — Awareness Implemented
-                </p>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-10" style={reducedMotion ? {} : { animation: 'fadeIn 0.8s ease-out 7.5s both' }}>
-                {user ? (
-                  <div>
-                    <p className="text-gray-400 font-body text-sm mb-6">Explore the platform</p>
-                    <div className="flex flex-wrap justify-center gap-4">
-                      <Link to="/dashboard" className="px-6 py-2.5 bg-[#1E293B] text-white font-body text-sm rounded-lg border border-[#334155] hover:border-[#0D9488] transition-colors">
-                        Dashboard
-                      </Link>
-                      <Link to="/proposals" className="px-6 py-2.5 bg-[#1E293B] text-white font-body text-sm rounded-lg border border-[#334155] hover:border-[#0D9488] transition-colors">
-                        Proposals
-                      </Link>
-                      <Link to="/compare" className="px-6 py-2.5 bg-[#1E293B] text-white font-body text-sm rounded-lg border border-[#334155] hover:border-[#0D9488] transition-colors">
-                        Compare
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <Link to="/login" className="inline-block px-8 py-3 bg-[#0D9488] text-white font-body font-medium rounded-lg hover:bg-[#0D9488]/90 transition-colors">
-                      Sign in to explore
-                    </Link>
-                  </div>
-                )}
-              </div>
-
-              {/* Replay */}
-              <button
-                onClick={replay}
-                className="text-gray-500 font-body text-sm mt-6 hover:text-[#0D9488] transition-colors"
-              >
-                ↻ Replay
-              </button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Attribution */}
-      <footer className="text-center pb-6 px-4">
-        <p className="text-gray-600 font-body text-xs">AI Smart Sourcing — Dubai Chambers</p>
-        <p className="text-gray-700 font-body text-xs mt-1">Created by Tamer Momtaz | Powered by &sigma;I</p>
-      </footer>
+      <NavigationBar
+        current={currentStage}
+        total={12}
+        stageName={STAGES[currentStage]?.name}
+        onNext={next}
+        onBack={back}
+        onJump={jumpTo}
+        isLast={currentStage === 12}
+      />
     </div>
   );
 }
-
-export default HowItWorks;

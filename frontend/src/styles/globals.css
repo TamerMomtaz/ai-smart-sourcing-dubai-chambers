@@ -96,6 +96,28 @@
   }
 }
 
+/* ─── HowItWorks animations ─── */
+@keyframes particleDrift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-110vh); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes particleDrift {
+    from { transform: translateY(0); }
+    to { transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { opacity: 1; transform: none; }
+    to { opacity: 1; transform: none; }
+  }
+}
+
 /* ─── Sidebar highlight for experience walkthrough ─── */
 .sidebar-highlight {
   background: rgba(1, 103, 100, 0.12) !important;
