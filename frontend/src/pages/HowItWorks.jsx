@@ -745,7 +745,7 @@ function FinaleSection({ impact, onReplay, onExplore, onBack }) {
             color: '#94A3B8', padding: '12px 28px', borderRadius: '8px',
             fontSize: '14px', cursor: 'pointer'
           }}>
-            Back
+            ← Back
           </button>
         </div>
       </div>
