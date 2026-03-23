@@ -27,6 +27,7 @@ function Layout() {
     { name: 'Proposals', href: '/proposals', icon: '📝' },
     { name: 'Vendors', href: '/vendors', icon: '🏢' },
     { name: 'Evaluations', href: '/evaluations', icon: '⭐' },
+    { name: 'Compare', href: '/compare', icon: '⚖️' },
     { name: 'Compliance Audits', href: '/compliance-audits', icon: '🔒' },
     { name: 'Documents', href: '/documents', icon: '📄' },
     { name: 'Business Groups', href: '/business-groups', icon: '🏛️' },
