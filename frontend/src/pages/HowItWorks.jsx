@@ -189,14 +189,14 @@ const STAGE_CONTENT = {
     title: "Submit a proposal",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          Vendors can <strong style={{color:'#e2e8f0'}}>upload a PDF</strong> and
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          Vendors can <strong style={{color:'#0F172A'}}>upload a PDF</strong> and
           AI extracts everything automatically — company info, technology type,
           sector, and maturity level. Or they can{' '}
-          <strong style={{color:'#e2e8f0'}}>fill in the details manually</strong> using
+          <strong style={{color:'#0F172A'}}>fill in the details manually</strong> using
           the submission form.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
           Vendor records are auto-created on first submission. Business group
           auto-assigned based on sector.
         </p>
@@ -218,9 +218,9 @@ const STAGE_CONTENT = {
     title: "AI evaluation — multi-model scoring",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           Each proposal is scored across 4 dimensions{' '}
-          <strong style={{color:'#e2e8f0'}}>in seconds</strong> — not hours, not days.
+          <strong style={{color:'#0F172A'}}>in seconds</strong> — not hours, not days.
           Multi-model AI (Claude, GPT-4o, Gemini) ensures no single-model bias.
           Full reasoning is provided for every score.
         </p>
@@ -233,8 +233,8 @@ const STAGE_CONTENT = {
             { label: 'Compliance', score: 94 },
           ].map((dim, i) => (
             <div key={dim.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ width: '120px', fontSize: '13px', color: '#94A3B8' }}>{dim.label}</span>
-              <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#1E293B' }}>
+              <span style={{ width: '120px', fontSize: '13px', color: '#475569' }}>{dim.label}</span>
+              <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#E2E8F0' }}>
                 <div style={{
                   height: '100%', borderRadius: '3px', background: '#0D9488',
                   width: `${dim.score}%`,
@@ -255,10 +255,10 @@ const STAGE_CONTENT = {
     title: "Hallucination Shield — can you trust the AI?",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          After every evaluation, a <strong style={{color:'#e2e8f0'}}>second AI pass</strong> verifies
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          After every evaluation, a <strong style={{color:'#0F172A'}}>second AI pass</strong> verifies
           every factual claim against the source document. A{' '}
-          <strong style={{color:'#e2e8f0'}}>different AI model</strong> independently
+          <strong style={{color:'#0F172A'}}>different AI model</strong> independently
           re-scores to detect anomalies. Claims are classified as:
         </p>
         {/* Visual: claim types */}
@@ -278,7 +278,7 @@ const STAGE_CONTENT = {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '12px', fontWeight: 600, flexShrink: 0
               }}>{claim.icon}</div>
-              <span style={{ fontSize: '13px', color: '#94A3B8' }}>{claim.text}</span>
+              <span style={{ fontSize: '13px', color: '#475569' }}>{claim.text}</span>
             </div>
           ))}
         </div>
@@ -290,12 +290,12 @@ const STAGE_CONTENT = {
     title: "DESC compliance — automated",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           Automated review against three DESC frameworks: ISR V3, AI Security
           Policy (covering the full lifecycle: design, develop, deploy, monitor,
           dispose), and Cloud Service Provider Standards.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
           Each control is checked individually with pass, fail, or warning status
           and supporting evidence. Data residency violations are flagged automatically.
         </p>
@@ -324,14 +324,14 @@ const STAGE_CONTENT = {
     title: "Market intelligence — generated on demand",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          From this page, you can <strong style={{color:'#e2e8f0'}}>generate AI-powered
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          From this page, you can <strong style={{color:'#0F172A'}}>generate AI-powered
           market intelligence reports</strong> covering any time period. The AI analyzes
           all evaluated proposals and produces sector breakdowns, technology trends,
           D33 alignment scores, and actionable recommendations.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
-          Reports can be <strong style={{color:'#e2e8f0'}}>exported as professional PDFs</strong> —
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
+          Reports can be <strong style={{color:'#0F172A'}}>exported as professional PDFs</strong> —
           ready for board meetings. One click to generate, one click to export.
         </p>
         {/* Visual: mini report card */}
@@ -339,7 +339,7 @@ const STAGE_CONTENT = {
           border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
           padding: '16px 20px', animation: 'slideUp 0.6s ease-out'
         }}>
-          <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
+          <div style={{ color: '#0F172A', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
             Smart Sourcing Report
           </div>
           <div style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.8 }}>
@@ -361,12 +361,12 @@ const STAGE_CONTENT = {
     title: "Compare proposals side by side",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           Select 2 or 3 proposals and compare everything in one view — evaluation
           scores, hallucination shield integrity, compliance status, and proposal
           details. The highest scorer per dimension is highlighted automatically.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
           The tool procurement officers actually need — no more switching between tabs.
         </p>
         {/* Visual: two mini columns */}
@@ -375,7 +375,7 @@ const STAGE_CONTENT = {
             border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
             padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out'
           }}>
-            <div style={{ fontSize: '13px', color: '#94A3B8' }}>Proposal A</div>
+            <div style={{ fontSize: '13px', color: '#475569' }}>Proposal A</div>
             <div style={{ fontSize: '24px', fontWeight: 500, color: '#0D9488', marginTop: '4px' }}>92.3</div>
             <span style={{
               fontSize: '10px', background: 'rgba(13,148,136,0.15)',
@@ -386,8 +386,8 @@ const STAGE_CONTENT = {
             border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px',
             padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out 0.2s both'
           }}>
-            <div style={{ fontSize: '13px', color: '#94A3B8' }}>Proposal B</div>
-            <div style={{ fontSize: '24px', fontWeight: 500, color: '#94A3B8', marginTop: '4px' }}>91.5</div>
+            <div style={{ fontSize: '13px', color: '#475569' }}>Proposal B</div>
+            <div style={{ fontSize: '24px', fontWeight: 500, color: '#475569', marginTop: '4px' }}>91.5</div>
           </div>
         </div>
       </div>
@@ -398,18 +398,18 @@ const STAGE_CONTENT = {
     title: "Your command center",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          The Dashboard shows <strong style={{color:'#e2e8f0'}}>live platform metrics</strong> —
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          The Dashboard shows <strong style={{color:'#0F172A'}}>live platform metrics</strong> —
           total proposals, evaluations completed, compliance audits, and average scores.
           All numbers update in real time as new proposals are processed.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          At the top: the <strong style={{color:'#e2e8f0'}}>σI Impact Meter</strong> —
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          At the top: the <strong style={{color:'#0F172A'}}>σI Impact Meter</strong> —
           a live Return on Time calculator showing analyst-hours saved, working days
           recovered, and total AI cost. With full methodology explaining every estimate.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
-          One click to generate the <strong style={{color:'#e2e8f0'}}>Executive Board
+        <p style={{ color: '#475569', lineHeight: 1.7 }}>
+          One click to generate the <strong style={{color:'#0F172A'}}>Executive Board
           Brief</strong> — a professional 3-page PDF report ready for leadership.
         </p>
       </div>
@@ -420,11 +420,11 @@ const STAGE_CONTENT = {
     title: "Know your vendors",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           Every vendor who submits a proposal gets a profile — company details,
           country of origin, DESC certification status, and complete submission history.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+        <p style={{ color: '#475569', lineHeight: 1.7 }}>
           From this page, you can review vendor backgrounds before evaluating
           their proposals.
         </p>
@@ -436,12 +436,12 @@ const STAGE_CONTENT = {
     title: "Central document library",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           Every document uploaded with a proposal — PDFs, presentations,
           spreadsheets — lives here in one searchable library.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
-          <strong style={{color:'#e2e8f0'}}>Why this matters:</strong> the AI reads
+        <p style={{ color: '#475569', lineHeight: 1.7 }}>
+          <strong style={{color:'#0F172A'}}>Why this matters:</strong> the AI reads
           these documents during evaluation and the Hallucination Shield verifies
           claims against them. The richer the document, the more accurate the AI
           assessment. Documents are the source of truth.
@@ -454,14 +454,14 @@ const STAGE_CONTENT = {
     title: "Organized by sector",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
-          From this page, you can <strong style={{color:'#e2e8f0'}}>view all sector
-          groups</strong> and <strong style={{color:'#e2e8f0'}}>configure how each
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+          From this page, you can <strong style={{color:'#0F172A'}}>view all sector
+          groups</strong> and <strong style={{color:'#0F172A'}}>configure how each
           sector is evaluated</strong>. Different sectors have different priorities —
           a cybersecurity proposal should weigh compliance higher, while an AgTech
           proposal should weigh feasibility higher.
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+        <p style={{ color: '#475569', lineHeight: 1.7 }}>
           Each group has its own evaluation weight configuration that shapes how
           the AI scores proposals in that sector.
         </p>
@@ -473,11 +473,11 @@ const STAGE_CONTENT = {
     title: "Role-based access",
     render: () => (
       <div>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
           From this page, you can manage platform users and assign roles.
           Different roles see different capabilities:
         </p>
-        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
           Vendors submit proposals. Analysts run evaluations. Compliance Officers
           conduct audits. Executives access board briefs and trend reports. Each
           role sees only what they need.
@@ -521,7 +521,7 @@ function StageCard({ stage }) {
       }}>
         {stage}
       </div>
-      <h2 style={{ fontSize: '24px', fontWeight: 500, marginBottom: '12px' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 500, marginBottom: '12px', color: '#1E293B' }}>
         {content.title}
       </h2>
       {content.render()}
@@ -661,7 +661,7 @@ function RevealSection({ impact }) {
 }
 
 /* ─── Finale Section ─── */
-function FinaleSection({ impact, onReplay, onExplore }) {
+function FinaleSection({ impact, onReplay, onExplore, onBack }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
@@ -715,13 +715,13 @@ function FinaleSection({ impact, onReplay, onExplore }) {
           AI Smart Sourcing — Dubai Chambers | by Tamer Momtaz
         </p>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '40px' }}>
           <button onClick={onExplore} style={{
             background: '#0D9488', border: 'none', color: '#fff',
             padding: '12px 28px', borderRadius: '8px', fontSize: '14px',
             cursor: 'pointer'
           }}>
-            Start exploring →
+            Start exploring
           </button>
 
           <button onClick={() => window.open('/board-brief', '_blank')} style={{
@@ -729,15 +729,23 @@ function FinaleSection({ impact, onReplay, onExplore }) {
             color: '#0D9488', padding: '12px 28px', borderRadius: '8px',
             fontSize: '14px', cursor: 'pointer'
           }}>
-            Generate Board Brief
+            Board Brief
           </button>
 
           <button onClick={onReplay} style={{
-            background: 'transparent', border: '1px solid #334155',
+            background: 'transparent', border: '1px solid #475569',
             color: '#94A3B8', padding: '12px 28px', borderRadius: '8px',
             fontSize: '14px', cursor: 'pointer'
           }}>
             Replay
+          </button>
+
+          <button onClick={onBack} style={{
+            background: 'transparent', border: '1px solid #475569',
+            color: '#94A3B8', padding: '12px 28px', borderRadius: '8px',
+            fontSize: '14px', cursor: 'pointer'
+          }}>
+            Back
           </button>
         </div>
       </div>
@@ -813,6 +821,7 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
+          onBack={() => setCurrentStage(12)}
         />
       </div>
     );
