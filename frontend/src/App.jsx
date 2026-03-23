@@ -29,6 +29,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import Settings from './pages/Settings';
 import UsersPage from './pages/UsersPage';
 import BoardBrief from './pages/BoardBrief';
+import ProposalCompare from './pages/ProposalCompare';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -77,6 +78,7 @@ function App() {
             <Route path="business-groups/:id/edit" element={<BusinessGroupForm />} />
             <Route path="evaluations" element={<EvaluationsList />} />
             <Route path="evaluations/:id" element={<EvaluationDetail />} />
+            <Route path="compare" element={<ProposalCompare />} />
             <Route path="compliance-audits" element={<ComplianceAuditsList />} />
             <Route path="compliance-audits/new" element={<ComplianceAuditForm />} />
             <Route path="compliance-audits/:id" element={<ComplianceAuditDetail />} />
