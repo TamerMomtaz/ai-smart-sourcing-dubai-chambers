@@ -315,9 +315,17 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-cream p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="font-heading text-4xl text-teal mb-2">Dashboard</h1>
-          <p className="text-ink/70">Welcome back, {user?.full_name || 'User'}</p>
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-4xl text-teal mb-2">Dashboard</h1>
+            <p className="text-ink/70">Welcome back, {user?.full_name || 'User'}</p>
+          </div>
+          <button
+            onClick={() => window.open('/board-brief', '_blank')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors shadow-md"
+          >
+            <span>📄</span> Executive Board Brief
+          </button>
         </header>
 
         {/* σI Impact Meter — ABOVE existing stats */}

@@ -28,6 +28,7 @@ import DESCCertifiedProvidersList from './pages/DESCCertifiedProvidersList';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import Settings from './pages/Settings';
 import UsersPage from './pages/UsersPage';
+import BoardBrief from './pages/BoardBrief';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -57,6 +58,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
