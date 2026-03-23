@@ -63,18 +63,7 @@ const HowItWorksStandalone = () => {
 };
 
 const HowItWorksPublicWrapper = () => (
-  <div className="min-h-screen bg-cream">
-    <header className="bg-white shadow-sm border-b border-ink/10 sticky top-0 z-30">
-      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 className="font-heading text-xl text-teal">AI Smart Sourcing</h1>
-        <a href="/login" className="text-sm font-body text-teal hover:underline">Sign In &rarr;</a>
-      </div>
-    </header>
-    <main className="p-6"><HowItWorks /></main>
-    <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
-      Created by Tamer Momtaz | Powered by &sigma;I (Added Intelligence)
-    </footer>
-  </div>
+  <HowItWorks />
 );
 
 function App() {
