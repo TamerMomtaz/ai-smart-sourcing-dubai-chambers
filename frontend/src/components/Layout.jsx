@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getErrorMessage } from '../lib/api';
 
+/* Tooltip text for sidebar highlights during the experience */
+const SIDEBAR_TOOLTIPS = {
+  'Proposals': 'This is where proposals are submitted',
+  'Evaluations': 'AI evaluations happen here',
+  'Compliance Audits': 'DESC compliance audits',
+  'Trend Analyses': 'Trend reports and board briefs',
+  'ΣI Transparency': 'Full AI transparency dashboard',
+  'Dashboard': 'The home base',
+};
+
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [highlightedItem, setHighlightedItem] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+
+  // Listen for sidebar highlight events from the HowItWorks experience
+  useEffect(() => {
+    const handler = (e) => {
+      setHighlightedItem(e.detail.item);
+      // Auto-clear after 4.5 seconds (just before next stage fires)
+      setTimeout(() => setHighlightedItem(null), 4500);
+    };
+    window.addEventListener('highlight-sidebar', handler);
+    return () => window.removeEventListener('highlight-sidebar', handler);
+  }, []);
 
   const handleSignOut = async () => {
     setLoggingOut(true);
@@ -65,22 +87,31 @@ function Layout() {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
             <ul className="space-y-2">
-              {navigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={item.href}
-                    className={`flex items-center px-4 py-2 rounded-lg font-body text-sm transition-colors ${
-                      isActive(item.href)
-                        ? 'bg-teal text-white'
-                        : 'text-ink hover:bg-teal/10 hover:text-teal'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <span className="mr-3">{item.icon}</span>
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+              {navigation.map((item) => {
+                const isHighlighted = highlightedItem === item.name;
+                return (
+                  <li key={item.name} className="relative">
+                    <Link
+                      to={item.href}
+                      className={`flex items-center px-4 py-2 rounded-lg font-body text-sm transition-colors ${
+                        isActive(item.href)
+                          ? 'bg-teal text-white'
+                          : 'text-ink hover:bg-teal/10 hover:text-teal'
+                      }${isHighlighted ? ' sidebar-highlight' : ''}`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <span className="mr-3">{item.icon}</span>
+                      {item.name}
+                    </Link>
+                    {/* Tooltip during experience */}
+                    {isHighlighted && SIDEBAR_TOOLTIPS[item.name] && (
+                      <span className="sidebar-highlight-tooltip">
+                        &larr; {SIDEBAR_TOOLTIPS[item.name]}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 

@@ -138,14 +138,14 @@ function PipelineViz({ currentStage, onNodeClick, reducedMotion }) {
 /* ─── Score Bar ─── */
 function ScoreBar({ label, score, delay, active, reducedMotion }) {
   return (
-    <div className="flex items-center gap-3 text-sm" style={!reducedMotion && active ? { animation: `typeIn 0.4s ease-out ${delay}s both` } : {}}>
+    <div className="flex items-center gap-3 text-sm" style={!reducedMotion && active ? { animation: `typeIn 0.5s ease-out ${delay}s both` } : {}}>
       <span className="text-gray-400 w-24 text-right font-body text-xs">{label}</span>
       <div className="flex-1 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
         <div
           className="h-full bg-[#0D9488] rounded-full"
           style={{
             width: active ? `${score}%` : '0%',
-            transition: reducedMotion ? 'none' : `width 0.8s ease-out ${delay}s`,
+            transition: reducedMotion ? 'none' : `width 1.5s ease-out ${delay}s`,
           }}
         />
       </div>
@@ -207,17 +207,32 @@ function HowItWorks() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Auto-advance stages
+  // Auto-advance stages (5s per stage for judges to absorb content)
   useEffect(() => {
     if (reducedMotion) {
       if (currentStage >= 1 && currentStage <= 5) setCurrentStage(6);
       return;
     }
     if (currentStage >= 1 && currentStage <= 5) {
-      const timer = setTimeout(() => setCurrentStage((prev) => prev + 1), 3000);
+      const timer = setTimeout(() => setCurrentStage((prev) => prev + 1), 5000);
       return () => clearTimeout(timer);
     }
   }, [currentStage, reducedMotion]);
+
+  // Sidebar highlighting — dispatch custom event for Layout to pick up
+  useEffect(() => {
+    const sidebarMap = {
+      1: 'Proposals',
+      2: 'Evaluations',
+      3: 'Evaluations',
+      4: 'Compliance Audits',
+      5: 'Trend Analyses',
+    };
+    const target = sidebarMap[currentStage];
+    if (target) {
+      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: target } }));
+    }
+  }, [currentStage]);
 
   const startJourney = useCallback(() => {
     setCurrentStage(1);
@@ -242,9 +257,23 @@ function HowItWorks() {
 
   // Animated reveal counters
   const revealActive = currentStage === 6;
-  const animMinutes = useCountUp(totalMinutes, 1500, revealActive);
-  const animHours = useCountUp(hoursSaved, 1500, revealActive);
-  const animCost = useCountUp(totalCost, 1500, revealActive);
+  const animMinutes = useCountUp(totalMinutes, 2000, revealActive);
+  const animHours = useCountUp(hoursSaved, 2000, revealActive);
+  const animCost = useCountUp(totalCost, 2000, revealActive);
+
+  // Sidebar highlights for reveal and post-reveal stages
+  useEffect(() => {
+    if (currentStage !== 6) return;
+    // 1.5s initial pause before reveal starts, then highlight ΣI Transparency
+    const revealTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: 'ΣI Transparency' } }));
+    }, 1500);
+    // After reveal completes, briefly highlight Dashboard
+    const dashTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('highlight-sidebar', { detail: { item: 'Dashboard' } }));
+    }, 10000);
+    return () => { clearTimeout(revealTimer); clearTimeout(dashTimer); };
+  }, [currentStage]);
 
   /* ─── STAGE CONTENT ─── */
 
@@ -268,10 +297,10 @@ function HowItWorks() {
         <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 2</p>
         <p className="text-white font-heading text-xl sm:text-2xl">Multi-model AI evaluates across 4 dimensions</p>
         <div className="space-y-3 mt-4">
-          <ScoreBar label="Relevance" score={92} delay={0.2} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Feasibility" score={88} delay={0.5} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Sector" score={95} delay={0.8} active={currentStage >= 2} reducedMotion={reducedMotion} />
-          <ScoreBar label="Compliance" score={94} delay={1.1} active={currentStage >= 2} reducedMotion={reducedMotion} />
+          <ScoreBar label="Relevance" score={92} delay={0.3} active={currentStage >= 2} reducedMotion={reducedMotion} />
+          <ScoreBar label="Feasibility" score={88} delay={0.9} active={currentStage >= 2} reducedMotion={reducedMotion} />
+          <ScoreBar label="Sector" score={95} delay={1.5} active={currentStage >= 2} reducedMotion={reducedMotion} />
+          <ScoreBar label="Compliance" score={94} delay={2.1} active={currentStage >= 2} reducedMotion={reducedMotion} />
         </div>
         <p className="text-gray-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1.5s both' }}>
           Composite: <span className="text-[#0D9488] font-mono font-medium">92.3</span> — evaluated in <span className="text-[#0D9488] font-mono">23 seconds</span>
@@ -283,10 +312,10 @@ function HowItWorks() {
         <p className="text-gray-400 font-body text-sm uppercase tracking-wider">Stage 3</p>
         <p className="text-white font-heading text-xl sm:text-2xl">Hallucination Shield verifies every AI claim</p>
         <div className="space-y-2 mt-4">
-          <ClaimItem icon="✓" text={'"ISO 27001 certified"'} status="Grounded" color="green" delay={0.2} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="✓" text={'"12,000 endpoints protected"'} status="Grounded" color="green" delay={0.5} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="~" text={'"50+ professionals"'} status="Partial" color="amber" delay={0.8} active={currentStage >= 3} reducedMotion={reducedMotion} />
-          <ClaimItem icon="✗" text={'"Dubai Police deployment"'} status="Ungrounded" color="red" delay={1.1} active={currentStage >= 3} reducedMotion={reducedMotion} />
+          <ClaimItem icon="✓" text={'"ISO 27001 certified"'} status="Grounded" color="green" delay={0.3} active={currentStage >= 3} reducedMotion={reducedMotion} />
+          <ClaimItem icon="✓" text={'"12,000 endpoints protected"'} status="Grounded" color="green" delay={0.9} active={currentStage >= 3} reducedMotion={reducedMotion} />
+          <ClaimItem icon="~" text={'"50+ professionals"'} status="Partial" color="amber" delay={1.5} active={currentStage >= 3} reducedMotion={reducedMotion} />
+          <ClaimItem icon="✗" text={'"Dubai Police deployment"'} status="Ungrounded" color="red" delay={2.1} active={currentStage >= 3} reducedMotion={reducedMotion} />
         </div>
         <p className="text-gray-400 font-body text-sm mt-4" style={reducedMotion ? {} : { animation: 'typeIn 0.5s ease-out 1.5s both' }}>
           Grounding score: <span className="text-[#0D9488] font-mono font-medium">61.4%</span> — 2 claims flagged for review
@@ -306,7 +335,7 @@ function HowItWorks() {
             <span
               key={badge.label}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-mono ${badge.color} bg-[#0F172A]/50`}
-              style={reducedMotion ? {} : { animation: `typeIn 0.4s ease-out ${0.3 + i * 0.4}s both` }}
+              style={reducedMotion ? {} : { animation: `typeIn 0.5s ease-out ${0.3 + i * 0.8}s both` }}
             >
               {badge.label}: {badge.status} {badge.icon}
             </span>
@@ -451,29 +480,29 @@ function HowItWorks() {
           {/* ─── REVEAL SECTION ─── */}
           {currentStage === 6 && (
             <div className="text-center space-y-6 mt-8">
-              <div style={reducedMotion ? {} : { animation: 'countReveal 0.8s ease-out 0.2s both' }}>
+              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 1.5s both' }}>
                 <p className="text-white font-heading text-xl sm:text-2xl">
                   All of this took <span className="text-[#0D9488] font-mono font-bold">{Math.round(animMinutes)} minutes</span> of AI time.
                 </p>
               </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 0.8s ease-out 1.2s both' }}>
+              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 3s both' }}>
                 <p className="text-white font-heading text-xl sm:text-2xl">
                   Replacing <span className="text-[#0D9488] font-mono font-bold">{Math.round(animHours)} hours</span> of manual analysis.
                 </p>
               </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 0.8s ease-out 2.2s both' }}>
+              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 4.5s both' }}>
                 <p className="text-white font-heading text-xl sm:text-2xl">
                   At a total cost of <span className="text-[#0D9488] font-mono font-bold">${animCost.toFixed(2)}</span>.
                 </p>
               </div>
-              <div style={reducedMotion ? {} : { animation: 'countReveal 0.8s ease-out 3.2s both' }}>
+              <div style={reducedMotion ? {} : { animation: 'countReveal 1s ease-out 6.5s both' }}>
                 <p className="text-[#0D9488] font-heading text-lg sm:text-xl mt-4">
                   Added Intelligence — Awareness Implemented
                 </p>
               </div>
 
               {/* CTA */}
-              <div className="pt-10" style={reducedMotion ? {} : { animation: 'fadeIn 0.8s ease-out 4s both' }}>
+              <div className="pt-10" style={reducedMotion ? {} : { animation: 'fadeIn 0.8s ease-out 7.5s both' }}>
                 {user ? (
                   <div>
                     <p className="text-gray-400 font-body text-sm mb-6">Explore the platform</p>
