@@ -182,11 +182,333 @@ function HeroSection({ onStart, impact, session }) {
   );
 }
 
-/* ─── Stage Card (placeholder for Part 2) ─── */
+/* ─── Stage Content (all 12 stages) ─── */
+const STAGE_CONTENT = {
+  1: {
+    title: "Submit a proposal",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Vendors can <strong style={{color:'#e2e8f0'}}>upload a PDF</strong> and
+          AI extracts everything automatically — company info, technology type,
+          sector, and maturity level. Or they can{' '}
+          <strong style={{color:'#e2e8f0'}}>fill in the details manually</strong> using
+          the submission form.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+          Vendor records are auto-created on first submission. Business group
+          auto-assigned based on sector.
+        </p>
+        {/* Visual: animated tags */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {['Cybersecurity', 'Production', 'Dubai', 'DESC Certified'].map((tag, i) => (
+            <span key={tag} style={{
+              background: 'rgba(13,148,136,0.15)', color: '#0D9488',
+              padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
+              animation: `slideUp 0.5s ease-out ${0.3 * i}s both`
+            }}>{tag}</span>
+          ))}
+        </div>
+      </div>
+    )
+  },
+
+  2: {
+    title: "AI evaluation — multi-model scoring",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Each proposal is scored across 4 dimensions{' '}
+          <strong style={{color:'#e2e8f0'}}>in seconds</strong> — not hours, not days.
+          Multi-model AI (Claude, GPT-4o, Gemini) ensures no single-model bias.
+          Full reasoning is provided for every score.
+        </p>
+        {/* Visual: score bars */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[
+            { label: 'Relevance', score: 92 },
+            { label: 'Feasibility', score: 88 },
+            { label: 'Sector Alignment', score: 95 },
+            { label: 'Compliance', score: 94 },
+          ].map((dim, i) => (
+            <div key={dim.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ width: '120px', fontSize: '13px', color: '#94A3B8' }}>{dim.label}</span>
+              <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#1E293B' }}>
+                <div style={{
+                  height: '100%', borderRadius: '3px', background: '#0D9488',
+                  width: `${dim.score}%`,
+                  animation: `barFill 1.5s ease-out ${0.3 * i}s both`
+                }} />
+              </div>
+              <span style={{ width: '32px', fontSize: '14px', color: '#0D9488', fontWeight: 500, textAlign: 'right' }}>
+                {dim.score}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  },
+
+  3: {
+    title: "Hallucination Shield — can you trust the AI?",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          After every evaluation, a <strong style={{color:'#e2e8f0'}}>second AI pass</strong> verifies
+          every factual claim against the source document. A{' '}
+          <strong style={{color:'#e2e8f0'}}>different AI model</strong> independently
+          re-scores to detect anomalies. Claims are classified as:
+        </p>
+        {/* Visual: claim types */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[
+            { icon: 'G', color: '#0D9488', bg: 'rgba(13,148,136,0.15)', text: 'Grounded — claim directly supported by proposal text' },
+            { icon: 'P', color: '#BA7517', bg: 'rgba(186,117,23,0.15)', text: 'Partial — related content exists but claim is extrapolated' },
+            { icon: 'U', color: '#A32D2D', bg: 'rgba(163,45,45,0.15)', text: 'Ungrounded — no supporting text found in the source' },
+          ].map((claim, i) => (
+            <div key={claim.icon} style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              animation: `slideUp 0.5s ease-out ${0.4 * i}s both`
+            }}>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: claim.bg, color: claim.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '12px', fontWeight: 600, flexShrink: 0
+              }}>{claim.icon}</div>
+              <span style={{ fontSize: '13px', color: '#94A3B8' }}>{claim.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  },
+
+  4: {
+    title: "DESC compliance — automated",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Automated review against three DESC frameworks: ISR V3, AI Security
+          Policy (covering the full lifecycle: design, develop, deploy, monitor,
+          dispose), and Cloud Service Provider Standards.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+          Each control is checked individually with pass, fail, or warning status
+          and supporting evidence. Data residency violations are flagged automatically.
+        </p>
+        {/* Visual: framework badges */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {[
+            { name: 'ISR V3', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
+            { name: 'AI Security', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
+            { name: 'CSP', status: 'Warning', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
+          ].map((fw, i) => (
+            <div key={fw.name} style={{
+              padding: '10px 20px', borderRadius: '8px', background: fw.bg,
+              animation: `slideUp 0.5s ease-out ${0.5 * i}s both`
+            }}>
+              <span style={{ color: fw.color, fontSize: '14px', fontWeight: 500 }}>
+                {fw.name}: {fw.status} {fw.status === 'Pass' ? '✓' : '⚠'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  },
+
+  5: {
+    title: "Market intelligence — generated on demand",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          From this page, you can <strong style={{color:'#e2e8f0'}}>generate AI-powered
+          market intelligence reports</strong> covering any time period. The AI analyzes
+          all evaluated proposals and produces sector breakdowns, technology trends,
+          D33 alignment scores, and actionable recommendations.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+          Reports can be <strong style={{color:'#e2e8f0'}}>exported as professional PDFs</strong> —
+          ready for board meetings. One click to generate, one click to export.
+        </p>
+        {/* Visual: mini report card */}
+        <div style={{
+          border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
+          padding: '16px 20px', animation: 'slideUp 0.6s ease-out'
+        }}>
+          <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
+            Smart Sourcing Report
+          </div>
+          <div style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.8 }}>
+            Sector breakdown • D33 alignment • Technology trends • 8 recommendations
+          </div>
+          <div style={{
+            marginTop: '12px', display: 'inline-block',
+            padding: '4px 12px', borderRadius: '4px',
+            background: 'rgba(13,148,136,0.15)', color: '#0D9488', fontSize: '12px'
+          }}>
+            Export PDF ↓
+          </div>
+        </div>
+      </div>
+    )
+  },
+
+  6: {
+    title: "Compare proposals side by side",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Select 2 or 3 proposals and compare everything in one view — evaluation
+          scores, hallucination shield integrity, compliance status, and proposal
+          details. The highest scorer per dimension is highlighted automatically.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+          The tool procurement officers actually need — no more switching between tabs.
+        </p>
+        {/* Visual: two mini columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{
+            border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
+            padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out'
+          }}>
+            <div style={{ fontSize: '13px', color: '#94A3B8' }}>Proposal A</div>
+            <div style={{ fontSize: '24px', fontWeight: 500, color: '#0D9488', marginTop: '4px' }}>92.3</div>
+            <span style={{
+              fontSize: '10px', background: 'rgba(13,148,136,0.15)',
+              color: '#0D9488', padding: '2px 8px', borderRadius: '10px'
+            }}>Best</span>
+          </div>
+          <div style={{
+            border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px',
+            padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out 0.2s both'
+          }}>
+            <div style={{ fontSize: '13px', color: '#94A3B8' }}>Proposal B</div>
+            <div style={{ fontSize: '24px', fontWeight: 500, color: '#94A3B8', marginTop: '4px' }}>91.5</div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+
+  7: {
+    title: "Your command center",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          The Dashboard shows <strong style={{color:'#e2e8f0'}}>live platform metrics</strong> —
+          total proposals, evaluations completed, compliance audits, and average scores.
+          All numbers update in real time as new proposals are processed.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          At the top: the <strong style={{color:'#e2e8f0'}}>σI Impact Meter</strong> —
+          a live Return on Time calculator showing analyst-hours saved, working days
+          recovered, and total AI cost. With full methodology explaining every estimate.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+          One click to generate the <strong style={{color:'#e2e8f0'}}>Executive Board
+          Brief</strong> — a professional 3-page PDF report ready for leadership.
+        </p>
+      </div>
+    )
+  },
+
+  8: {
+    title: "Know your vendors",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Every vendor who submits a proposal gets a profile — company details,
+          country of origin, DESC certification status, and complete submission history.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+          From this page, you can review vendor backgrounds before evaluating
+          their proposals.
+        </p>
+      </div>
+    )
+  },
+
+  9: {
+    title: "Central document library",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          Every document uploaded with a proposal — PDFs, presentations,
+          spreadsheets — lives here in one searchable library.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+          <strong style={{color:'#e2e8f0'}}>Why this matters:</strong> the AI reads
+          these documents during evaluation and the Hallucination Shield verifies
+          claims against them. The richer the document, the more accurate the AI
+          assessment. Documents are the source of truth.
+        </p>
+      </div>
+    )
+  },
+
+  10: {
+    title: "Organized by sector",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          From this page, you can <strong style={{color:'#e2e8f0'}}>view all sector
+          groups</strong> and <strong style={{color:'#e2e8f0'}}>configure how each
+          sector is evaluated</strong>. Different sectors have different priorities —
+          a cybersecurity proposal should weigh compliance higher, while an AgTech
+          proposal should weigh feasibility higher.
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7 }}>
+          Each group has its own evaluation weight configuration that shapes how
+          the AI scores proposals in that sector.
+        </p>
+      </div>
+    )
+  },
+
+  11: {
+    title: "Role-based access",
+    render: () => (
+      <div>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '20px' }}>
+          From this page, you can manage platform users and assign roles.
+          Different roles see different capabilities:
+        </p>
+        <p style={{ color: '#94A3B8', lineHeight: 1.7, marginBottom: '24px' }}>
+          Vendors submit proposals. Analysts run evaluations. Compliance Officers
+          conduct audits. Executives access board briefs and trend reports. Each
+          role sees only what they need.
+        </p>
+        {/* Visual: role badges */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {['Admin', 'Analyst', 'Compliance Officer', 'Vendor'].map((role, i) => (
+            <span key={role} style={{
+              padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
+              background: 'rgba(13,148,136,0.15)', color: '#0D9488',
+              animation: `slideUp 0.5s ease-out ${0.2 * i}s both`
+            }}>{role}</span>
+          ))}
+        </div>
+      </div>
+    )
+  },
+
+  12: {
+    title: "Every AI interaction — transparent",
+    render: () => null // Handled in Part 3 (Finale takes over at stage 12)
+  },
+};
+
+/* ─── Stage Card ─── */
 function StageCard({ stage }) {
-  const stageData = STAGES[stage];
+  // Each stage is a card with: number circle, title, description, visual element
+  const content = STAGE_CONTENT[stage];
+  if (!content) return null;
+
   return (
-    <div style={{
+    <div key={stage} style={{
       maxWidth: '700px', width: '100%', padding: '40px',
       animation: 'slideUp 0.6s ease-out'
     }}>
@@ -198,10 +520,10 @@ function StageCard({ stage }) {
       }}>
         {stage}
       </div>
-      <h2 style={{ fontSize: '24px', fontWeight: 500, marginBottom: '8px', color: '#fff' }}>
-        {stageData?.name}
+      <h2 style={{ fontSize: '24px', fontWeight: 500, marginBottom: '12px' }}>
+        {content.title}
       </h2>
-      <p style={{ color: '#94A3B8' }}>Content coming in Part 2...</p>
+      {content.render()}
     </div>
   );
 }
