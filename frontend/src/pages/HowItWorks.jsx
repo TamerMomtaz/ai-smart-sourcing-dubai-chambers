@@ -496,8 +496,8 @@ const STAGE_CONTENT = {
   },
 
   12: {
-    title: "Every AI interaction — transparent",
-    render: () => null // Handled in Part 3 (Finale takes over at stage 12)
+    title: "σI Transparency",
+    render: () => null // Handled by RevealSection in main render
   },
 };
 
@@ -573,21 +573,173 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
   );
 }
 
-/* ─── Finale Section (placeholder for Part 3) ─── */
+/* ─── Reveal Section (Stage 12) ─── */
+function RevealSection({ impact }) {
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase(1), 500),
+      setTimeout(() => setPhase(2), 2000),
+      setTimeout(() => setPhase(3), 5000),
+      setTimeout(() => setPhase(4), 6500),
+      setTimeout(() => setPhase(5), 8000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const show = (minPhase) => reducedMotion || phase >= minPhase;
+
+  const aiMinutes = impact?.ai_performance?.ai_minutes || '—';
+  const hoursSaved = impact?.time_saved?.total_hours || '—';
+  const totalCost = impact?.ai_performance?.total_cost_usd || '—';
+
+  return (
+    <div style={{ maxWidth: '600px', textAlign: 'center' }}>
+      {/* Description */}
+      <p style={{
+        color: '#94A3B8', fontSize: '16px', lineHeight: 1.8, marginBottom: '40px',
+        opacity: show(1) ? 1 : 0, transition: 'opacity 1s ease-out'
+      }}>
+        From this page, every single AI interaction is tracked — model used,
+        tokens consumed, cost in dollars, energy in kilowatt-hours, and carbon footprint.
+      </p>
+
+      {/* σI Definition */}
+      <div style={{
+        marginBottom: '48px',
+        opacity: show(2) ? 1 : 0,
+        transition: 'opacity 1.5s ease-out'
+      }}>
+        <p style={{
+          fontSize: '22px', fontWeight: 500, color: '#fff', marginBottom: '16px'
+        }}>
+          <span style={{ color: '#0D9488' }}>σI</span> — coined by Tee — stands for Added Intelligence.
+        </p>
+        <p style={{
+          color: '#94A3B8', fontSize: '15px', lineHeight: 1.8, maxWidth: '500px', margin: '0 auto'
+        }}>
+          Not artificial. Not a replacement. Added. Intelligence that augments
+          human judgment, with full transparency about what it costs, what it
+          consumes, and what it claims.
+        </p>
+      </div>
+
+      {/* Impact numbers */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+        <p style={{
+          fontSize: '20px', color: '#e2e8f0', fontWeight: 500,
+          opacity: show(3) ? 1 : 0,
+          transform: show(3) ? 'translateY(0)' : 'translateY(10px)',
+          transition: 'opacity 1s ease-out, transform 1s ease-out'
+        }}>
+          <span style={{ color: '#0D9488', fontFamily: 'monospace', fontSize: '24px' }}>{aiMinutes}</span> minutes of AI time.
+        </p>
+
+        <p style={{
+          fontSize: '20px', color: '#e2e8f0', fontWeight: 500,
+          opacity: show(4) ? 1 : 0,
+          transform: show(4) ? 'translateY(0)' : 'translateY(10px)',
+          transition: 'opacity 1s ease-out, transform 1s ease-out'
+        }}>
+          Replacing <span style={{ color: '#0D9488', fontFamily: 'monospace', fontSize: '24px' }}>{hoursSaved}</span> hours of manual analysis.
+        </p>
+
+        <p style={{
+          fontSize: '20px', color: '#e2e8f0', fontWeight: 500,
+          opacity: show(5) ? 1 : 0,
+          transform: show(5) ? 'translateY(0)' : 'translateY(10px)',
+          transition: 'opacity 1s ease-out, transform 1s ease-out'
+        }}>
+          At a total cost of <span style={{ color: '#0D9488', fontFamily: 'monospace', fontSize: '24px' }}>${totalCost}</span>.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Finale Section ─── */
 function FinaleSection({ impact, onReplay, onExplore }) {
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase(1), 1000),
+      setTimeout(() => setPhase(2), 2500),
+      setTimeout(() => setPhase(3), 4500),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const show = (minPhase) => reducedMotion || phase >= minPhase;
+
   return (
     <div style={{
-      minHeight: '100vh', background: '#0F172A',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: '24px'
+      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      position: 'relative', zIndex: 2, textAlign: 'center', padding: '2rem'
     }}>
-      <p style={{ color: '#94A3B8' }}>Finale coming in Part 3...</p>
-      <button onClick={onReplay} style={{
-        background: 'none', border: '1px solid #334155', color: '#94A3B8',
-        padding: '8px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px'
+      {/* Slogan 1 */}
+      <p style={{
+        fontSize: '28px', fontWeight: 500, color: '#0D9488',
+        marginBottom: '20px', letterSpacing: '1px',
+        opacity: show(1) ? 1 : 0,
+        transform: show(1) ? 'translateY(0)' : 'translateY(15px)',
+        transition: 'opacity 1.5s ease-out, transform 1.5s ease-out'
       }}>
-        Replay
-      </button>
+        For us, AI means Added Intelligence.
+      </p>
+
+      {/* Slogan 2 */}
+      <p style={{
+        fontSize: '28px', fontWeight: 500, color: '#0D9488',
+        marginBottom: '48px', letterSpacing: '1px',
+        opacity: show(2) ? 1 : 0,
+        transform: show(2) ? 'translateY(0)' : 'translateY(15px)',
+        transition: 'opacity 1.5s ease-out, transform 1.5s ease-out'
+      }}>
+        Awareness Implemented.
+      </p>
+
+      {/* Attribution + CTAs */}
+      <div style={{
+        opacity: show(3) ? 1 : 0,
+        transition: 'opacity 1s ease-out'
+      }}>
+        <p style={{
+          fontSize: '14px', color: '#64748B', marginBottom: '40px'
+        }}>
+          AI Smart Sourcing — Dubai Chambers | by Tamer Momtaz
+        </p>
+
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={onExplore} style={{
+            background: '#0D9488', border: 'none', color: '#fff',
+            padding: '12px 28px', borderRadius: '8px', fontSize: '14px',
+            cursor: 'pointer'
+          }}>
+            Start exploring →
+          </button>
+
+          <button onClick={() => window.open('/board-brief', '_blank')} style={{
+            background: 'transparent', border: '1px solid #0D9488',
+            color: '#0D9488', padding: '12px 28px', borderRadius: '8px',
+            fontSize: '14px', cursor: 'pointer'
+          }}>
+            Generate Board Brief
+          </button>
+
+          <button onClick={onReplay} style={{
+            background: 'transparent', border: '1px solid #334155',
+            color: '#94A3B8', padding: '12px 28px', borderRadius: '8px',
+            fontSize: '14px', cursor: 'pointer'
+          }}>
+            Replay
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -638,33 +790,40 @@ export default function HowItWorks() {
     return <HeroSection onStart={startJourney} impact={impactData} session={session} />;
   }
 
-  // Render finale if stage 13
-  if (currentStage === 13) {
+  // Stage 12 gets the dark cinematic treatment (like the hero)
+  if (currentStage === 12) {
     return (
-      <FinaleSection
-        impact={impactData}
-        onReplay={() => setCurrentStage(0)}
-        onExplore={() => navigate('/dashboard')}
-      />
+      <div style={{ minHeight: '100vh', background: '#0F172A', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <ParticleField />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, padding: '2rem' }}>
+          <RevealSection impact={impactData} />
+        </div>
+        <NavigationBar current={12} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+      </div>
     );
   }
 
-  // Stages 1-12
+  // Render finale if stage 13
+  if (currentStage === 13) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0F172A', position: 'relative', overflow: 'hidden' }}>
+        <ParticleField />
+        <FinaleSection
+          impact={impactData}
+          onReplay={() => setCurrentStage(0)}
+          onExplore={() => navigate('/dashboard')}
+        />
+      </div>
+    );
+  }
+
+  // Stages 1-11: normal content cards
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', background: '#0F172A' }}>
+    <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-
-      <NavigationBar
-        current={currentStage}
-        total={12}
-        stageName={STAGES[currentStage]?.name}
-        onNext={next}
-        onBack={back}
-        onJump={jumpTo}
-        isLast={currentStage === 12}
-      />
+      <NavigationBar current={currentStage} total={12} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 12} />
     </div>
   );
 }
