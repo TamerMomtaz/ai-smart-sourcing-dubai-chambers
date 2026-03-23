@@ -16,23 +16,23 @@ const STAGES = [
   { id: 9, name: 'Documents', sidebar: 'Documents' },
   { id: 10, name: 'Business Groups', sidebar: 'Business Groups' },
   { id: 11, name: 'Users', sidebar: 'Users' },
-  { id: 12, name: '\u03C3I Transparency', sidebar: '\u03A3I Transparency' },
+  { id: 12, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
   { id: 13, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
-  1: 'Proposals \u2014 submit via PDF upload or manual form',
-  2: 'Evaluations \u2014 AI-powered scoring with full reasoning',
-  3: 'Evaluations \u2014 Shield verification inside each evaluation',
-  4: 'Compliance Audits \u2014 automated DESC framework assessment',
-  5: 'Trend Analyses \u2014 on-demand market intelligence with PDF export',
-  6: 'Compare \u2014 side-by-side decision-making tool',
-  7: 'Dashboard \u2014 live metrics with Impact Meter and Board Brief',
-  8: 'Vendors \u2014 profiles with DESC certification status',
-  9: 'Documents \u2014 source of truth powering AI accuracy',
-  10: 'Business Groups \u2014 sector-specific evaluation configuration',
-  11: 'Users \u2014 role-based access management',
-  12: '\u03A3I Transparency \u2014 full AI cost and environmental accountability',
+  1: 'Proposals — submit via PDF upload or manual form',
+  2: 'Evaluations — AI-powered scoring with full reasoning',
+  3: 'Evaluations — Shield verification inside each evaluation',
+  4: 'Compliance Audits — automated DESC framework assessment',
+  5: 'Trend Analyses — on-demand market intelligence with PDF export',
+  6: 'Compare — side-by-side decision-making tool',
+  7: 'Dashboard — live metrics with Impact Meter and Board Brief',
+  8: 'Vendors — profiles with DESC certification status',
+  9: 'Documents — source of truth powering AI accuracy',
+  10: 'Business Groups — sector-specific evaluation configuration',
+  11: 'Users — role-based access management',
+  12: 'ΣI Transparency — full AI cost and environmental accountability',
 };
 
 /* ─── Particle Field ─── */
@@ -96,9 +96,10 @@ function HeroSection({ onStart, impact, session }) {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0F172A', display: 'flex',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: '#0F172A', display: 'flex',
       flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      position: 'relative', overflow: 'hidden'
+      overflow: 'hidden', zIndex: 50
     }}>
       <ParticleField />
 
@@ -114,7 +115,7 @@ function HeroSection({ onStart, impact, session }) {
           AI Smart Sourcing
         </h1>
 
-        {/* "powered by \u03C3I" */}
+        {/* "powered by σI" */}
         <div style={{
           fontSize: '18px', color: '#94A3B8', marginBottom: '24px',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
@@ -128,7 +129,7 @@ function HeroSection({ onStart, impact, session }) {
             opacity: show(3) ? 1 : 0,
             transform: show(3) ? 'translateX(0)' : 'translateX(120px)',
             transition: 'opacity 0.8s ease-out, transform 2s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}>\u03C3I</span>
+          }}>σI</span>
         </div>
 
         {/* Subtitle */}
@@ -148,9 +149,9 @@ function HeroSection({ onStart, impact, session }) {
             opacity: show(5) ? 1 : 0, transition: 'opacity 1s ease-out',
             flexWrap: 'wrap'
           }}>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.summary?.total_proposals || '\u2014'}</span> proposals processed</span>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.time_saved?.total_hours || '\u2014'}</span> analyst-hours saved</span>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>${impact.ai_performance?.total_cost_usd || '\u2014'}</span> total AI cost</span>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.summary?.total_proposals || '—'}</span> proposals processed</span>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.time_saved?.total_hours || '—'}</span> analyst-hours saved</span>
+            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>${impact.ai_performance?.total_cost_usd || '—'}</span> total AI cost</span>
           </div>
         )}
 
@@ -166,7 +167,7 @@ function HeroSection({ onStart, impact, session }) {
             onMouseEnter={e => { e.target.style.background = '#0D9488'; e.target.style.color = '#fff'; }}
             onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#0D9488'; }}
             >
-              Explore the platform \u2192
+              Explore the platform →
             </button>
             {!session && (
               <p style={{ marginTop: '16px', fontSize: '13px', color: '#64748B' }}>
@@ -541,7 +542,7 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
           background: 'none', border: 'none', color: current <= 1 ? '#334155' : '#94A3B8',
           cursor: current <= 1 ? 'default' : 'pointer', fontSize: '14px', padding: '8px 16px'
         }}>
-        \u2190 Back
+        ← Back
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -558,7 +559,7 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
           />
         ))}
         <span style={{ color: '#64748B', fontSize: '12px', marginLeft: '12px' }}>
-          {current}/12 \u2014 {stageName}
+          {current}/12 — {stageName}
         </span>
       </div>
 
@@ -567,7 +568,7 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
           background: 'none', border: '1px solid #0D9488', color: '#0D9488',
           cursor: 'pointer', fontSize: '14px', padding: '8px 20px', borderRadius: '6px'
         }}>
-        {isLast ? 'See the reveal \u2192' : 'Next \u2192'}
+        {isLast ? 'See the reveal →' : 'Next →'}
       </button>
     </div>
   );
@@ -689,7 +690,7 @@ function FinaleSection({ impact, onReplay, onExplore }) {
         transform: show(1) ? 'translateY(0)' : 'translateY(15px)',
         transition: 'opacity 1.5s ease-out, transform 1.5s ease-out'
       }}>
-        For us, AI means Added Intelligence.
+        For σI, AI means Added Intelligence.
       </p>
 
       {/* Slogan 2 */}
@@ -700,7 +701,7 @@ function FinaleSection({ impact, onReplay, onExplore }) {
         transform: show(2) ? 'translateY(0)' : 'translateY(15px)',
         transition: 'opacity 1.5s ease-out, transform 1.5s ease-out'
       }}>
-        Awareness Implemented.
+        AI means Awareness Implemented.
       </p>
 
       {/* Attribution + CTAs */}
@@ -793,7 +794,7 @@ export default function HowItWorks() {
   // Stage 12 gets the dark cinematic treatment (like the hero)
   if (currentStage === 12) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0F172A', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 50 }}>
         <ParticleField />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, padding: '2rem' }}>
           <RevealSection impact={impactData} />
@@ -806,7 +807,7 @@ export default function HowItWorks() {
   // Render finale if stage 13
   if (currentStage === 13) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0F172A', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', overflow: 'hidden', zIndex: 50 }}>
         <ParticleField />
         <FinaleSection
           impact={impactData}
