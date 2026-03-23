@@ -97,7 +97,7 @@ function HeroSection({ onStart, impact, session }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: '#0F172A', display: 'flex',
+      background: '#0F172A', minHeight: '100vh', display: 'flex',
       flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       overflow: 'hidden', zIndex: 50
     }}>
@@ -342,7 +342,7 @@ const STAGE_CONTENT = {
           <div style={{ color: '#0F172A', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
             Smart Sourcing Report
           </div>
-          <div style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.8 }}>
+          <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', lineHeight: 1.8 }}>
             Sector breakdown • D33 alignment • Technology trends • 8 recommendations
           </div>
           <div style={{
@@ -802,7 +802,7 @@ export default function HowItWorks() {
   // Stage 12 gets the dark cinematic treatment (like the hero)
   if (currentStage === 12) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 50 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', minHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 50 }}>
         <ParticleField />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, padding: '2rem' }}>
           <RevealSection impact={impactData} />
@@ -815,7 +815,7 @@ export default function HowItWorks() {
   // Render finale if stage 13
   if (currentStage === 13) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', overflow: 'hidden', zIndex: 50 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F172A', minHeight: '100vh', overflow: 'hidden', zIndex: 50 }}>
         <ParticleField />
         <FinaleSection
           impact={impactData}
