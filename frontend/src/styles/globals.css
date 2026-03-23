@@ -11,6 +11,10 @@
   --font-body: 'Outfit', sans-serif;
   --font-heading: 'Cormorant Garamond', serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748B;
+  --color-border-tertiary: #E2E8F0;
 }
 
 @layer base {
