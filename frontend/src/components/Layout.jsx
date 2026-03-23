@@ -3,31 +3,19 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getErrorMessage } from '../lib/api';
 
-/* Tooltip text for sidebar highlights during the experience */
-const SIDEBAR_TOOLTIPS = {
-  'Proposals': 'This is where proposals are submitted',
-  'Evaluations': 'AI evaluations happen here',
-  'Compliance Audits': 'DESC compliance audits',
-  'Trend Analyses': 'Trend reports and board briefs',
-  'ΣI Transparency': 'Full AI transparency dashboard',
-  'Dashboard': 'The home base',
-};
+/* Sidebar highlight state is now driven by HowItWorks custom events */
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [highlightedItem, setHighlightedItem] = useState(null);
+  const [sidebarHighlight, setSidebarHighlight] = useState({ item: null, tooltip: '' });
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
 
   // Listen for sidebar highlight events from the HowItWorks experience
   useEffect(() => {
-    const handler = (e) => {
-      setHighlightedItem(e.detail.item);
-      // Auto-clear after 4.5 seconds (just before next stage fires)
-      setTimeout(() => setHighlightedItem(null), 4500);
-    };
+    const handler = (e) => setSidebarHighlight(e.detail);
     window.addEventListener('highlight-sidebar', handler);
     return () => window.removeEventListener('highlight-sidebar', handler);
   }, []);
@@ -88,7 +76,7 @@ function Layout() {
           <nav className="flex-1 overflow-y-auto p-4">
             <ul className="space-y-2">
               {navigation.map((item) => {
-                const isHighlighted = highlightedItem === item.name;
+                const isHighlighted = sidebarHighlight.item === item.name;
                 return (
                   <li key={item.name} className="relative">
                     <Link
@@ -104,9 +92,9 @@ function Layout() {
                       {item.name}
                     </Link>
                     {/* Tooltip during experience */}
-                    {isHighlighted && SIDEBAR_TOOLTIPS[item.name] && (
+                    {isHighlighted && sidebarHighlight.tooltip && (
                       <span className="sidebar-highlight-tooltip">
-                        &larr; {SIDEBAR_TOOLTIPS[item.name]}
+                        &larr; {sidebarHighlight.tooltip}
                       </span>
                     )}
                   </li>
