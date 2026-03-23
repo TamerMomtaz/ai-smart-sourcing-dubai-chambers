@@ -30,6 +30,7 @@ import Settings from './pages/Settings';
 import UsersPage from './pages/UsersPage';
 import BoardBrief from './pages/BoardBrief';
 import ProposalCompare from './pages/ProposalCompare';
+import HowItWorks from './pages/HowItWorks';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -52,6 +53,30 @@ const PublicRoute = ({ children }) => {
   return !user ? children : <Navigate to="/dashboard" />;
 };
 
+const HowItWorksStandalone = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>;
+  // Authenticated users see it inside the Layout
+  if (user) return <Navigate to="/guide" replace />;
+  // Public visitors see a minimal wrapper
+  return <HowItWorksPublicWrapper />;
+};
+
+const HowItWorksPublicWrapper = () => (
+  <div className="min-h-screen bg-cream">
+    <header className="bg-white shadow-sm border-b border-ink/10 sticky top-0 z-30">
+      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <h1 className="font-heading text-xl text-teal">AI Smart Sourcing</h1>
+        <a href="/login" className="text-sm font-body text-teal hover:underline">Sign In &rarr;</a>
+      </div>
+    </header>
+    <main className="p-6"><HowItWorks /></main>
+    <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
+      Created by Tamer Momtaz | Powered by &sigma;I (Added Intelligence)
+    </footer>
+  </div>
+);
+
 function App() {
   return (
     <AuthProvider>
@@ -59,9 +84,11 @@ function App() {
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/how-it-works" element={<HowItWorksStandalone />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="guide" element={<HowItWorks />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
             <Route path="proposals" element={<ProposalsList />} />
