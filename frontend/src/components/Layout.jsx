@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useUserRole } from '../lib/userRole';
 import { getErrorMessage } from '../lib/api';
+import { ROLE_SIDEBAR_ITEMS, DEFAULT_ITEMS, ROUTE_TO_KEY } from '../config/rolePermissions';
 
 /* Sidebar highlight state is now driven by HowItWorks custom events */
 
@@ -12,6 +14,7 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const { role, roleLoading } = useUserRole();
 
   // Listen for sidebar highlight events from the HowItWorks experience
   useEffect(() => {
@@ -32,22 +35,43 @@ function Layout() {
     }
   };
 
-  const navigation = [
-    { name: 'How It Works', href: '/guide', icon: '💡' },
-    { name: 'Dashboard', href: '/', icon: '📊' },
-    { name: 'Proposals', href: '/proposals', icon: '📝' },
-    { name: 'Vendors', href: '/vendors', icon: '🏢' },
-    { name: 'Evaluations', href: '/evaluations', icon: '⭐' },
-    { name: 'Compare', href: '/compare', icon: '⚖️' },
-    { name: 'Compliance Audits', href: '/compliance-audits', icon: '🔒' },
-    { name: 'Documents', href: '/documents', icon: '📄' },
-    { name: 'Business Groups', href: '/business-groups', icon: '🏛️' },
-    { name: 'Trend Analyses', href: '/trend-analyses', icon: '📈' },
-    { name: 'ΣI Transparency', href: '/ai-interactions', icon: '🔬' },
-    { name: 'Users', href: '/users', icon: '👥' },
+  const allNavigation = [
+    { name: 'How It Works', href: '/guide', icon: '💡', key: 'how-it-works' },
+    { name: 'Dashboard', href: '/dashboard', icon: '📊', key: 'dashboard' },
+    { name: 'Proposals', href: '/proposals', icon: '📝', key: 'proposals' },
+    { name: 'Vendors', href: '/vendors', icon: '🏢', key: 'vendors' },
+    { name: 'Evaluations', href: '/evaluations', icon: '⭐', key: 'evaluations' },
+    { name: 'Compare', href: '/compare', icon: '⚖️', key: 'compare' },
+    { name: 'Compliance Audits', href: '/compliance-audits', icon: '🔒', key: 'compliance-audits' },
+    { name: 'Documents', href: '/documents', icon: '📄', key: 'documents' },
+    { name: 'Business Groups', href: '/business-groups', icon: '🏛️', key: 'business-groups' },
+    { name: 'Trend Analyses', href: '/trend-analyses', icon: '📈', key: 'trend-analyses' },
+    { name: 'ΣI Transparency', href: '/ai-interactions', icon: '🔬', key: 'ai-interactions' },
+    { name: 'Users', href: '/users', icon: '👥', key: 'users' },
+    { name: 'Executive Board Brief', href: '/board-brief', icon: '📄', key: 'board-brief' },
   ];
 
-  const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+  const allowedKeys = ROLE_SIDEBAR_ITEMS[role] || DEFAULT_ITEMS;
+  const navigation = useMemo(
+    () => roleLoading ? [] : allNavigation.filter(item => allowedKeys.includes(item.key)),
+    [role, roleLoading]
+  );
+
+  const isActive = (path) => location.pathname === path || (path !== '/' && path !== '/dashboard' && location.pathname.startsWith(path));
+
+  // Route protection: check if current path is allowed for user's role
+  const isRouteAllowed = useMemo(() => {
+    if (roleLoading) return true; // don't block while loading
+    const pathname = location.pathname;
+    // Find matching route key
+    const matchedKey = Object.entries(ROUTE_TO_KEY).find(([routePath]) => {
+      return pathname === routePath || pathname.startsWith(routePath + '/');
+    });
+    if (!matchedKey) return true; // unknown routes are allowed
+    const routeKey = matchedKey[1];
+    if (routeKey === null) return true; // explicitly always-allowed routes
+    return allowedKeys.includes(routeKey);
+  }, [location.pathname, allowedKeys, roleLoading]);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -149,7 +173,25 @@ function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="p-6"><Outlet /></main>
+        <main className="p-6">
+          {isRouteAllowed ? (
+            <Outlet />
+          ) : (
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <div className="bg-white rounded-xl shadow-md p-8 max-w-md text-center">
+                <div className="text-5xl mb-4">🔒</div>
+                <h2 className="font-heading text-2xl text-ink mb-2">Access Restricted</h2>
+                <p className="text-ink/60 mb-6">You don't have permission to view this page.</p>
+                <Link
+                  to="/dashboard"
+                  className="inline-block px-6 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
+              </div>
+            </div>
+          )}
+        </main>
 
         {/* Footer */}
         <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
