@@ -3,11 +3,11 @@ export const ROLE_SIDEBAR_ITEMS = {
     'how-it-works', 'dashboard', 'proposals', 'evaluations',
     'compliance-audits', 'vendors', 'documents', 'business-groups',
     'trend-analyses', 'ai-interactions', 'users', 'board-brief',
-    'compare'
+    'compare', 'api-docs'
   ],
   analyst: [
     'how-it-works', 'dashboard', 'proposals', 'evaluations',
-    'trend-analyses', 'ai-interactions', 'documents'
+    'trend-analyses', 'ai-interactions', 'documents', 'api-docs'
   ],
   compliance_officer: [
     'how-it-works', 'dashboard', 'compliance-audits', 'evaluations',
@@ -55,4 +55,6 @@ export const ROUTE_TO_KEY = {
   '/analytics': null,  // always allowed
   '/comments': null,   // always allowed
   '/desc-certified-providers': null, // always allowed
+  '/api-reference': 'api-docs',
+  '/api-docs': null, // always allowed (public route)
 };

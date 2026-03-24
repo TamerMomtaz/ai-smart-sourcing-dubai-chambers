@@ -49,6 +49,7 @@ function Layout() {
     { name: 'ΣI Transparency', href: '/ai-interactions', icon: '🔬', key: 'ai-interactions' },
     { name: 'Users', href: '/users', icon: '👥', key: 'users' },
     { name: 'Executive Board Brief', href: '/board-brief', icon: '📄', key: 'board-brief' },
+    { name: 'API Docs', href: '/api-reference', icon: '🔗', key: 'api-docs' },
   ];
 
   const allowedKeys = ROLE_SIDEBAR_ITEMS[role] || DEFAULT_ITEMS;

@@ -32,6 +32,7 @@ import UsersPage from './pages/UsersPage';
 import BoardBrief from './pages/BoardBrief';
 import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
+import ApiDocs from './pages/ApiDocs';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -67,6 +68,19 @@ const HowItWorksPublicWrapper = () => (
   <HowItWorks />
 );
 
+const ApiDocsStandalone = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>;
+  // Authenticated users see it inside the Layout
+  if (user) return <Navigate to="/api-reference" replace />;
+  // Public visitors see a minimal wrapper
+  return (
+    <div className="min-h-screen bg-[#FAF8F4] p-6">
+      <ApiDocs />
+    </div>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -75,6 +89,7 @@ function App() {
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/how-it-works" element={<HowItWorksStandalone />} />
+          <Route path="/api-docs" element={<ApiDocsStandalone />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
@@ -108,6 +123,7 @@ function App() {
             <Route path="desc-certified-providers" element={<DESCCertifiedProvidersList />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="api-reference" element={<ApiDocs />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
