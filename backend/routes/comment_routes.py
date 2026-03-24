@@ -1,10 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Path
-from models.comment import CommentCreate, CommentResponse
-from models.common import ErrorResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from auth import get_current_user
-from services.comment_service import create_comment
+from database import supabase
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,87 +10,239 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/proposals", tags=["comments"])
 
 
-@router.post(
-    "/{proposal_id}/comments",
-    response_model=CommentResponse,
-    status_code=201,
-    responses={
-        401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {"model": ErrorResponse, "description": "Proposal not found"},
-        422: {"model": ErrorResponse, "description": "Comment text too long"},
-        500: {"model": ErrorResponse, "description": "Internal server error"},
-    },
+@router.get(
+    "/comment-counts",
+    status_code=200,
 )
-async def add_comment_to_proposal(
-    proposal_id: UUID = Path(..., description="Proposal UUID"),
-    payload: CommentCreate = ...,
+async def get_comment_counts(
+    proposal_ids: str = Query(..., description="Comma-separated proposal UUIDs"),
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Add a comment to a proposal.
-
-    - **proposal_id**: UUID of the proposal to comment on
-    - **comment_text**: Comment content (max 2000 characters)
-    - **visibility**: Comment visibility - 'internal' (default) or 'vendor_visible'
-
-    Requires authentication. Analysts, business group leads, compliance officers, and executives can comment.
-    Comments are linked to the authenticated user.
-    """
+    """Return comment counts for a list of proposal IDs."""
     try:
-        user_id = UUID(current_user["id"])
-        user_role = current_user.get("role", "")
+        ids = [pid.strip() for pid in proposal_ids.split(",") if pid.strip()]
+        if not ids:
+            return {"counts": {}}
 
-        # Validate role permissions for commenting
-        allowed_roles = ["analyst", "business_group_lead", "compliance_officer", "executive", "admin"]
-        if user_role not in allowed_roles:
-            logger.warning(f"User {user_id} with role {user_role} attempted to comment on proposal {proposal_id}")
-            raise HTTPException(
-                status_code=403,
-                detail={"error": "Forbidden", "detail": "Insufficient permissions to add comments", "code": 403},
-            )
-
-        # Validate comment text length
-        if len(payload.comment_text) > 2000:
-            raise HTTPException(
-                status_code=422,
-                detail={"error": "Validation Error", "detail": "Comment text exceeds 2000 characters", "code": 422},
-            )
-
-        # Create comment
-        comment = create_comment(
-            user_id=user_id,
-            proposal_id=proposal_id,
-            comment_text=payload.comment_text.strip(),
-            visibility=payload.visibility,
+        response = (
+            supabase.table("chamber_comments")
+            .select("proposal_id", count="exact")
+            .in_("proposal_id", ids)
+            .execute()
         )
 
-        if not comment:
-            logger.error(f"Failed to create comment for proposal {proposal_id} by user {user_id}")
+        # Count per proposal
+        counts = {}
+        for row in response.data or []:
+            pid = row["proposal_id"]
+            counts[pid] = counts.get(pid, 0) + 1
+
+        return {"counts": counts}
+    except Exception as e:
+        logger.error(f"Failed to get comment counts: {e}")
+        raise HTTPException(status_code=500, detail={"error": "Internal server error", "detail": str(e), "code": 500})
+
+
+@router.get(
+    "/{proposal_id}/comments",
+    status_code=200,
+)
+async def list_proposal_comments(
+    proposal_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
+):
+    """List comments for a proposal with user info (full_name, role)."""
+    try:
+        # Verify proposal exists
+        proposal_response = (
+            supabase.table("chamber_proposals")
+            .select("id, submitter_id")
+            .eq("id", str(proposal_id))
+            .maybe_single()
+            .execute()
+        )
+        if not proposal_response.data:
             raise HTTPException(
                 status_code=404,
-                detail={"error": "Not Found", "detail": "Proposal not found or access denied", "code": 404},
+                detail={"error": "Not Found", "detail": f"Proposal {proposal_id} not found", "code": 404},
             )
 
-        return CommentResponse(
-            comment_id=UUID(comment["id"]),
-            proposal_id=UUID(comment["proposal_id"]),
-            user_id=UUID(comment["user_id"]),
-            comment_text=comment["comment_text"],
-            created_at=comment["created_at"],
-            visibility=comment["visibility"],
+        proposal = proposal_response.data
+
+        # Build query — join chamber_users for name + role
+        offset = (page - 1) * page_size
+        query = (
+            supabase.table("chamber_comments")
+            .select("id, proposal_id, user_id, comment_text, visibility, created_at, updated_at, chamber_users!inner(full_name, role)", count="exact")
+            .eq("proposal_id", str(proposal_id))
         )
+
+        # Vendors only see vendor_visible comments
+        user_role = current_user.get("role", "vendor")
+        if user_role == "vendor":
+            if str(proposal["submitter_id"]) != str(current_user["id"]):
+                raise HTTPException(
+                    status_code=403,
+                    detail={"error": "Forbidden", "detail": "Vendors can only view comments on their own proposals", "code": 403},
+                )
+            query = query.eq("visibility", "vendor_visible")
+
+        response = query.order("created_at", desc=True).range(offset, offset + page_size - 1).execute()
+
+        total = response.count if response.count is not None else 0
+        total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+
+        comments = []
+        for c in response.data or []:
+            user_info = c.get("chamber_users", {})
+            comments.append({
+                "id": c["id"],
+                "proposal_id": c["proposal_id"],
+                "user_id": c["user_id"],
+                "user_name": user_info.get("full_name", "Unknown"),
+                "user_role": user_info.get("role", "vendor"),
+                "comment_text": c["comment_text"],
+                "visibility": c["visibility"],
+                "created_at": c["created_at"],
+            })
+
+        return {
+            "comments": comments,
+            "pagination": {"total": total, "page": page, "page_size": page_size, "total_pages": total_pages},
+        }
 
     except HTTPException:
         raise
-    except ValueError as ve:
-        logger.error(f"Value error creating comment: {str(ve)}")
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "Validation Error", "detail": str(ve), "code": 422},
-        )
     except Exception as e:
-        logger.exception(f"Unexpected error creating comment for proposal {proposal_id}: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail={"error": "Internal Server Error", "detail": "Failed to create comment", "code": 500},
+        logger.error(f"Failed to list comments: {e}")
+        raise HTTPException(status_code=500, detail={"error": "Internal server error", "detail": str(e), "code": 500})
+
+
+@router.post(
+    "/{proposal_id}/comments",
+    status_code=201,
+)
+async def create_proposal_comment(
+    proposal_id: UUID,
+    payload: dict,
+    current_user: dict = Depends(get_current_user),
+):
+    """Create a comment on a proposal. Returns created comment with user info."""
+    try:
+        comment_text = (payload.get("content") or payload.get("comment_text") or "").strip()
+        if not comment_text:
+            raise HTTPException(status_code=422, detail={"error": "Validation Error", "detail": "Comment text is required", "code": 422})
+        if len(comment_text) > 2000:
+            raise HTTPException(status_code=422, detail={"error": "Validation Error", "detail": "Comment text exceeds 2000 characters", "code": 422})
+
+        visibility = payload.get("visibility", "internal")
+        if visibility not in ("internal", "vendor_visible"):
+            visibility = "internal"
+
+        # Verify proposal exists
+        proposal_response = (
+            supabase.table("chamber_proposals")
+            .select("id, submitter_id")
+            .eq("id", str(proposal_id))
+            .maybe_single()
+            .execute()
         )
+        if not proposal_response.data:
+            raise HTTPException(status_code=404, detail={"error": "Not Found", "detail": f"Proposal {proposal_id} not found", "code": 404})
+
+        proposal = proposal_response.data
+        user_id = str(current_user["id"])
+        user_role = current_user.get("role", "vendor")
+
+        # Role-based access: vendors can only comment on own proposals
+        allowed_roles = ["analyst", "business_group_lead", "compliance_officer", "executive", "admin"]
+        if user_role == "vendor":
+            if str(proposal["submitter_id"]) != user_id:
+                raise HTTPException(status_code=403, detail={"error": "Forbidden", "detail": "Vendors can only comment on their own proposals", "code": 403})
+        elif user_role not in allowed_roles:
+            raise HTTPException(status_code=403, detail={"error": "Forbidden", "detail": "Insufficient permissions to add comments", "code": 403})
+
+        # Insert comment
+        from datetime import datetime, timezone
+        comment_data = {
+            "proposal_id": str(proposal_id),
+            "user_id": user_id,
+            "comment_text": comment_text,
+            "visibility": visibility,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        result = supabase.table("chamber_comments").insert(comment_data).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=500, detail={"error": "Internal server error", "detail": "Failed to create comment", "code": 500})
+
+        created = result.data[0]
+
+        # Get user full_name + role for the response
+        user_response = (
+            supabase.table("chamber_users")
+            .select("full_name, role")
+            .eq("id", user_id)
+            .maybe_single()
+            .execute()
+        )
+        user_info = user_response.data if user_response.data else {}
+
+        return {
+            "id": created["id"],
+            "proposal_id": created["proposal_id"],
+            "user_id": created["user_id"],
+            "user_name": user_info.get("full_name", "Unknown"),
+            "user_role": user_info.get("role", user_role),
+            "comment_text": created["comment_text"],
+            "visibility": created["visibility"],
+            "created_at": created["created_at"],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create comment: {e}")
+        raise HTTPException(status_code=500, detail={"error": "Internal server error", "detail": str(e), "code": 500})
+
+
+@router.delete(
+    "/{proposal_id}/comments/{comment_id}",
+    status_code=204,
+)
+async def delete_proposal_comment(
+    proposal_id: UUID,
+    comment_id: UUID,
+    current_user: dict = Depends(get_current_user),
+):
+    """Delete a comment. Only the author or admin can delete."""
+    try:
+        # Fetch comment
+        comment_response = (
+            supabase.table("chamber_comments")
+            .select("id, user_id, proposal_id")
+            .eq("id", str(comment_id))
+            .eq("proposal_id", str(proposal_id))
+            .maybe_single()
+            .execute()
+        )
+
+        if not comment_response.data:
+            raise HTTPException(status_code=404, detail={"error": "Not Found", "detail": f"Comment {comment_id} not found", "code": 404})
+
+        comment = comment_response.data
+
+        # Only author or admin can delete
+        if str(comment["user_id"]) != str(current_user["id"]) and current_user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail={"error": "Forbidden", "detail": "You can only delete your own comments", "code": 403})
+
+        supabase.table("chamber_comments").delete().eq("id", str(comment_id)).execute()
+        return None
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete comment: {e}")
+        raise HTTPException(status_code=500, detail={"error": "Internal server error", "detail": str(e), "code": 500})

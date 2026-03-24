@@ -93,6 +93,7 @@ const ProposalsList = () => {
   const [evaluatingId, setEvaluatingId] = useState(null);
   const [auditingId, setAuditingId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [commentCounts, setCommentCounts] = useState({});
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     sector: searchParams.get('sector') || '',
@@ -133,8 +134,20 @@ const ProposalsList = () => {
       if (filters.status) params.append('status', filters.status);
       if (filters.sector) params.append('sector', filters.sector);
       const res = await api.get(`/api/v1/proposals?${params.toString()}`);
-      setProposals(res.data.proposals || []);
+      const proposalsList = res.data.proposals || [];
+      setProposals(proposalsList);
       setPagination(res.data.pagination);
+
+      // Fetch comment counts for visible proposals
+      if (proposalsList.length > 0) {
+        try {
+          const ids = proposalsList.map((p) => p.id).join(',');
+          const countsRes = await api.get(`/api/v1/proposals/comment-counts?proposal_ids=${ids}`);
+          setCommentCounts(countsRes.data.counts || {});
+        } catch {
+          // Non-critical — comment counts are cosmetic
+        }
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -369,6 +382,11 @@ const ProposalsList = () => {
                         <Link to={`/proposals/${p.id}`} className="text-[#3B82F6] hover:text-blue-300 font-medium">
                           {p.title}
                         </Link>
+                        {commentCounts[p.id] > 0 && (
+                          <span className="ml-2 inline-flex items-center gap-1 bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded-full text-xs">
+                            <span>💬</span> {commentCounts[p.id]}
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 text-gray-300 capitalize">{p.sector}</td>
                       <td className="p-4">

@@ -455,6 +455,163 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
   );
 };
 
+const ROLE_BADGE_STYLES = {
+  admin: 'bg-red-500/20 text-red-400 border-red-500/30',
+  analyst: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  compliance_officer: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  vendor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  executive: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  business_group_lead: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+};
+
+const ROLE_LABELS = {
+  admin: 'Admin',
+  analyst: 'Analyst',
+  compliance_officer: 'Compliance',
+  vendor: 'Vendor',
+  executive: 'Executive',
+  business_group_lead: 'BG Lead',
+};
+
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return '';
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return 'just now';
+  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+  if (diffHr < 24) return `${diffHr} hour${diffHr !== 1 ? 's' : ''} ago`;
+  if (diffDay === 1) return 'yesterday';
+  if (diffDay < 30) return `${diffDay} days ago`;
+  return date.toLocaleDateString();
+};
+
+const CommentsSection = ({ proposalId, userRole, currentUserId, onToast }) => {
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentText, setCommentText] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      setCommentsLoading(true);
+      const { data } = await api.get(`/api/v1/proposals/${proposalId}/comments`);
+      setComments(data.comments || []);
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setCommentsLoading(false);
+    }
+  }, [proposalId, onToast]);
+
+  useEffect(() => { fetchComments(); }, [fetchComments]);
+
+  const handlePost = async () => {
+    if (!commentText.trim()) return;
+    try {
+      setPosting(true);
+      const { data } = await api.post(`/api/v1/proposals/${proposalId}/comments`, {
+        content: commentText.trim(),
+      });
+      setComments((prev) => [data, ...prev]);
+      setCommentText('');
+      onToast({ message: 'Comment posted', type: 'success' });
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleDelete = async (commentId) => {
+    if (!window.confirm('Delete this comment?')) return;
+    try {
+      setDeletingId(commentId);
+      await api.delete(`/api/v1/proposals/${proposalId}/comments/${commentId}`);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      onToast({ message: 'Comment deleted', type: 'success' });
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const canDelete = (comment) => {
+    return String(comment.user_id) === String(currentUserId) || userRole === 'admin';
+  };
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Comments</h3>
+
+      {/* Comment Input */}
+      <div className="mb-6">
+        <textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="Share your assessment of this proposal..."
+          rows={3}
+          maxLength={2000}
+          className="w-full bg-[#0F172A] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none placeholder-gray-500"
+        />
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-gray-500 text-xs">{commentText.length}/2000</span>
+          <button
+            onClick={handlePost}
+            disabled={posting || !commentText.trim()}
+            className="bg-[#0D9488] hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 transition-colors"
+          >
+            {posting ? 'Posting...' : 'Post Comment'}
+          </button>
+        </div>
+      </div>
+
+      {/* Separator */}
+      <div className="border-t border-gray-700 mb-4" />
+
+      {/* Comment List */}
+      {commentsLoading ? (
+        <p className="text-gray-400 text-sm">Loading comments...</p>
+      ) : comments.length === 0 ? (
+        <p className="text-gray-500 text-sm">No comments yet. Be the first to share your assessment.</p>
+      ) : (
+        <div className="space-y-3">
+          {comments.map((c) => (
+            <div key={c.id} className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-medium text-sm">{c.user_name || 'Unknown'}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${ROLE_BADGE_STYLES[c.user_role] || ROLE_BADGE_STYLES.vendor}`}>
+                    {ROLE_LABELS[c.user_role] || c.user_role}
+                  </span>
+                  <span className="text-gray-500 text-xs">{formatRelativeTime(c.created_at)}</span>
+                </div>
+                {canDelete(c) && (
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    disabled={deletingId === c.id}
+                    className="text-red-400 hover:text-red-300 text-xs font-medium disabled:opacity-50"
+                  >
+                    {deletingId === c.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                )}
+              </div>
+              <p className="text-gray-300 text-sm whitespace-pre-wrap">{c.comment_text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProposalDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -465,12 +622,14 @@ const ProposalDetail = () => {
   const [showArabic, setShowArabic] = useState(false);
   const [toast, setToast] = useState(null);
   const [userRole, setUserRole] = useState('');
+  const [currentUserId, setCurrentUserId] = useState('');
 
   useEffect(() => { fetchProposal(); }, [id]);
 
   useEffect(() => {
     api.get('/api/v1/users/me').then(({ data }) => {
       setUserRole(data.role || '');
+      setCurrentUserId(data.id || '');
     }).catch(() => {});
   }, []);
 
@@ -707,6 +866,9 @@ const ProposalDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Comments */}
+        <CommentsSection proposalId={id} userRole={userRole} currentUserId={currentUserId} onToast={setToast} />
 
         {/* Action Buttons */}
         <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50">
