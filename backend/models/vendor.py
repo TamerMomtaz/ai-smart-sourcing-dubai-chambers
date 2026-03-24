@@ -43,6 +43,8 @@ class VendorResponse(BaseModel):
     desc_certified: bool = Field(default=False, description="Whether vendor is DESC certified")
     desc_certification_level: Optional[str] = Field(None, description="Certification level: certified or in_progress")
     desc_provider_name: Optional[str] = Field(None, description="DESC certified provider name")
+    reputation_score: Optional[float] = Field(None, description="Vendor reputation score 0-100")
+    reputation_tier: Optional[str] = Field(None, description="Reputation tier: trusted, established, emerging, new, flagged")
 
 
 class VendorProfileUpdate(BaseModel):

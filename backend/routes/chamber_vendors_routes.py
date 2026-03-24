@@ -12,6 +12,7 @@ from models.vendor import (
 )
 from models.common import PaginationResponse, ErrorResponse
 from services import chamber_vendor_service, chamber_vendor_profile_service
+from database import supabase
 import logging
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,8 @@ async def create_vendor(
             desc_certified=result.get("desc_certified", False),
             desc_certification_level=result.get("desc_certification_level"),
             desc_provider_name=result.get("desc_provider_name"),
+            reputation_score=result.get("reputation_score"),
+            reputation_tier=result.get("reputation_tier"),
         )
 
     except HTTPException:
@@ -169,6 +172,8 @@ async def list_vendors(
                 desc_certified=v.get("desc_certified", False),
                 desc_certification_level=v.get("desc_certification_level"),
                 desc_provider_name=v.get("desc_provider_name"),
+                reputation_score=v.get("reputation_score"),
+                reputation_tier=v.get("reputation_tier"),
             )
             for v in vendor_data
         ]
@@ -253,6 +258,8 @@ async def get_vendor(
             desc_certified=result.get("desc_certified", False),
             desc_certification_level=result.get("desc_certification_level"),
             desc_provider_name=result.get("desc_provider_name"),
+            reputation_score=result.get("reputation_score"),
+            reputation_tier=result.get("reputation_tier"),
         )
 
     except HTTPException:
@@ -403,5 +410,108 @@ async def delete_vendor(
                 "error": "Internal server error",
                 "detail": "An unexpected error occurred while deleting vendor",
                 "code": "VENDOR_DELETE_ERROR",
+            },
+        )
+
+
+@router.get(
+    "/{vendor_id}/reputation",
+    summary="Get vendor reputation profile",
+    responses={
+        200: {"description": "Reputation profile retrieved successfully"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Vendor not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+)
+async def get_vendor_reputation(
+    vendor_id: UUID,
+    current_user: dict = Depends(get_current_user),
+):
+    """Get full reputation profile for a vendor including submission history."""
+    try:
+        user_role = current_user["role"]
+
+        if user_role not in ["admin", "analyst", "executive", "business_group_lead", "compliance_officer", "vendor"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "Forbidden",
+                    "detail": "Insufficient permissions",
+                    "code": "INSUFFICIENT_PERMISSIONS",
+                },
+            )
+
+        vendor = await chamber_vendor_service.get_vendor_by_id(
+            vendor_id=vendor_id,
+            user_id=UUID(current_user["id"]),
+            user_role=user_role,
+        )
+
+        if not vendor:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": "Not found",
+                    "detail": "Vendor not found",
+                    "code": "VENDOR_NOT_FOUND",
+                },
+            )
+
+        # Fetch submission history from chamber_proposals
+        proposals_response = (
+            supabase.table("chamber_proposals")
+            .select("id, title, composite_score, submission_date, status, compliance_score, grounding_score")
+            .eq("submitter_id", str(vendor_id))
+            .order("submission_date", desc=True)
+            .execute()
+        )
+        proposals = proposals_response.data or []
+
+        submission_history = []
+        for p in proposals:
+            submission_history.append({
+                "proposal_title": p.get("title", "Untitled"),
+                "score": p.get("composite_score"),
+                "date": p.get("submission_date"),
+                "status": p.get("status", "submitted"),
+                "compliance": p.get("compliance_score"),
+                "grounding": p.get("grounding_score"),
+            })
+
+        desc_certified = vendor.get("desc_certified", False) or vendor.get("is_desc_approved", False)
+
+        return {
+            "vendor_id": str(vendor["id"]),
+            "vendor_name": vendor.get("name"),
+            "reputation_score": vendor.get("reputation_score"),
+            "reputation_tier": vendor.get("reputation_tier"),
+            "total_evaluations": vendor.get("total_evaluations", 0),
+            "avg_evaluation_score": vendor.get("avg_evaluation_score"),
+            "avg_grounding_score": vendor.get("avg_grounding_score"),
+            "compliance_pass_rate": vendor.get("compliance_pass_rate"),
+            "desc_certified": desc_certified,
+            "shortlist_count": vendor.get("shortlist_count", 0),
+            "rejection_count": vendor.get("rejection_count", 0),
+            "submission_history": submission_history,
+            "formula": {
+                "evaluation_weight": 0.30,
+                "compliance_weight": 0.25,
+                "grounding_weight": 0.20,
+                "desc_weight": 0.15,
+                "engagement_weight": 0.10,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting vendor reputation {vendor_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "Internal server error",
+                "detail": "An unexpected error occurred while retrieving vendor reputation",
+                "code": "VENDOR_REPUTATION_ERROR",
             },
         )

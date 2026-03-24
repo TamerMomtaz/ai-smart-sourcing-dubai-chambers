@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+import ReputationGauge from '../components/VendorReputationBadge';
 
 const DESCShieldIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -111,11 +112,18 @@ const VendorsList = () => {
             </div>
           ) : (
             vendors.map((v) => (
-              <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+              <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition relative">
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-heading text-xl text-teal">{v.name}</h3>
-                  {v.desc_certified && (
-                    <DESCCertifiedBadge providerName={v.desc_provider_name} />
+                  <div className="flex-1">
+                    <h3 className="font-heading text-xl text-teal">{v.name}</h3>
+                    {v.desc_certified && (
+                      <div className="mt-1">
+                        <DESCCertifiedBadge providerName={v.desc_provider_name} />
+                      </div>
+                    )}
+                  </div>
+                  {v.reputation_score != null && (
+                    <ReputationGauge score={v.reputation_score} tier={v.reputation_tier} size={56} />
                   )}
                 </div>
                 <div className="space-y-2 text-sm text-ink/70 mb-4">

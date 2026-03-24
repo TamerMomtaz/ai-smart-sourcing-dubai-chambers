@@ -623,6 +623,7 @@ const ProposalDetail = () => {
   const [toast, setToast] = useState(null);
   const [userRole, setUserRole] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
+  const [vendorReputation, setVendorReputation] = useState(null);
 
   useEffect(() => { fetchProposal(); }, [id]);
 
@@ -638,6 +639,15 @@ const ProposalDetail = () => {
       setLoading(true);
       const { data } = await api.get(`/api/v1/proposals/${id}`);
       setProposal(data);
+      // Fetch vendor reputation if submitter_id exists
+      if (data.submitter_id) {
+        try {
+          const { data: rep } = await api.get(`/api/v1/vendors/${data.submitter_id}/reputation`);
+          setVendorReputation(rep);
+        } catch {
+          // Non-critical
+        }
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -719,6 +729,41 @@ const ProposalDetail = () => {
               <p className="text-orange-400 font-semibold">Flagged for Manual Review</p>
               <p className="text-orange-300 text-sm">{evaluation?.review_reason || 'This proposal requires human review before proceeding.'}</p>
             </div>
+          </div>
+        )}
+
+        {/* Vendor Reputation / Previously Applied Indicator */}
+        {vendorReputation && vendorReputation.submission_history && vendorReputation.submission_history.length > 1 && (
+          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">
+            <span className="text-xl">⚡</span>
+            <div className="flex-1">
+              <p className="text-blue-300 text-sm">
+                This vendor has submitted <span className="font-bold text-white">{vendorReputation.submission_history.length}</span> previous proposals.
+                {vendorReputation.avg_evaluation_score != null && (
+                  <> Average score: <span className="font-bold text-white">{vendorReputation.avg_evaluation_score.toFixed(1)}</span>.</>
+                )}
+                {' '}Reputation: <span className="font-bold" style={{
+                  color: vendorReputation.reputation_tier === 'trusted' ? '#10B981' :
+                         vendorReputation.reputation_tier === 'established' ? '#0D9488' :
+                         vendorReputation.reputation_tier === 'emerging' ? '#F59E0B' :
+                         vendorReputation.reputation_tier === 'flagged' ? '#EF4444' : '#94A3B8'
+                }}>{vendorReputation.reputation_tier ? vendorReputation.reputation_tier.charAt(0).toUpperCase() + vendorReputation.reputation_tier.slice(1) : 'N/A'}</span>.
+              </p>
+            </div>
+            {proposal.submitter_id && (
+              <a
+                href={`/vendors/${proposal.submitter_id}`}
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium whitespace-nowrap"
+              >
+                View Vendor →
+              </a>
+            )}
+          </div>
+        )}
+        {vendorReputation && vendorReputation.submission_history && vendorReputation.submission_history.length <= 1 && (
+          <div className="mb-6 p-4 bg-gray-500/10 border border-gray-500/30 rounded-lg flex items-center gap-3">
+            <span className="text-xl">🆕</span>
+            <p className="text-gray-300 text-sm">First-time vendor</p>
           </div>
         )}
 
