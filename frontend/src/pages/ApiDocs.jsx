@@ -165,7 +165,7 @@ function EndpointRow({ endpoint }) {
       </div>
 
       {expanded && (
-        <div className="border-t border-ink/10 bg-[#0F172A]/[0.02] p-4 space-y-3">
+        <div className="border-t border-ink/10 bg-[var(--color-table-header-bg)]/[0.02] p-4 space-y-3">
           <p className="text-sm text-ink/70">{endpoint.description}</p>
 
           {endpoint.example?.request && (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api, { getErrorMessage } from '../lib/api';
 
-const TEAL = '#0D9488';
+const TEAL = 'var(--color-accent)';
 
 const ShieldIcon = ({ size = 14, color = TEAL }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -77,12 +77,12 @@ const SelectionCard = ({ proposal, selected, onToggle, evaluation, shieldData })
       onClick={onToggle}
       className={`relative cursor-pointer rounded-xl p-5 border-2 transition-all duration-200 ${
         selected
-          ? 'border-[#0D9488] bg-[#0D9488]/10 shadow-lg shadow-teal-500/10'
+          ? 'border-[var(--color-accent)] bg-accent-10 shadow-lg shadow-accent-10'
           : 'border-gray-700/50 bg-[#1E293B] hover:border-gray-600'
       }`}
     >
       {selected && (
-        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#0D9488] flex items-center justify-center">
+        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
@@ -252,7 +252,7 @@ const ProposalCompare = () => {
   // ─── Selection Mode ───
   if (!comparing) {
     return (
-      <div className="min-h-screen bg-[#0F172A] p-8">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
         <div className="max-w-7xl mx-auto">
           <header className="mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">Compare Proposals</h1>
@@ -270,7 +270,7 @@ const ProposalCompare = () => {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#0D9488] mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--color-accent)] mx-auto mb-4"></div>
                 <p className="text-gray-400">Loading evaluated proposals...</p>
               </div>
             </div>
@@ -353,7 +353,7 @@ const ProposalCompare = () => {
   const colCount = selected.length;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between">

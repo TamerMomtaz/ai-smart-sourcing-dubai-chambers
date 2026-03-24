@@ -41,8 +41,8 @@ const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0D9488]"></div>
+      <div className="flex items-center justify-center min-h-screen bg-[var(--color-table-header-bg)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent)]"></div>
       </div>
     );
   }

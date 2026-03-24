@@ -68,7 +68,7 @@ const PRINT_STYLES = `
 
   /* White background overrides */
   .printing-report .bg-\\[\\#1E293B\\],
-  .printing-report .bg-\\[\\#0F172A\\] {
+  .printing-report .bg-\\[var\\(--color-table-header-bg\\)\\] {
     background: white !important;
     border: 1px solid #e5e7eb !important;
   }
@@ -250,7 +250,7 @@ const TrendReportCard = ({ report, analysisDate, submissionVolume, averageScores
           <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">Average Scores</h4>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {Object.entries(averageScores).map(([key, val]) => (
-              <div key={key} className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div key={key} className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <div className="text-xs text-[#94A3B8] mb-1 capitalize">{key.replace('_', ' ')}</div>
                 <div className={`text-lg font-bold ${val > 70 ? 'text-emerald-400' : val >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                   {val?.toFixed(1) || 'N/A'}
@@ -321,7 +321,7 @@ const TrendAnalysesList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="max-w-7xl mx-auto">

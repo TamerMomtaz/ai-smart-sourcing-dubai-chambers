@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
-const TEAL = '#0D9488';
+const TEAL = 'var(--color-accent)';
 
 const ShieldIcon = ({ size = 14, color = TEAL }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,7 @@ const ShieldBadge = ({ evaluationId }) => {
   if (verifying) {
     return (
       <span className="flex items-center gap-1 text-xs" style={{ color: TEAL }}>
-        <span className="animate-spin inline-block w-3 h-3 border-2 border-teal-400 border-t-transparent rounded-full" />
+        <span className="animate-spin inline-block w-3 h-3 border-2 border-[var(--color-accent)] border-t-transparent rounded-full" />
         Verifying...
       </span>
     );
@@ -77,8 +77,8 @@ const ShieldBadge = ({ evaluationId }) => {
   return (
     <button
       onClick={handleVerify}
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border transition-colors hover:bg-teal-500/10"
-      style={{ borderColor: `${TEAL}50`, color: TEAL }}
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border transition-colors hover:bg-accent-10"
+      style={{ borderColor: 'var(--color-badge-bg)', color: TEAL }}
     >
       <ShieldIcon size={12} />
       Verify
@@ -123,7 +123,7 @@ const EvaluationsList = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Evaluations</h1>
@@ -152,7 +152,7 @@ const EvaluationsList = () => {
           ) : (
             <div style={{ overflowX: 'auto', width: '100%' }}>
             <table className="w-full" style={{ minWidth: '900px' }}>
-              <thead className="bg-[#0F172A] border-b border-gray-700">
+              <thead className="bg-[var(--color-table-header-bg)] border-b border-gray-700">
                 <tr>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Proposal</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Composite</th>
@@ -173,7 +173,7 @@ const EvaluationsList = () => {
                   </tr>
                 ) : (
                   sortedEvaluations.map((ev) => (
-                    <tr key={ev.id} className="border-b border-gray-700/50 hover:bg-[#0F172A]/50 transition-colors">
+                    <tr key={ev.id} className="border-b border-gray-700/50 hover:bg-[var(--color-table-header-bg)] transition-colors">
                       <td className="p-4">
                         <Link to={`/proposals/${ev.proposal_id}`} className="text-[#3B82F6] hover:text-blue-300 font-medium">
                           {ev.proposal_title || 'Untitled'}

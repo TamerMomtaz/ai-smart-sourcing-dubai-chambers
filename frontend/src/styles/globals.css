@@ -2,8 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-teal: #016764;
+:root, [data-theme="teal"] {
+  --color-accent: #0D9488;
+  --color-accent-light: rgba(13, 148, 136, 0.1);
+  --color-accent-hover: #0F766E;
+  --color-sidebar-active: #0D9488;
+  --color-sidebar-text: #CBD5E1;
+  --color-button-primary: #0D9488;
+  --color-stat-number: #0D9488;
+  --color-table-header-bg: #0F172A;
+  --color-badge-bg: rgba(13, 148, 136, 0.15);
+  --color-badge-text: #0D9488;
+  --color-link: #0D9488;
+  --color-teal: #0D9488;
   --color-gold: #B8904A;
   --color-burgundy: #7A1E47;
   --color-cream: #FAF8F4;
@@ -15,6 +26,51 @@
   --color-text-secondary: #475569;
   --color-text-tertiary: #64748B;
   --color-border-tertiary: #E2E8F0;
+}
+
+[data-theme="gold"] {
+  --color-accent: #B8904A;
+  --color-accent-light: rgba(184, 144, 74, 0.1);
+  --color-accent-hover: #9A7739;
+  --color-sidebar-active: #B8904A;
+  --color-sidebar-text: #D4C5B0;
+  --color-button-primary: #B8904A;
+  --color-stat-number: #B8904A;
+  --color-table-header-bg: #1C1410;
+  --color-badge-bg: rgba(184, 144, 74, 0.15);
+  --color-badge-text: #B8904A;
+  --color-link: #B8904A;
+  --color-teal: #B8904A;
+}
+
+[data-theme="blue"] {
+  --color-accent: #3B82F6;
+  --color-accent-light: rgba(59, 130, 246, 0.1);
+  --color-accent-hover: #2563EB;
+  --color-sidebar-active: #3B82F6;
+  --color-sidebar-text: #B0C4DE;
+  --color-button-primary: #3B82F6;
+  --color-stat-number: #3B82F6;
+  --color-table-header-bg: #0F1628;
+  --color-badge-bg: rgba(59, 130, 246, 0.15);
+  --color-badge-text: #3B82F6;
+  --color-link: #3B82F6;
+  --color-teal: #3B82F6;
+}
+
+[data-theme="emerald"] {
+  --color-accent: #10B981;
+  --color-accent-light: rgba(16, 185, 129, 0.1);
+  --color-accent-hover: #059669;
+  --color-sidebar-active: #10B981;
+  --color-sidebar-text: #A7D5C0;
+  --color-button-primary: #10B981;
+  --color-stat-number: #10B981;
+  --color-table-header-bg: #0A1F12;
+  --color-badge-bg: rgba(16, 185, 129, 0.15);
+  --color-badge-text: #10B981;
+  --color-link: #10B981;
+  --color-teal: #10B981;
 }
 
 @layer base {
@@ -94,6 +150,29 @@
     font-family: var(--font-mono);
   }
 
+  /* Theme-aware accent utilities with opacity */
+  .border-accent-20 {
+    border-color: var(--color-badge-bg);
+  }
+  .text-accent-10 {
+    color: var(--color-accent);
+    opacity: 0.1;
+  }
+  .bg-accent-10 {
+    background-color: var(--color-accent-light);
+  }
+  .bg-accent-5 {
+    background-color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+  .border-accent-30 {
+    border-color: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+  .shadow-accent-10 {
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+
   /* How It Works cinematic page — negate Layout padding when inside Layout */
   .hiw-container {
     margin: -1.5rem;
@@ -131,15 +210,15 @@
 
 /* ─── Sidebar highlight for experience walkthrough ─── */
 .sidebar-highlight {
-  background: rgba(1, 103, 100, 0.12) !important;
-  border-left: 3px solid var(--color-teal) !important;
+  background: var(--color-accent-light) !important;
+  border-left: 3px solid var(--color-accent) !important;
   transition: all 0.5s ease-out;
   animation: sidebarPulse 2s ease-in-out infinite;
 }
 
 @keyframes sidebarPulse {
-  0%, 100% { background: rgba(1, 103, 100, 0.12); }
-  50% { background: rgba(1, 103, 100, 0.22); }
+  0%, 100% { background: var(--color-accent-light); }
+  50% { background: var(--color-badge-bg); }
 }
 
 /* Respect prefers-reduced-motion — static highlight only */
@@ -157,7 +236,7 @@
   transform: translateY(-50%);
   margin-left: 0.5rem;
   padding: 0.25rem 0.75rem;
-  background: var(--color-teal);
+  background: var(--color-accent);
   color: #fff;
   font-family: var(--font-body);
   font-size: 0.7rem;

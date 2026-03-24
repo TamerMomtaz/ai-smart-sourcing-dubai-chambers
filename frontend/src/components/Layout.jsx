@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useUserRole } from '../lib/userRole';
 import { getErrorMessage } from '../lib/api';
 import { ROLE_SIDEBAR_ITEMS, DEFAULT_ITEMS, ROUTE_TO_KEY } from '../config/rolePermissions';
+import ThemeSwitcher from './ThemeSwitcher';
 
 /* Sidebar highlight state is now driven by HowItWorks custom events */
 
@@ -128,9 +129,10 @@ function Layout() {
             </ul>
           </nav>
 
-          {/* User info and sign out */}
+          {/* Theme switcher and sign out */}
           <div className="p-4 border-t border-ink/10">
-            <div className="mb-3">
+            <ThemeSwitcher />
+            <div className="mb-3 mt-2">
               <p className="font-body text-sm text-ink font-medium truncate">
                 {user?.email || 'User'}
               </p>

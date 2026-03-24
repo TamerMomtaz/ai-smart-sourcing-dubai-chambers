@@ -56,8 +56,8 @@ const Sparkline = ({ data, width = 400, height = 48 }) => {
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="mt-2">
       <defs>
         <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0D9488" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#0D9488" stopOpacity="0.02" />
+          <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <polygon
@@ -67,7 +67,7 @@ const Sparkline = ({ data, width = 400, height = 48 }) => {
       <polyline
         points={points}
         fill="none"
-        stroke="#0D9488"
+        stroke="var(--color-accent)"
         strokeWidth="2"
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -123,16 +123,16 @@ const ImpactMeter = ({ impact, timeline }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-[#0D9488]/20 relative overflow-hidden">
+    <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-accent-20 relative overflow-hidden">
       {/* Subtle sigma badge */}
-      <div className="absolute top-3 right-4 text-[#0D9488]/10 text-6xl font-bold select-none pointer-events-none" aria-hidden="true">
+      <div className="absolute top-3 right-4 text-accent-10 text-6xl font-bold select-none pointer-events-none" aria-hidden="true">
         &sigma;I
       </div>
 
       {/* Header */}
       <div className="mb-5">
-        <h2 className="font-heading text-xl text-[#0D9488] flex items-center gap-2">
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#0D9488]/10 text-sm font-bold text-[#0D9488]">&sigma;</span>
+        <h2 className="font-heading text-xl text-[var(--color-accent)] flex items-center gap-2">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-accent-10 text-sm font-bold text-[var(--color-accent)]">&sigma;</span>
           Impact Meter &mdash; Return on Time
         </h2>
       </div>
@@ -144,12 +144,12 @@ const ImpactMeter = ({ impact, timeline }) => {
             key={idx}
             className={`rounded-lg p-4 text-center ${
               m.hero
-                ? 'bg-[#0D9488]/5 border-2 border-[#0D9488]/30'
+                ? 'bg-accent-5 border-2 border-accent-30'
                 : 'bg-gray-50 border border-gray-100'
             }`}
           >
             <div
-              className="text-[#0D9488] font-mono leading-none"
+              className="text-[var(--color-accent)] font-mono leading-none"
               style={{ fontSize: m.hero ? '2rem' : '1.75rem', fontWeight: 700 }}
             >
               {m.value}
@@ -162,16 +162,16 @@ const ImpactMeter = ({ impact, timeline }) => {
       {/* Performance bar */}
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600 mb-4">
         <span>
-          Speed: <strong className="text-[#0D9488]">{ai_performance.speed_multiplier}x</strong> faster than manual
+          Speed: <strong className="text-[var(--color-accent)]">{ai_performance.speed_multiplier}x</strong> faster than manual
         </span>
         <span>
-          Cost: <strong className="text-[#0D9488]">${ai_performance.total_cost_usd}</strong> total
+          Cost: <strong className="text-[var(--color-accent)]">${ai_performance.total_cost_usd}</strong> total
         </span>
         <span>
-          Cost per operation: <strong className="text-[#0D9488]">${ai_performance.cost_per_operation}</strong>
+          Cost per operation: <strong className="text-[var(--color-accent)]">${ai_performance.cost_per_operation}</strong>
         </span>
         <span>
-          Period: <strong className="text-[#0D9488]">{time_saved.period_days}</strong> days
+          Period: <strong className="text-[var(--color-accent)]">{time_saved.period_days}</strong> days
         </span>
       </div>
 
@@ -179,7 +179,7 @@ const ImpactMeter = ({ impact, timeline }) => {
       <div className="border-t border-gray-100 pt-3">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#0D9488] transition-colors w-full text-left"
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[var(--color-accent)] transition-colors w-full text-left"
         >
           <svg
             className={`w-4 h-4 transition-transform ${expanded ? 'rotate-90' : ''}`}
@@ -206,7 +206,7 @@ const ImpactMeter = ({ impact, timeline }) => {
                     <span className="text-gray-500">
                       {b.count} &times; {b.manual_hours_each} hrs
                       <span className="mx-2">=</span>
-                      <span className="text-[#0D9488] font-semibold">{b.total_hours_saved} hrs saved</span>
+                      <span className="text-[var(--color-accent)] font-semibold">{b.total_hours_saved} hrs saved</span>
                     </span>
                   </div>
                 ))}
@@ -295,7 +295,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#0D9488]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--color-accent)]"></div>
           <span className="text-teal font-heading text-lg">Loading dashboard...</span>
         </div>
       </div>

@@ -80,7 +80,7 @@ const DocumentsList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#3B82F6] mx-auto mb-4"></div>
           <p className="text-gray-400">Loading documents...</p>
@@ -90,7 +90,7 @@ const DocumentsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-white">Documents</h1>
@@ -110,12 +110,12 @@ const DocumentsList = () => {
             placeholder="Search by filename..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] w-64"
+            className="bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] w-64"
           />
           <select
             value={fileTypeFilter}
             onChange={(e) => { setFileTypeFilter(e.target.value); setSearchParams({ page: '1' }); }}
-            className="bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+            className="bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
           >
             <option value="">All Types</option>
             <option value="pdf">PDF</option>
@@ -128,7 +128,7 @@ const DocumentsList = () => {
         <div className="bg-[#1E293B] rounded-xl overflow-hidden shadow-xl">
           <div style={{ overflowX: 'auto', width: '100%' }}>
           <table className="w-full" style={{ minWidth: '800px' }}>
-            <thead className="bg-[#0F172A] border-b border-gray-700">
+            <thead className="bg-[var(--color-table-header-bg)] border-b border-gray-700">
               <tr>
                 <th className="text-left p-4 text-gray-400 font-medium text-sm">File Name</th>
                 <th className="text-left p-4 text-gray-400 font-medium text-sm">Proposal</th>
@@ -156,7 +156,7 @@ const DocumentsList = () => {
                 filteredDocs.map((d) => {
                   const typeInfo = FILE_TYPE_STYLES[d.file_type] || FILE_TYPE_STYLES.pdf;
                   return (
-                    <tr key={d.id} className="border-b border-gray-700/50 hover:bg-[#0F172A]/50 transition-colors">
+                    <tr key={d.id} className="border-b border-gray-700/50 hover:bg-[var(--color-table-header-bg)] transition-colors">
                       <td className="p-4 text-white font-medium">{d.file_name}</td>
                       <td className="p-4 text-sm">
                         {d.proposal_id ? (

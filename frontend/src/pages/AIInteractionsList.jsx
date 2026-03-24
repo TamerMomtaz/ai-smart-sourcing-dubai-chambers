@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
 const GOLD = '#B8904A';
-const TEAL = '#0D9488';
+const TEAL = 'var(--color-accent)';
 const DARK_SURFACE = '#1E293B';
 
 const SigmaIcon = ({ size = 24, color = GOLD }) => (
@@ -77,20 +77,20 @@ const ShieldStatsSection = ({ stats }) => {
         )}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-3xl font-bold" style={{ color: scoreColor, fontFamily: '"JetBrains Mono", monospace' }}>
             {avgScore}%
           </p>
           <p className="text-slate-400 text-xs mt-1">Avg Grounding Score</p>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-3xl font-bold text-white" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
             {stats.total_checks}
             <span className="text-slate-500 text-sm">/{stats.total_evaluations || '?'}</span>
           </p>
           <p className="text-slate-400 text-xs mt-1">Checks Run</p>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4">
           <p className="text-slate-400 text-xs mb-2">Risk Distribution</p>
           <div className="flex items-end gap-2">
             <div className="flex-1 text-center">
@@ -107,7 +107,7 @@ const ShieldStatsSection = ({ stats }) => {
             </div>
           </div>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-3xl font-bold" style={{ color: TEAL, fontFamily: '"JetBrains Mono", monospace' }}>
             {(stats.total_verification_iu || 0).toFixed(2)}
           </p>
@@ -199,7 +199,7 @@ const AIInteractionsList = () => {
 
   if (loading && summaryLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0F172A' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-table-header-bg)' }}>
         <div className="text-center">
           <div className="mb-4">
             <SigmaIcon size={48} />
@@ -211,7 +211,7 @@ const AIInteractionsList = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0F172A' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-table-header-bg)' }}>
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <header className="mb-8">
