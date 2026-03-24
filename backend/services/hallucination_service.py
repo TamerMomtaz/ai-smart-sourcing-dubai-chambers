@@ -139,13 +139,16 @@ class HallucinationShield:
 
         await self._save_report(report=report)
 
+        # Determine the actual model name used (from claims verification step)
+        actual_model_name = claims_result.get("model_name") or "claude-sonnet-4-5-20250929"
+
         # Log AI interaction for the verification
         if user_id:
             try:
                 create_ai_interaction(
                     user_id=user_id,
                     session_id=uuid.uuid4(),
-                    model_name="hallucination_shield",
+                    model_name=actual_model_name,
                     prompt_tokens=total_prompt_tokens,
                     completion_tokens=total_completion_tokens,
                     latency_ms=total_latency_ms,
@@ -235,6 +238,7 @@ Return ONLY valid JSON (no markdown, no backticks):
             "partial": partial,
             "ungrounded": ungrounded,
             "claims": claims,
+            "model_name": result.get("model_name"),
         }, tokens
 
     async def _cross_model_verify(self, proposal_text, original_scores):
