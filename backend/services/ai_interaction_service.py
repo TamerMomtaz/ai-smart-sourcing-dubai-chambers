@@ -50,13 +50,17 @@ def list_interactions(
     page_size: int = 50,
     session_id: Optional[UUID] = None,
     operation_type: Optional[str] = None,
+    platform_wide: bool = False,
 ) -> tuple[List[Dict[str, Any]], int]:
     """
-    List AI interactions for a user with optional filters and pagination.
+    List AI interactions with optional filters and pagination.
+    When platform_wide=True, returns all interactions across all users.
     """
     offset = (page - 1) * page_size
 
-    query = supabase.table("chamber_ai_interactions").select("*", count="exact").eq("user_id", str(user_id))
+    query = supabase.table("chamber_ai_interactions").select("*", count="exact")
+    if not platform_wide:
+        query = query.eq("user_id", str(user_id))
 
     if session_id:
         query = query.eq("session_id", str(session_id))
@@ -91,11 +95,15 @@ def get_summary(
     session_id: Optional[UUID] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    platform_wide: bool = False,
 ) -> Dict[str, Any]:
     """
     Get summary statistics for AI interactions.
+    When platform_wide=True, returns aggregate metrics across all users.
     """
-    query = supabase.table("chamber_ai_interactions").select("*").eq("user_id", str(user_id))
+    query = supabase.table("chamber_ai_interactions").select("*")
+    if not platform_wide:
+        query = query.eq("user_id", str(user_id))
 
     if session_id:
         query = query.eq("session_id", str(session_id))
@@ -184,6 +192,7 @@ def get_ai_interaction_summary(
     session_id: Optional[UUID] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    platform_wide: bool = False,
 ) -> Dict[str, Any]:
     """
     Convenience wrapper around get_summary that accepts a limit parameter.
@@ -194,6 +203,7 @@ def get_ai_interaction_summary(
         session_id=session_id,
         start_date=start_date,
         end_date=end_date,
+        platform_wide=platform_wide,
     )
     if limit and result.get("recent_interactions"):
         result["recent_interactions"] = result["recent_interactions"][:limit]

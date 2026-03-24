@@ -57,7 +57,8 @@ const DESCCertifiedProvidersList = () => {
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table className="w-full" style={{ minWidth: '600px' }}>
             <thead className="bg-cream">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-body font-medium text-ink">Provider</th>
@@ -77,6 +78,7 @@ const DESCCertifiedProvidersList = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

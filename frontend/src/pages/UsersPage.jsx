@@ -78,7 +78,7 @@ function UsersPage() {
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full" style={{ minWidth: '700px' }}>
               <thead>
                 <tr className="bg-teal/5 border-b border-ink/10">
                   <th className="text-left px-6 py-3 font-heading text-sm text-ink/70">Name</th>

@@ -75,7 +75,7 @@ function Layout() {
   }, [location.pathname, allowedKeys, roleLoading]);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream" style={{ overflowX: 'hidden' }}>
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -174,7 +174,7 @@ function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-6" style={{ overflowX: 'auto', minWidth: 0 }}>
           {isRouteAllowed ? (
             <Outlet />
           ) : (

@@ -126,7 +126,8 @@ const DocumentsList = () => {
         </div>
 
         <div className="bg-[#1E293B] rounded-xl overflow-hidden shadow-xl">
-          <table className="w-full">
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table className="w-full" style={{ minWidth: '800px' }}>
             <thead className="bg-[#0F172A] border-b border-gray-700">
               <tr>
                 <th className="text-left p-4 text-gray-400 font-medium text-sm">File Name</th>
@@ -189,6 +190,7 @@ const DocumentsList = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         {pagination && pagination.total_pages > 1 && (

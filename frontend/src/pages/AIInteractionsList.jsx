@@ -291,7 +291,7 @@ const AIInteractionsList = () => {
             )}
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ minWidth: '800px' }}>
               <thead>
                 <tr className="border-b border-slate-700/50">
                   <th className="text-left p-4 text-slate-400 font-medium uppercase text-xs tracking-wider">Timestamp</th>

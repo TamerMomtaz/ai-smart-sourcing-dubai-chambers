@@ -182,7 +182,7 @@ const TrendReportCard = ({ report, analysisDate, submissionVolume, averageScores
         <div className="mb-6 print-section print-page-break">
           <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">Sector Breakdown</h4>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ minWidth: '700px' }}>
               <thead>
                 <tr className="border-b border-gray-700">
                   <th className="text-left py-2 text-gray-400 font-medium">Sector</th>
