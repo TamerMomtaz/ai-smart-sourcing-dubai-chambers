@@ -150,7 +150,8 @@ const EvaluationsList = () => {
               <p className="text-gray-400">Loading evaluations...</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="w-full" style={{ minWidth: '900px' }}>
               <thead className="bg-[#0F172A] border-b border-gray-700">
                 <tr>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Proposal</th>
@@ -207,6 +208,7 @@ const EvaluationsList = () => {
                 )}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

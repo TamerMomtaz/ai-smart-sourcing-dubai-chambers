@@ -115,7 +115,8 @@ const ComplianceAuditsList = () => {
         )}
 
         <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-gray-700/50">
-          <table className="w-full">
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table className="w-full" style={{ minWidth: '900px' }}>
             <thead className="bg-[#0F172A]">
               <tr>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Proposal</th>
@@ -191,6 +192,7 @@ const ComplianceAuditsList = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         {pagination && pagination.total_pages > 1 && (

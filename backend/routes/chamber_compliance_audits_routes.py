@@ -400,15 +400,28 @@ async def get_audit_report_data(
                 },
             )
 
-        # Fetch proposal details
+        # Fetch proposal details with vendor name via join
         from database import supabase as db
         proposal_data = (
             db.table("chamber_proposals")
-            .select("id,title,sector,vendor_name,created_at")
+            .select("id,title,sector,submitter_id,created_at,submitter:chamber_vendors(name)")
             .eq("id", str(audit["proposal_id"]))
             .execute()
         )
         proposal = proposal_data.data[0] if proposal_data.data else {}
+        # Resolve vendor_name from the joined submitter relation
+        vendor_name = "Unknown Vendor"
+        if proposal.get("submitter") and isinstance(proposal["submitter"], dict):
+            vendor_name = proposal["submitter"].get("name", "Unknown Vendor")
+        elif proposal.get("submitter_id"):
+            vendor_data = (
+                db.table("chamber_vendors")
+                .select("name")
+                .eq("id", str(proposal["submitter_id"]))
+                .execute()
+            )
+            if vendor_data.data:
+                vendor_name = vendor_data.data[0].get("name", "Unknown Vendor")
 
         # Fetch auditor name
         auditor_name = "AI Smart Sourcing"
@@ -539,7 +552,7 @@ async def get_audit_report_data(
         return {
             "audit_id": str(audit["id"]),
             "proposal_title": proposal.get("title", "Unknown Proposal"),
-            "vendor_name": proposal.get("vendor_name", "Unknown Vendor"),
+            "vendor_name": vendor_name,
             "sector": proposal.get("sector", ""),
             "audit_date": audit.get("audit_timestamp", ""),
             "auditor": auditor_name,

@@ -52,14 +52,15 @@ async def get_interaction_summary(
     current_user: UserInfo = Depends(get_current_user)
 ) -> AIInteractionResponse:
     try:
-        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=limit)
-        
+        # Platform-wide metrics — all roles see all AI interactions
+        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=limit, platform_wide=True)
+
         if summary_data is None:
             raise HTTPException(
                 status_code=500,
                 detail={"error": "Service Error", "detail": "Failed to retrieve AI interaction summary", "code": 500}
             )
-        
+
         return AIInteractionResponse(
             total_interactions=summary_data.get("total_interactions", 0),
             total_tokens=summary_data.get("total_tokens", 0),
@@ -111,7 +112,7 @@ async def get_model_breakdown(
     current_user: UserInfo = Depends(get_current_user)
 ) -> ModelBreakdown:
     try:
-        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=0)
+        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=0, platform_wide=True)
         
         if summary_data is None:
             raise HTTPException(
@@ -171,8 +172,8 @@ async def get_recent_interactions(
     current_user: UserInfo = Depends(get_current_user)
 ) -> list[RecentInteraction]:
     try:
-        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=limit)
-        
+        summary_data = get_ai_interaction_summary(user_id=current_user.id, limit=limit, platform_wide=True)
+
         if summary_data is None:
             raise HTTPException(
                 status_code=500,

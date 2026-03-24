@@ -37,22 +37,9 @@ async def get_ai_interactions_summary(
     """
     try:
         user_id = current_user.get("id")
-        user_role = current_user.get("role", "")
 
-        allowed_roles = ["analyst", "executive", "compliance_officer", "admin"]
-        if user_role not in allowed_roles:
-            return AIInteractionResponse(
-                total_interactions=0,
-                total_tokens=0,
-                total_cost_usd=0.0,
-                total_energy_kwh=0.0,
-                total_carbon_gco2=0.0,
-                total_intelligence_units=0.0,
-                model_breakdown=[],
-                recent_interactions=[],
-            )
-
-        summary_data = get_ai_interaction_summary(user_id=user_id, limit=10)
+        # AI transparency metrics are platform-wide — all roles see all data
+        summary_data = get_ai_interaction_summary(user_id=user_id, limit=10, platform_wide=True)
 
         if summary_data is None:
             logger.error(f"Failed to retrieve AI interaction summary for user {user_id}")
@@ -113,13 +100,9 @@ async def get_ai_interactions(
     """
     try:
         user_id = current_user.get("id")
-        user_role = current_user.get("role", "")
 
-        allowed_roles = ["analyst", "executive", "compliance_officer", "admin"]
-        if user_role not in allowed_roles:
-            return JSONResponse(content={"interactions": [], "pagination": {"page": page, "page_size": page_size, "total": 0, "total_pages": 0}})
-
-        interactions, total = list_interactions(user_id=user_id, page=page, page_size=page_size)
+        # AI transparency metrics are platform-wide — all roles see all data
+        interactions, total = list_interactions(user_id=user_id, page=page, page_size=page_size, platform_wide=True)
         total_pages = math.ceil(total / page_size) if total > 0 else 0
 
         return JSONResponse(content=jsonable_encoder({
