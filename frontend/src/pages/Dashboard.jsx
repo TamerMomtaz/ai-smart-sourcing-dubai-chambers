@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { ROLE_BADGES } from '../config/rolePermissions';
 
 // --- Animated counter hook ---
 function useCountUp(target, duration = 1500) {
@@ -318,7 +319,14 @@ const Dashboard = () => {
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-heading text-4xl text-teal mb-2">Dashboard</h1>
-            <p className="text-ink/70">Welcome back, {user?.full_name || 'User'}</p>
+            <p className="text-ink/70 flex items-center gap-2">
+              Welcome back, {user?.full_name || 'User'}
+              {user?.role && ROLE_BADGES[user.role] && (
+                <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${ROLE_BADGES[user.role].color}`}>
+                  {ROLE_BADGES[user.role].label}
+                </span>
+              )}
+            </p>
           </div>
           <button
             onClick={() => window.open('/board-brief', '_blank')}

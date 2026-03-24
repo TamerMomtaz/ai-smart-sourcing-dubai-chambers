@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
+import { UserRoleProvider } from './lib/userRole';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -75,7 +76,7 @@ function App() {
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/how-it-works" element={<HowItWorksStandalone />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
-          <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+          <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="guide" element={<HowItWorks />} />
             <Route path="dashboard" element={<Dashboard />} />
