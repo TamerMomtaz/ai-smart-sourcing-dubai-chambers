@@ -89,7 +89,8 @@ async def get_dashboard_impact(
         working_days_saved = round(total_manual_hours / 8, 1)
         working_months_saved = round(total_manual_hours / (8 * 22), 1)
         ai_minutes = round(total_ai_ms / 60000, 1)
-        speed_multiplier = round(total_manual_hours * 60 / max(ai_minutes, 0.1), 0)
+        total_ai_hours = total_ai_ms / 3_600_000  # ms → hours
+        speed_multiplier = round(total_manual_hours / max(total_ai_hours, 0.001), 1)
 
         # People equivalent based on elapsed working days
         days_elapsed = 1
@@ -131,7 +132,7 @@ async def get_dashboard_impact(
             "methodology": {
                 "note": "Manual time estimates based on industry benchmarks for procurement analysis tasks",
                 "estimates": _METHODOLOGY_ESTIMATES,
-                "assumptions": "Based on 8-hour working days, 22 working days per month. Speed multiplier = manual hours / AI minutes.",
+                "assumptions": "Based on 8-hour working days, 22 working days per month. Speed multiplier = manual hours / AI hours.",
             },
         }
 

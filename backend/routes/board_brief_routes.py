@@ -78,7 +78,7 @@ async def get_board_brief_data(current_user: Dict = Depends(get_current_user)):
     # Model usage breakdown
     model_usage: Dict[str, int] = {}
     for i in all_interactions:
-        model = i.get("model", "unknown") or "unknown"
+        model = i.get("model_name") or i.get("model") or "unknown"
         model_usage[model] = model_usage.get(model, 0) + 1
 
     # Operations count for hours-saved calculation
@@ -104,9 +104,9 @@ async def get_board_brief_data(current_user: Dict = Depends(get_current_user)):
     period_to = max(created_dates, default="")
 
     # Speed multiplier
-    ai_seconds = sum(i.get("duration_ms", 0) or 0 for i in all_interactions) / 1000
-    manual_seconds = hours_saved * 3600
-    speed_multiplier = round(manual_seconds / max(ai_seconds, 1), 0)
+    total_ai_ms = sum(i.get("latency_ms", 0) or 0 for i in all_interactions)
+    total_ai_hours = total_ai_ms / 3_600_000  # ms → hours
+    speed_multiplier = round(hours_saved / max(total_ai_hours, 0.001), 1)
 
     return {
         "generated_at": datetime.utcnow().isoformat(),
