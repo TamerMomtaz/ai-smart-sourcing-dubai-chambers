@@ -81,12 +81,22 @@ const ComplianceAuditDetail = () => {
               </Link>
             )}
           </div>
-          <button
-            onClick={() => navigate('/compliance-audits')}
-            className="text-[#3B82F6] hover:text-blue-300"
-          >
-            &larr; Back to Audits
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href={`/compliance-audits/${id}/report`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition inline-block"
+            >
+              Download Report
+            </a>
+            <button
+              onClick={() => navigate('/compliance-audits')}
+              className="text-[#3B82F6] hover:text-blue-300"
+            >
+              &larr; Back to Audits
+            </button>
+          </div>
         </div>
 
         {error && (
