@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
-const TEAL = '#0D9488';
+const TEAL = 'var(--color-accent)';
 
 const ShieldIcon = ({ size = 20, color = TEAL }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -151,14 +151,14 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
             disabled={verifying}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
             style={{
-              borderColor: `${TEAL}60`,
+              borderColor: 'var(--color-badge-bg)',
               color: TEAL,
-              backgroundColor: verifying ? `${TEAL}10` : 'transparent',
+              backgroundColor: verifying ? 'var(--color-accent-light)' : 'transparent',
             }}
           >
             {verifying ? (
               <>
-                <span className="animate-spin inline-block w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full" />
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full" />
                 Verifying AI integrity... ~20 seconds
               </>
             ) : (
@@ -212,21 +212,21 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
 
       {/* Metric cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-2xl font-bold" style={{ color: TEAL, fontFamily: '"JetBrains Mono", monospace' }}>{gs}%</p>
           <p className="text-gray-500 text-xs mt-1">Grounding Score</p>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-white" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
             {shieldData.grounded_claims}/{shieldData.total_claims}
           </p>
           <p className="text-gray-500 text-xs mt-1">Claims Verified</p>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-[#3B82F6]" style={{ fontFamily: '"JetBrains Mono", monospace' }}>{sourceCitations}</p>
           <p className="text-gray-500 text-xs mt-1">Source Citations</p>
         </div>
-        <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className={`text-2xl font-bold ${shieldData.hallucination_risk === 'low' ? 'text-emerald-400' : shieldData.hallucination_risk === 'medium' ? 'text-amber-400' : 'text-red-400'}`}>
             {shieldData.hallucination_risk?.charAt(0).toUpperCase() + shieldData.hallucination_risk?.slice(1)}
           </p>
@@ -237,7 +237,7 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
       {/* Two-column: grounding bars + cross-model */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6">
         {/* Left: Per-dimension grounding */}
-        <div className="bg-[#0F172A] rounded-lg p-4">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4">
           <h4 className="text-gray-300 font-medium text-sm mb-3">Per-Dimension Grounding</h4>
           {['grounded', 'partial', 'ungrounded'].map((type) => {
             const count = shieldData[`${type}_claims`] || 0;
@@ -258,7 +258,7 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
         </div>
 
         {/* Right: Cross-model verification */}
-        <div className="bg-[#0F172A] rounded-lg p-4">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4">
           <h4 className="text-gray-300 font-medium text-sm mb-3">Cross-Model Verification</h4>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -300,7 +300,7 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
             Claim-by-claim verification ({claims.length} claims)
           </button>
           {claimsExpanded && (
-            <div className="bg-[#0F172A] rounded-lg p-4 max-h-96 overflow-y-auto">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 max-h-96 overflow-y-auto">
               {claims.map((claim, idx) => (
                 <ClaimItem key={idx} claim={claim} />
               ))}
@@ -352,7 +352,7 @@ const EvaluationDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3B82F6] mx-auto mb-4"></div>
           <p className="text-gray-400">Loading evaluation...</p>
@@ -363,7 +363,7 @@ const EvaluationDetail = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-red-400 text-lg">{error}</div>
       </div>
     );
@@ -372,7 +372,7 @@ const EvaluationDetail = () => {
   const aiCost = evaluation?.ai_cost;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Evaluation Detail</h1>
@@ -480,19 +480,19 @@ const EvaluationDetail = () => {
           <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50">
             <h3 className="text-lg font-semibold text-white mb-4">ΣI — Evaluation Cost</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-xl font-bold text-[#3B82F6]">{(aiCost.prompt_tokens + aiCost.completion_tokens).toLocaleString()}</p>
                 <p className="text-gray-500 text-xs mt-1">Total Tokens</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-xl font-bold text-[#F59E0B]">${parseFloat(aiCost.cost_usd).toFixed(4)}</p>
                 <p className="text-gray-500 text-xs mt-1">Cost (USD)</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-xl font-bold text-[#10B981]">{parseFloat(aiCost.energy_kwh).toFixed(6)}</p>
                 <p className="text-gray-500 text-xs mt-1">Energy (kWh)</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-xl font-bold text-gray-300">{aiCost.latency_ms}ms</p>
                 <p className="text-gray-500 text-xs mt-1">Latency</p>
               </div>

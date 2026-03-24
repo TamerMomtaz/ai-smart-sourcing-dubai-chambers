@@ -66,9 +66,9 @@ const ComplianceAuditsList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent)] mx-auto mb-4"></div>
           <p className="text-gray-400">Loading compliance audits...</p>
         </div>
       </div>
@@ -76,14 +76,14 @@ const ComplianceAuditsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Compliance Audits</h1>
           <div className="flex items-center gap-3">
             <Link
               to="/proposals"
-              className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+              className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
             >
               Run Audit on Proposal
             </Link>
@@ -117,7 +117,7 @@ const ComplianceAuditsList = () => {
         <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-gray-700/50">
           <div style={{ overflowX: 'auto', width: '100%' }}>
           <table className="w-full" style={{ minWidth: '900px' }}>
-            <thead className="bg-[#0F172A]">
+            <thead className="bg-[var(--color-table-header-bg)]">
               <tr>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Proposal</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Score</th>
@@ -139,7 +139,7 @@ const ComplianceAuditsList = () => {
                 </tr>
               ) : (
                 audits.map((a) => (
-                  <tr key={a.id} className="border-t border-gray-700/50 hover:bg-[#0F172A]/50">
+                  <tr key={a.id} className="border-t border-gray-700/50 hover:bg-[var(--color-table-header-bg)]">
                     <td className="p-4">
                       <Link to={`/proposals/${a.proposal_id}`} className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium">
                         {a.proposal_title || 'View Proposal'}
@@ -173,7 +173,7 @@ const ComplianceAuditsList = () => {
                     <td className="p-4 space-x-2">
                       <Link
                         to={`/compliance-audits/${a.id}`}
-                        className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
+                        className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
                       >
                         View Evidence
                       </Link>
@@ -200,7 +200,7 @@ const ComplianceAuditsList = () => {
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[#0F172A] transition"
+              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
             >
               Previous
             </button>
@@ -210,7 +210,7 @@ const ComplianceAuditsList = () => {
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === pagination.total_pages}
-              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[#0F172A] transition"
+              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
             >
               Next
             </button>

@@ -191,7 +191,7 @@ const DocumentsSection = ({ proposalId, userRole, onToast }) => {
           {documents.map((doc) => {
             const typeInfo = FILE_TYPE_ICONS[doc.file_type] || FILE_TYPE_ICONS.pdf;
             return (
-              <div key={doc.id} className="flex items-center justify-between bg-[#0F172A] rounded-lg p-3 border border-gray-700/50">
+              <div key={doc.id} className="flex items-center justify-between bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`px-2 py-1 rounded text-xs font-bold border ${typeInfo.color}`}>
                     {typeInfo.label}
@@ -304,7 +304,7 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
           <button
             onClick={handleRunAudit}
             disabled={auditLoading}
-            className="bg-teal-500 hover:bg-teal-600 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50 transition-colors"
+            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent)] text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50 transition-colors"
           >
             {auditLoading ? (
               <span className="flex items-center gap-2">
@@ -348,19 +348,19 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
 
           {/* Quick Compliance Checklist */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.isr_v3_compliance ? '✅' : '❌'}</span>
               <p className="text-gray-300 text-sm mt-1 font-medium">ISR V3</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.ai_security_policy_compliance ? '✅' : '❌'}</span>
               <p className="text-gray-300 text-sm mt-1 font-medium">AI Security</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.csp_standards_compliance ? '✅' : '❌'}</span>
               <p className="text-gray-300 text-sm mt-1 font-medium">CSP Standards</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-3 border border-gray-700/50 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.data_residency_verified ? '✅' : '❌'}</span>
               <p className="text-gray-300 text-sm mt-1 font-medium">Data Residency</p>
             </div>
@@ -368,12 +368,12 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
 
           {/* Summary */}
           {audit.summary && (
-            <p className="text-gray-300 text-sm leading-relaxed border-l-2 border-teal-500 pl-4">{audit.summary}</p>
+            <p className="text-gray-300 text-sm leading-relaxed border-l-2 border-[var(--color-accent)] pl-4">{audit.summary}</p>
           )}
 
           {/* Framework Accordions */}
           {(audit.frameworks || []).map((fw, idx) => (
-            <div key={idx} className="bg-[#0F172A] rounded-lg border border-gray-700/50">
+            <div key={idx} className="bg-[var(--color-table-header-bg)] rounded-lg border border-gray-700/50">
               <button
                 onClick={() => setExpandedFramework(expandedFramework === idx ? null : idx)}
                 className="w-full flex items-center justify-between p-4 text-left"
@@ -401,7 +401,7 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
                       </div>
                       <p className="text-gray-400 text-xs mt-1">{ctrl.finding}</p>
                       {ctrl.recommendation && (
-                        <p className="text-teal-400 text-xs mt-1">Rec: {ctrl.recommendation}</p>
+                        <p className="text-[var(--color-accent)] text-xs mt-1">Rec: {ctrl.recommendation}</p>
                       )}
                     </div>
                   ))}
@@ -412,7 +412,7 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
 
           {/* Key Findings */}
           {audit.findings && (
-            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 border border-gray-700/50">
               <h4 className="text-gray-300 text-sm font-semibold mb-2">Key Findings</h4>
               {Array.isArray(audit.findings) ? (
                 <ul className="space-y-1">
@@ -430,7 +430,7 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
 
           {/* Data Residency & Vendor Certification */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 border border-gray-700/50">
               <h4 className="text-gray-400 text-sm mb-2">Data Residency</h4>
               <span className={`px-2 py-1 rounded text-xs font-bold border ${audit.data_residency_verified || audit.data_residency?.compliant ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
                 {audit.data_residency_verified || audit.data_residency?.compliant ? 'UAE Compliant' : 'Not Verified'}
@@ -439,7 +439,7 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
                 <p className="text-gray-400 text-xs mt-2">{audit.data_residency.finding}</p>
               )}
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 border border-gray-700/50">
               <h4 className="text-gray-400 text-sm mb-2">Vendor Certification</h4>
               <span className={`px-2 py-1 rounded text-xs font-bold border ${audit.vendor_certification?.desc_approved ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'}`}>
                 {audit.vendor_certification?.desc_approved ? 'DESC Approved' : 'Not DESC Approved'}
@@ -461,7 +461,7 @@ const ROLE_BADGE_STYLES = {
   compliance_officer: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   vendor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   executive: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  business_group_lead: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+  business_group_lead: 'bg-accent-10 text-[var(--color-accent)] border-accent-30',
 };
 
 const ROLE_LABELS = {
@@ -559,14 +559,14 @@ const CommentsSection = ({ proposalId, userRole, currentUserId, onToast }) => {
           placeholder="Share your assessment of this proposal..."
           rows={3}
           maxLength={2000}
-          className="w-full bg-[#0F172A] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none placeholder-gray-500"
+          className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] resize-none placeholder-gray-500"
         />
         <div className="flex items-center justify-between mt-2">
           <span className="text-gray-500 text-xs">{commentText.length}/2000</span>
           <button
             onClick={handlePost}
             disabled={posting || !commentText.trim()}
-            className="bg-[#0D9488] hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 transition-colors"
+            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 transition-colors"
           >
             {posting ? 'Posting...' : 'Post Comment'}
           </button>
@@ -584,7 +584,7 @@ const CommentsSection = ({ proposalId, userRole, currentUserId, onToast }) => {
       ) : (
         <div className="space-y-3">
           {comments.map((c) => (
-            <div key={c.id} className="bg-[#0F172A] rounded-lg p-4 border border-gray-700/50">
+            <div key={c.id} className="bg-[var(--color-table-header-bg)] rounded-lg p-4 border border-gray-700/50">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-white font-medium text-sm">{c.user_name || 'Unknown'}</span>
@@ -674,7 +674,7 @@ const ProposalDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3B82F6] mx-auto mb-4"></div>
           <p className="text-gray-400">Loading proposal...</p>
@@ -685,7 +685,7 @@ const ProposalDetail = () => {
 
   if (error && !proposal) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-red-400 text-lg">{error}</div>
       </div>
     );
@@ -695,7 +695,7 @@ const ProposalDetail = () => {
   const aiCost = proposal?.ai_cost;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       {toast && (
         <div className={`fixed top-6 right-6 z-50 ${toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-2xl`}>
           {toast.message}
@@ -847,19 +847,19 @@ const ProposalDetail = () => {
           <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
             <h3 className="text-xl font-bold text-white mb-4">ΣI — Evaluation Cost</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-[#3B82F6]">{(aiCost.prompt_tokens + aiCost.completion_tokens).toLocaleString()}</p>
                 <p className="text-gray-500 text-xs mt-1">Total Tokens</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-[#F59E0B]">${parseFloat(aiCost.cost_usd).toFixed(4)}</p>
                 <p className="text-gray-500 text-xs mt-1">Cost (USD)</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-[#10B981]">{parseFloat(aiCost.energy_kwh).toFixed(6)}</p>
                 <p className="text-gray-500 text-xs mt-1">Energy (kWh)</p>
               </div>
-              <div className="bg-[#0F172A] rounded-lg p-3 text-center">
+              <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-gray-300">{aiCost.latency_ms}ms</p>
                 <p className="text-gray-500 text-xs mt-1">Latency</p>
               </div>

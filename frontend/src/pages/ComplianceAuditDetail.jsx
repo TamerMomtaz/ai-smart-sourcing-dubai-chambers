@@ -42,9 +42,9 @@ const ComplianceAuditDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent)] mx-auto mb-4"></div>
           <p className="text-gray-400">Loading audit...</p>
         </div>
       </div>
@@ -53,7 +53,7 @@ const ComplianceAuditDetail = () => {
 
   if (error && !audit) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] flex items-center justify-center">
         <div className="text-red-400 text-lg">{error}</div>
       </div>
     );
@@ -70,7 +70,7 @@ const ComplianceAuditDetail = () => {
   const scoreColor = (overallScore || 0) > 80 ? '#10B981' : (overallScore || 0) >= 50 ? '#F59E0B' : '#EF4444';
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -86,7 +86,7 @@ const ComplianceAuditDetail = () => {
               href={`/compliance-audits/${id}/report`}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition inline-block"
+              className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-semibold px-4 py-2 rounded-lg transition inline-block"
             >
               Download Report
             </a>
@@ -157,7 +157,7 @@ const ComplianceAuditDetail = () => {
                 const warnCount = controls.filter(c => c.status === 'warning').length;
 
                 return (
-                  <div key={idx} className="bg-[#0F172A] rounded-lg border border-gray-700/50">
+                  <div key={idx} className="bg-[var(--color-table-header-bg)] rounded-lg border border-gray-700/50">
                     <button
                       onClick={() => setExpandedFramework(expandedFramework === idx ? null : idx)}
                       className="w-full flex items-center justify-between p-4 text-left"
@@ -189,7 +189,7 @@ const ComplianceAuditDetail = () => {
                               {(ctrl.finding || ctrl.recommendation) && (
                                 <button
                                   onClick={() => setExpandedEvidence(prev => ({ ...prev, [evidenceKey]: !prev[evidenceKey] }))}
-                                  className="text-teal-400 hover:text-teal-300 text-xs font-medium mt-1 flex items-center gap-1"
+                                  className="text-[var(--color-accent)] hover:text-[var(--color-accent)] text-xs font-medium mt-1 flex items-center gap-1"
                                 >
                                   {isEvidenceExpanded ? '▾ Hide evidence' : '▸ Show evidence'}
                                 </button>
@@ -205,7 +205,7 @@ const ComplianceAuditDetail = () => {
                                   {ctrl.recommendation && (
                                     <div>
                                       <span className="text-[#94A3B8] text-xs font-medium uppercase">Recommendation</span>
-                                      <p className="text-teal-400 text-sm mt-0.5">{ctrl.recommendation}</p>
+                                      <p className="text-[var(--color-accent)] text-sm mt-0.5">{ctrl.recommendation}</p>
                                     </div>
                                   )}
                                 </div>
@@ -237,7 +237,7 @@ const ComplianceAuditDetail = () => {
               <p className="text-[#CBD5E1] text-sm mt-3">{dataResidency.finding}</p>
             )}
             {dataResidency?.recommendation && (
-              <p className="text-teal-400 text-sm mt-2">Rec: {dataResidency.recommendation}</p>
+              <p className="text-[var(--color-accent)] text-sm mt-2">Rec: {dataResidency.recommendation}</p>
             )}
           </div>
           <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50">
@@ -259,25 +259,25 @@ const ComplianceAuditDetail = () => {
         <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
           <h3 className="text-lg font-bold text-white mb-4">Compliance Summary</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.isr_v3_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.isr_v3_compliance ? 'Pass' : 'Fail'}
               </p>
               <p className="text-[#94A3B8] text-xs mt-1">ISR V3</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.ai_security_policy_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.ai_security_policy_compliance ? 'Pass' : 'Fail'}
               </p>
               <p className="text-[#94A3B8] text-xs mt-1">AI Security</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.csp_standards_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.csp_standards_compliance ? 'Pass' : 'Fail'}
               </p>
               <p className="text-[#94A3B8] text-xs mt-1">CSP Standards</p>
             </div>
-            <div className="bg-[#0F172A] rounded-lg p-4 text-center">
+            <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.remediation_required ? 'text-amber-400' : 'text-emerald-400'}`}>
                 {audit?.remediation_required ? 'Yes' : 'No'}
               </p>
@@ -290,7 +290,7 @@ const ComplianceAuditDetail = () => {
         {!frameworks.length && audit?.findings_json && (
           <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
             <h3 className="text-lg font-bold text-white mb-3">Findings</h3>
-            <pre className="bg-[#0F172A] p-4 rounded-lg overflow-x-auto text-sm text-gray-300">
+            <pre className="bg-[var(--color-table-header-bg)] p-4 rounded-lg overflow-x-auto text-sm text-gray-300">
               {JSON.stringify(audit.findings_json, null, 2)}
             </pre>
           </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
-const TEAL = '#0D9488';
+const TEAL = 'var(--color-accent)';
 
 const ShieldIconSvg = ({ size = 12, color = TEAL }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -290,14 +290,14 @@ const ProposalsList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Proposals</h1>
           <div className="flex items-center gap-3">
-            <label className="bg-[#0D9488] hover:bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-2">
+            <label className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold px-6 py-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-2">
               <span>Upload Proposal PDF</span>
               <input
                 type="file"
@@ -326,7 +326,7 @@ const ProposalsList = () => {
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+            className="bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
           >
             <option value="">All Statuses</option>
             <option value="queued">Queued</option>
@@ -340,7 +340,7 @@ const ProposalsList = () => {
           <select
             value={filters.sector}
             onChange={(e) => handleFilterChange('sector', e.target.value)}
-            className="bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+            className="bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
           >
             <option value="">All Sectors</option>
             {businessGroups.map((bg) => (
@@ -359,7 +359,7 @@ const ProposalsList = () => {
           ) : (
             <div style={{ overflowX: 'auto', width: '100%' }}>
             <table className="w-full" style={{ minWidth: '800px' }}>
-              <thead className="bg-[#0F172A] border-b border-gray-700">
+              <thead className="bg-[var(--color-table-header-bg)] border-b border-gray-700">
                 <tr>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Title</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
@@ -378,7 +378,7 @@ const ProposalsList = () => {
                   </tr>
                 ) : (
                   proposals.map((p) => (
-                    <tr key={p.id} className="border-b border-gray-700/50 hover:bg-[#0F172A]/50 transition-colors">
+                    <tr key={p.id} className="border-b border-gray-700/50 hover:bg-[var(--color-table-header-bg)] transition-colors">
                       <td className="p-4">
                         <Link to={`/proposals/${p.id}`} className="text-[#3B82F6] hover:text-blue-300 font-medium">
                           {p.title}
@@ -449,22 +449,22 @@ const ProposalsList = () => {
                           </span>
                         )}
                         {auditingId === p.id ? (
-                          <span className="flex items-center gap-2 text-teal-400 text-sm">
-                            <span className="animate-spin inline-block w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full"></span>
+                          <span className="flex items-center gap-2 text-[var(--color-accent)] text-sm">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full"></span>
                             Running DESC compliance audit...
                           </span>
                         ) : p.has_audit === true ? (
                           <button
                             onClick={() => handleAudit(p.id)}
                             title="Click to re-audit"
-                            className="bg-[#0D9488] text-white px-2 py-0.5 rounded-full text-xs font-bold hover:bg-teal-700 transition cursor-pointer"
+                            className="bg-[var(--color-accent)] text-white px-2 py-0.5 rounded-full text-xs font-bold hover:bg-[var(--color-accent-hover)] transition cursor-pointer"
                           >
                             {p.audit_score != null ? p.audit_score : 'Audited'}
                           </button>
                         ) : (
                           <button
                             onClick={() => handleAudit(p.id)}
-                            className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition"
+                            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition"
                           >
                             Audit
                           </button>
@@ -521,7 +521,7 @@ const ProposalsList = () => {
 
             {ingestStep === 'extracting' && (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0D9488] mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent)] mx-auto mb-4"></div>
                 <p className="text-gray-300 text-lg mb-2">AI is reading your document...</p>
                 <p className="text-gray-500 text-sm">Extracting proposal details from {ingestFile?.name}</p>
               </div>
@@ -537,7 +537,7 @@ const ProposalsList = () => {
                     type="text"
                     value={ingestData.title}
                     onChange={(e) => handleIngestFieldChange('title', e.target.value)}
-                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   />
                 </div>
 
@@ -546,7 +546,7 @@ const ProposalsList = () => {
                   <select
                     value={ingestData.sector}
                     onChange={(e) => handleIngestFieldChange('sector', e.target.value)}
-                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   >
                     {['AI/ML', 'FinTech', 'HealthTech', 'CleanTech', 'EdTech', 'Construction', 'Cybersecurity', 'Supply Chain', 'AgTech', 'SpaceTech', 'Retail'].map(s => (
                       <option key={s} value={s}>{s}</option>
@@ -560,7 +560,7 @@ const ProposalsList = () => {
                     type="text"
                     value={ingestData.technology_type}
                     onChange={(e) => handleIngestFieldChange('technology_type', e.target.value)}
-                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   />
                 </div>
 
@@ -569,7 +569,7 @@ const ProposalsList = () => {
                   <select
                     value={ingestData.maturity_level}
                     onChange={(e) => handleIngestFieldChange('maturity_level', e.target.value)}
-                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   >
                     <option value="concept">Concept</option>
                     <option value="prototype">Prototype</option>
@@ -590,7 +590,7 @@ const ProposalsList = () => {
                           value={opt.value}
                           checked={ingestData.language === opt.value}
                           onChange={(e) => handleIngestFieldChange('language', e.target.value)}
-                          className="text-[#0D9488] focus:ring-[#0D9488]"
+                          className="text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
                         />
                         <span className="text-gray-300 text-sm">{opt.label}</span>
                       </label>
@@ -604,7 +604,7 @@ const ProposalsList = () => {
                     rows={4}
                     value={ingestData.description}
                     onChange={(e) => handleIngestFieldChange('description', e.target.value)}
-                    className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488] resize-none"
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] resize-none"
                   />
                 </div>
 
@@ -615,7 +615,7 @@ const ProposalsList = () => {
                       type="text"
                       value={ingestData.company_name}
                       onChange={(e) => handleIngestFieldChange('company_name', e.target.value)}
-                      className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                      className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                     />
                   </div>
                   <div>
@@ -624,7 +624,7 @@ const ProposalsList = () => {
                       type="text"
                       value={ingestData.company_country}
                       onChange={(e) => handleIngestFieldChange('company_country', e.target.value)}
-                      className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                      className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                     />
                   </div>
                 </div>
@@ -633,7 +633,7 @@ const ProposalsList = () => {
                   <button
                     onClick={handleConfirmIngestion}
                     disabled={confirmingIngestion}
-                    className="flex-1 bg-[#0D9488] hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg disabled:opacity-50 transition-colors"
+                    className="flex-1 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold py-2.5 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     {confirmingIngestion ? 'Creating Proposal...' : 'Confirm Submission'}
                   </button>
@@ -668,7 +668,7 @@ const ProposalsList = () => {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                   placeholder="Proposal title"
                 />
               </div>
@@ -680,7 +680,7 @@ const ProposalsList = () => {
                   required
                   value={formData.sector}
                   onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                  className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                 >
                   <option value="">Select sector...</option>
                   {businessGroups.map((bg) => (
@@ -698,7 +698,7 @@ const ProposalsList = () => {
                   required
                   value={formData.technology_type}
                   onChange={(e) => setFormData({ ...formData, technology_type: e.target.value })}
-                  className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                   placeholder="e.g. Machine Learning, Blockchain, IoT"
                 />
               </div>
@@ -710,7 +710,7 @@ const ProposalsList = () => {
                   required
                   value={formData.maturity_level}
                   onChange={(e) => setFormData({ ...formData, maturity_level: e.target.value })}
-                  className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                 >
                   <option value="">Select maturity level...</option>
                   <option value="concept">Concept</option>
@@ -748,7 +748,7 @@ const ProposalsList = () => {
                   rows={5}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-[#0F172A] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B] resize-none"
+                  className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B] resize-none"
                   placeholder="Describe your technology solution..."
                 />
               </div>
