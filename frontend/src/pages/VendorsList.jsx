@@ -2,6 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
+const DESCShieldIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#10B981" fillOpacity="0.15" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const DESCCertifiedBadge = ({ providerName }) => (
+  <div className="group relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 text-xs font-semibold">
+    <DESCShieldIcon size={14} />
+    <span>DESC Certified</span>
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+      {providerName ? `${providerName} — ` : ''}This vendor meets DESC ISR V3, AI Security, and CSP standards
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+    </div>
+  </div>
+);
+
 const VendorsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -96,8 +114,8 @@ const VendorsList = () => {
               <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="font-heading text-xl text-teal">{v.name}</h3>
-                  {v.is_desc_approved && (
-                    <span className="bg-gold/20 text-gold px-2 py-1 rounded text-xs font-medium">DESC</span>
+                  {v.desc_certified && (
+                    <DESCCertifiedBadge providerName={v.desc_provider_name} />
                   )}
                 </div>
                 <div className="space-y-2 text-sm text-ink/70 mb-4">

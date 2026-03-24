@@ -134,8 +134,25 @@ async def list_chamber_proposals(
         total = response.count if response.count else 0
         total_pages = (total + page_size - 1) // page_size
 
+        # Enrich proposals with vendor DESC certification status
+        proposals = response.data
+        submitter_ids = list({str(p["submitter_id"]) for p in proposals if p.get("submitter_id")})
+        vendor_desc_map = {}
+        if submitter_ids:
+            vendor_query = supabase.table("chamber_vendors").select(
+                "id, is_desc_approved, desc_certified_provider_id"
+            ).in_("id", submitter_ids).execute()
+            for v in (vendor_query.data or []):
+                vendor_desc_map[v["id"]] = {
+                    "vendor_desc_certified": bool(v.get("desc_certified_provider_id")) or v.get("is_desc_approved", False),
+                }
+
+        for p in proposals:
+            vendor_info = vendor_desc_map.get(str(p.get("submitter_id")), {})
+            p["vendor_desc_certified"] = vendor_info.get("vendor_desc_certified", False)
+
         return {
-            "proposals": response.data,
+            "proposals": proposals,
             "pagination": {"total": total, "page": page, "page_size": page_size, "total_pages": total_pages},
         }
 

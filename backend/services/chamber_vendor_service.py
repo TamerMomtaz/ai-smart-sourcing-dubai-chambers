@@ -38,6 +38,34 @@ async def create_vendor(
     return None
 
 
+def _enrich_vendor_with_cert(vendor: Dict[str, Any], cert_map: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """Add DESC certification fields to a vendor dict."""
+    provider_id = vendor.get("desc_certified_provider_id")
+    if provider_id and provider_id in cert_map:
+        cert = cert_map[provider_id]
+        vendor["desc_certified"] = True
+        vendor["desc_certification_level"] = "certified"
+        vendor["desc_provider_name"] = cert.get("provider_name")
+    else:
+        vendor["desc_certified"] = vendor.get("is_desc_approved", False)
+        vendor["desc_certification_level"] = "in_progress" if vendor.get("is_desc_approved") and not provider_id else None
+        vendor["desc_provider_name"] = None
+    return vendor
+
+
+def _fetch_cert_map(provider_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+    """Fetch certified providers by IDs and return a lookup dict."""
+    if not provider_ids:
+        return {}
+    response = (
+        supabase.table("chamber_desc_certified_providers")
+        .select("id, provider_name, certification_number, valid_until")
+        .in_("id", provider_ids)
+        .execute()
+    )
+    return {r["id"]: r for r in (response.data or [])}
+
+
 async def list_vendors(
     page: int = 1,
     page_size: int = 20,
@@ -66,7 +94,14 @@ async def list_vendors(
 
     response = query.execute()
     total = response.count if response.count else 0
-    return response.data or [], total
+    vendors = response.data or []
+
+    # Enrich with DESC certification info
+    provider_ids = [v["desc_certified_provider_id"] for v in vendors if v.get("desc_certified_provider_id")]
+    cert_map = _fetch_cert_map(provider_ids)
+    vendors = [_enrich_vendor_with_cert(v, cert_map) for v in vendors]
+
+    return vendors, total
 
 
 async def get_vendor_by_id(vendor_id: UUID, **kwargs) -> Optional[Dict[str, Any]]:
@@ -78,7 +113,10 @@ async def get_vendor_by_id(vendor_id: UUID, **kwargs) -> Optional[Dict[str, Any]
         .execute()
     )
     if response.data and len(response.data) > 0:
-        return response.data[0]
+        vendor = response.data[0]
+        provider_ids = [vendor["desc_certified_provider_id"]] if vendor.get("desc_certified_provider_id") else []
+        cert_map = _fetch_cert_map(provider_ids)
+        return _enrich_vendor_with_cert(vendor, cert_map)
     return None
 
 
