@@ -30,6 +30,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import Settings from './pages/Settings';
 import UsersPage from './pages/UsersPage';
 import BoardBrief from './pages/BoardBrief';
+import AuditReport from './pages/AuditReport';
 import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
 import ApiDocs from './pages/ApiDocs';
@@ -91,6 +92,7 @@ function App() {
           <Route path="/how-it-works" element={<HowItWorksStandalone />} />
           <Route path="/api-docs" element={<ApiDocsStandalone />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
+          <Route path="/compliance-audits/:id/report" element={<PrivateRoute><AuditReport /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="guide" element={<HowItWorks />} />

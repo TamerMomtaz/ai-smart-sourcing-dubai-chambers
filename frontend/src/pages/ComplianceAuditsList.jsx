@@ -169,13 +169,22 @@ const ComplianceAuditsList = () => {
                     <td className="p-4 text-gray-400 text-sm">
                       {a.audit_timestamp ? new Date(a.audit_timestamp).toLocaleDateString() : 'N/A'}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 space-x-2">
                       <Link
                         to={`/compliance-audits/${a.id}`}
                         className="bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
                       >
                         View Evidence
                       </Link>
+                      <a
+                        href={`/compliance-audits/${a.id}/report`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#1E293B] hover:bg-[#334155] text-gray-300 text-sm font-medium px-3 py-1 rounded transition inline-block border border-gray-600"
+                        title="Download Audit Report"
+                      >
+                        Report
+                      </a>
                     </td>
                   </tr>
                 ))
