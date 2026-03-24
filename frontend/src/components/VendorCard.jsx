@@ -1,6 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const DESCShieldIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#10B981" fillOpacity="0.15" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 const VendorCard = ({ vendor }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -19,9 +26,14 @@ const VendorCard = ({ vendor }) => {
             <h3 className="text-xl font-heading font-bold text-ink mb-2">
               {vendor.name}
             </h3>
-            {vendor.is_desc_approved && (
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-body font-medium bg-teal/10 text-teal mb-2">
-                ✓ DESC Approved
+            {(vendor.desc_certified || vendor.is_desc_approved) && (
+              <div className="group relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 text-xs font-body font-semibold mb-2">
+                <DESCShieldIcon size={14} />
+                <span>DESC Certified</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                  {vendor.desc_provider_name ? `${vendor.desc_provider_name} — ` : ''}This vendor meets DESC ISR V3, AI Security, and CSP standards
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                </div>
               </div>
             )}
           </div>

@@ -40,6 +40,9 @@ class VendorResponse(BaseModel):
     submission_history_count: int = Field(..., description="Total proposals submitted")
     average_compliance_score: Optional[float] = Field(None, description="Average compliance score")
     profile: Optional[VendorProfile] = Field(None, description="Extended vendor profile")
+    desc_certified: bool = Field(default=False, description="Whether vendor is DESC certified")
+    desc_certification_level: Optional[str] = Field(None, description="Certification level: certified or in_progress")
+    desc_provider_name: Optional[str] = Field(None, description="DESC certified provider name")
 
 
 class VendorProfileUpdate(BaseModel):

@@ -3,6 +3,19 @@ import { Link } from 'react-router-dom';
 import StatusBadge from './StatusBadge';
 import ScoreBadge from './ScoreBadge';
 
+const DESCShieldMini = () => (
+  <span className="group relative inline-flex items-center ml-1.5" title="Vendor is DESC Certified">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#10B981" fillOpacity="0.15" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+      DESC Certified Vendor
+      <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+    </span>
+  </span>
+);
+
 const ProposalCard = ({ proposal }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -20,6 +33,7 @@ const ProposalCard = ({ proposal }) => {
           <div className="flex-1">
             <h3 className="text-xl font-heading font-bold text-ink mb-2 line-clamp-2">
               {proposal.title}
+              {proposal.vendor_desc_certified && <DESCShieldMini />}
             </h3>
             <div className="flex flex-wrap gap-2 mb-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-body font-medium bg-teal/10 text-teal">

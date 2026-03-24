@@ -86,6 +86,9 @@ async def create_vendor(
             submission_history_count=result.get("submission_history_count", 0),
             average_compliance_score=result.get("average_compliance_score"),
             profile=None,
+            desc_certified=result.get("desc_certified", False),
+            desc_certification_level=result.get("desc_certification_level"),
+            desc_provider_name=result.get("desc_provider_name"),
         )
 
     except HTTPException:
@@ -163,6 +166,9 @@ async def list_vendors(
                 submission_history_count=v.get("submission_history_count", 0),
                 average_compliance_score=v.get("average_compliance_score"),
                 profile=None,
+                desc_certified=v.get("desc_certified", False),
+                desc_certification_level=v.get("desc_certification_level"),
+                desc_provider_name=v.get("desc_provider_name"),
             )
             for v in vendor_data
         ]
@@ -244,6 +250,9 @@ async def get_vendor(
             submission_history_count=result.get("submission_history_count", 0),
             average_compliance_score=result.get("average_compliance_score"),
             profile=result.get("profile"),
+            desc_certified=result.get("desc_certified", False),
+            desc_certification_level=result.get("desc_certification_level"),
+            desc_provider_name=result.get("desc_provider_name"),
         )
 
     except HTTPException:

@@ -382,6 +382,14 @@ const ProposalsList = () => {
                         <Link to={`/proposals/${p.id}`} className="text-[#3B82F6] hover:text-blue-300 font-medium">
                           {p.title}
                         </Link>
+                        {p.vendor_desc_certified && (
+                          <span className="group relative ml-1.5 inline-flex items-center" title="Vendor is DESC Certified">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#10B981" fillOpacity="0.15" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        )}
                         {commentCounts[p.id] > 0 && (
                           <span className="ml-2 inline-flex items-center gap-1 bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded-full text-xs">
                             <span>💬</span> {commentCounts[p.id]}
