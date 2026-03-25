@@ -1,7 +1,8 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime, timezone
+import json
 
 from auth import get_current_user
 from models.vendor import (
@@ -300,29 +301,41 @@ async def update_vendor(
     update_data: VendorProfileUpdate,
     current_user: dict = Depends(get_current_user),
 ):
-    """Update vendor profile. Vendors can only update their own profile."""
+    """Update vendor profile. Admin only — changes are logged to audit trail."""
     try:
         user_id = UUID(current_user["id"])
         user_role = current_user["role"]
 
-        if user_role == "vendor":
-            vendor_check = await chamber_vendor_service.get_vendor_by_id(
-                user_id=user_id,
-                vendor_id=vendor_id,
-                user_role=user_role,
+        if user_role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "Forbidden",
+                    "detail": "Only admin can edit vendor profiles",
+                    "code": "INSUFFICIENT_PERMISSIONS",
+                },
             )
-            if not vendor_check or UUID(vendor_check["id"]) != vendor_id:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail={
-                        "error": "Forbidden",
-                        "detail": "Vendors can only update their own profile",
-                        "code": "INSUFFICIENT_PERMISSIONS",
-                    },
-                )
+
+        # Fetch old vendor data for audit diff
+        old_vendor = await chamber_vendor_service.get_vendor_by_id(
+            user_id=user_id,
+            vendor_id=vendor_id,
+            user_role=user_role,
+        )
 
         update_dict = update_data.model_dump(exclude_unset=True)
-        
+
+        # Build field-level diff for audit log
+        changed_fields = {}
+        if old_vendor:
+            editable_keys = ["name", "company_registration", "country", "contact_email", "contact_phone", "website"]
+            for key in editable_keys:
+                if key in update_dict and str(update_dict.get(key, "")) != str(old_vendor.get(key, "")):
+                    changed_fields[key] = {
+                        "old": old_vendor.get(key),
+                        "new": update_dict.get(key),
+                    }
+
         result = await chamber_vendor_service.update_vendor(
             user_id=user_id,
             vendor_id=vendor_id,
@@ -338,6 +351,32 @@ async def update_vendor(
                     "code": "VENDOR_UPDATE_FAILED",
                 },
             )
+
+        # Log change to chamber_ai_interactions audit trail
+        if changed_fields:
+            try:
+                audit_detail = json.dumps({
+                    "vendor_id": str(vendor_id),
+                    "vendor_name": result.get("name"),
+                    "changed_fields": changed_fields,
+                    "edited_by": current_user.get("email"),
+                })
+                supabase.table("chamber_ai_interactions").insert({
+                    "session_id": str(uuid4()),
+                    "user_id": str(user_id),
+                    "operation_type": "vendor_profile_edit",
+                    "model_name": f"admin_edit:{audit_detail}",
+                    "prompt_tokens": 0,
+                    "completion_tokens": 0,
+                    "latency_ms": 0,
+                    "cost_usd": 0,
+                    "energy_kwh": 0,
+                    "carbon_gco2": 0,
+                    "intelligence_units": 0,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }).execute()
+            except Exception as audit_err:
+                logger.warning(f"Failed to log vendor edit audit: {audit_err}")
 
         return VendorUpdateResponse(
             vendor_id=UUID(result["id"]),

@@ -17,7 +17,8 @@ const STAGES = [
   { id: 10, name: 'Business Groups', sidebar: 'Business Groups' },
   { id: 11, name: 'Users', sidebar: 'Users' },
   { id: 12, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
-  { id: 13, name: 'Finale', sidebar: null },
+  { id: 13, name: 'Vendor Intelligence — vScore', sidebar: 'Vendor Intelligence' },
+  { id: 14, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
@@ -33,6 +34,7 @@ const TOOLTIPS = {
   10: 'Business Groups — sector-specific evaluation configuration',
   11: 'Users — role-based access management',
   12: 'ΣI Transparency — full AI cost and environmental accountability',
+  13: 'Vendor Intelligence — supplier credit scoring with vScore',
 };
 
 /* ─── Particle Field ─── */
@@ -500,6 +502,109 @@ const STAGE_CONTENT = {
     title: "σI Transparency",
     render: () => null // Handled by RevealSection in main render
   },
+
+  13: {
+    title: "Vendor Intelligence — vScore",
+    render: () => {
+      /* Animated vScore gauge count-up */
+      const VScoreDemo = () => {
+        const [val, setVal] = React.useState(300);
+        React.useEffect(() => {
+          const duration = 2000;
+          const start = performance.now();
+          const animate = (now) => {
+            const pct = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - pct, 3); // ease-out cubic
+            setVal(Math.round(300 + eased * 532));
+            if (pct < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }, []);
+        return (
+          <div style={{
+            width: '100px', height: '100px', borderRadius: '50%',
+            border: '4px solid #0D9488', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', fontWeight: 700, color: '#0D9488',
+            margin: '0 auto 16px', animation: 'slideUp 0.6s ease-out'
+          }}>
+            {val}
+          </div>
+        );
+      };
+
+      return (
+        <div>
+          <VScoreDemo />
+          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+            Every vendor gets a vScore — a 300 to 900 credit score that tells
+            you how much you can trust them. Like a financial credit bureau, but
+            for suppliers. Platinum, Gold, Silver, Bronze, or Under Review.
+          </p>
+          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+            The vScore aggregates five dimensions: Performance History from past
+            engagements, Proposal Quality from AI evaluations, Compliance from
+            DESC and ISO certifications, Claim Integrity from the Hallucination
+            Shield, and Entity Intelligence from related company analysis.
+          </p>
+          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
+            Every score comes with an AI-generated risk narrative — a plain-English
+            assessment that reads like a credit report. And because this is σI,
+            every factor, every data point, every calculation is transparent and
+            traceable.
+          </p>
+
+          {/* Tier badges appearing one by one */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            {[
+              { name: 'Platinum', color: '#0D9488' },
+              { name: 'Gold', color: '#B8904A' },
+              { name: 'Silver', color: '#3B82F6' },
+              { name: 'Bronze', color: '#F59E0B' },
+              { name: 'Under Review', color: '#EF4444' },
+            ].map((tier, i) => (
+              <span key={tier.name} style={{
+                padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
+                background: `${tier.color}20`, color: tier.color, fontWeight: 600,
+                animation: `slideUp 0.5s ease-out ${0.3 * i}s both`
+              }}>{tier.name}</span>
+            ))}
+          </div>
+
+          {/* Mini radar chart representation */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
+            maxWidth: '400px'
+          }}>
+            {[
+              { dim: 'Performance', pct: 85 },
+              { dim: 'Quality', pct: 78 },
+              { dim: 'Compliance', pct: 92 },
+              { dim: 'Integrity', pct: 88 },
+              { dim: 'Entity', pct: 72 },
+            ].map((d, i) => (
+              <div key={d.dim} style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                animation: `slideUp 0.5s ease-out ${0.2 * i + 1.5}s both`
+              }}>
+                <span style={{ width: '80px', fontSize: '12px', color: '#475569' }}>{d.dim}</span>
+                <div style={{ flex: 1, height: '5px', borderRadius: '3px', background: '#E2E8F0' }}>
+                  <div style={{
+                    height: '100%', borderRadius: '3px', background: '#0D9488',
+                    width: `${d.pct}%`,
+                    animation: `barFill 1.5s ease-out ${0.2 * i + 1.5}s both`
+                  }} />
+                </div>
+                <span style={{ width: '24px', fontSize: '11px', color: '#0D9488', fontWeight: 500, textAlign: 'right' }}>
+                  {d.pct}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+  },
 };
 
 /* ─── Stage Card ─── */
@@ -559,7 +664,7 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
           />
         ))}
         <span style={{ color: 'var(--color-text-secondary, #64748B)', fontSize: '12px', marginLeft: '12px' }}>
-          {current}/12 — {stageName}
+          {current}/{total} — {stageName}
         </span>
       </div>
 
@@ -789,7 +894,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 13));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 14));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -808,14 +913,14 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={12} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+          <NavigationBar current={12} total={13} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
   }
 
-  // Render finale if stage 13
-  if (currentStage === 13) {
+  // Render finale if stage 14
+  if (currentStage === 14) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -823,19 +928,19 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(12)}
+          onBack={() => setCurrentStage(13)}
         />
       </div>
     );
   }
 
-  // Stages 1-11: normal content cards
+  // Stages 1-11, 13: normal content cards
   return (
     <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={12} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 12} />
+      <NavigationBar current={currentStage} total={13} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 13} />
     </div>
   );
 }

@@ -30,6 +30,17 @@ async def get_vendor_vscore(
 
         vid = str(vendor_id)
 
+        # Vendor role: restrict to own vendor only
+        if user_role == "vendor":
+            user_email = current_user.get("email")
+            own_vendor = None
+            if user_email:
+                own_resp = supabase.table("chamber_vendors").select("id").eq("contact_email", user_email).maybe_single().execute()
+                if own_resp and own_resp.data:
+                    own_vendor = own_resp.data["id"]
+            if own_vendor != vid:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error": "Forbidden", "detail": "You can only view your own vScore profile.", "code": "VENDOR_ACCESS_DENIED"})
+
         # Fetch vendor base data
         vendor_resp = supabase.table("chamber_vendors").select("*").eq("id", vid).maybe_single().execute()
         if not vendor_resp or not vendor_resp.data:
