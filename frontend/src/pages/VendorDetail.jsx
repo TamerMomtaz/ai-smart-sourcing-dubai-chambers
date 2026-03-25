@@ -519,24 +519,20 @@ const VendorDetail = () => {
             </div>
           )}
 
-          <div className="border-t pt-6 flex gap-4">
-            {currentUser?.role === 'admin' || currentUser?.role === 'executive' ? (
+          {currentUser?.role === 'admin' && (
+            <div className="border-t pt-6 flex gap-4">
               <button
-                onClick={() => navigate(`/vendors/${id}/edit`)}
+                onClick={() => {
+                  if (window.confirm('Changes to vendor data will be logged to the audit trail. Proceed?')) {
+                    navigate(`/vendors/${id}/edit`);
+                  }
+                }}
                 className="bg-teal text-white py-2 px-6 rounded-lg font-semibold hover:bg-teal/90 transition-colors"
               >
-                Edit
+                Admin Edit
               </button>
-            ) : (
-              <button
-                disabled
-                className="bg-gray-300 text-gray-500 py-2 px-6 rounded-lg font-semibold cursor-not-allowed"
-                title="Only admins can edit vendor records"
-              >
-                Edit
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

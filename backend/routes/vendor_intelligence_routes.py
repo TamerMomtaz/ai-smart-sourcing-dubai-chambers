@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from uuid import UUID
 import logging
 
 from auth import get_current_user
@@ -7,6 +8,67 @@ from database import supabase
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/vendors", tags=["Vendor Intelligence"])
+
+
+@router.get(
+    "/my-vendor",
+    summary="Get vendor profile for current user",
+)
+async def get_my_vendor(
+    current_user: dict = Depends(get_current_user),
+):
+    """Find the vendor record associated with the current user.
+    Matches by email (chamber_users → chamber_vendors.contact_email)
+    or by submitter_id in chamber_proposals."""
+    try:
+        user_email = current_user.get("email")
+        user_id = current_user["id"]
+
+        # Try matching by email first
+        if user_email:
+            vendor_resp = (
+                supabase.table("chamber_vendors")
+                .select("id, name, vscore, vscore_tier")
+                .eq("contact_email", user_email)
+                .maybe_single()
+                .execute()
+            )
+            if vendor_resp and vendor_resp.data:
+                return {"vendor_id": vendor_resp.data["id"], "vendor_name": vendor_resp.data.get("name")}
+
+        # Fallback: match via proposals submitter_id → vendor
+        proposal_resp = (
+            supabase.table("chamber_proposals")
+            .select("submitter_id")
+            .eq("submitter_id", str(user_id))
+            .limit(1)
+            .execute()
+        )
+        if proposal_resp.data and len(proposal_resp.data) > 0:
+            submitter_id = proposal_resp.data[0]["submitter_id"]
+            vendor_resp = (
+                supabase.table("chamber_vendors")
+                .select("id, name, vscore, vscore_tier")
+                .eq("id", submitter_id)
+                .maybe_single()
+                .execute()
+            )
+            if vendor_resp and vendor_resp.data:
+                return {"vendor_id": vendor_resp.data["id"], "vendor_name": vendor_resp.data.get("name")}
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Not found", "detail": "No vendor profile found for this user", "code": "VENDOR_NOT_FOUND"},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error finding vendor for user: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Internal server error", "detail": "Failed to find vendor profile", "code": "MY_VENDOR_ERROR"},
+        )
 
 
 @router.get(

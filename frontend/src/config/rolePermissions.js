@@ -15,7 +15,7 @@ export const ROLE_SIDEBAR_ITEMS = {
   ],
   vendor: [
     'how-it-works', 'dashboard', 'proposals', 'documents',
-    'business-groups'
+    'business-groups', 'vendor-intelligence'
   ],
   executive: [
     'how-it-works', 'dashboard', 'board-brief', 'trend-analyses',

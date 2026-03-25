@@ -56,7 +56,18 @@ function Layout() {
 
   const allowedKeys = ROLE_SIDEBAR_ITEMS[role] || DEFAULT_ITEMS;
   const navigation = useMemo(
-    () => roleLoading ? [] : allNavigation.filter(item => allowedKeys.includes(item.key)),
+    () => {
+      if (roleLoading) return [];
+      return allNavigation
+        .filter(item => allowedKeys.includes(item.key))
+        .map(item => {
+          // Vendor role sees "My vScore" instead of "Vendor Intelligence"
+          if (role === 'vendor' && item.key === 'vendor-intelligence') {
+            return { ...item, name: 'My vScore' };
+          }
+          return item;
+        });
+    },
     [role, roleLoading]
   );
 
