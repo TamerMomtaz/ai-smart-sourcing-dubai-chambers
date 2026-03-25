@@ -210,6 +210,7 @@ app.include_router(chamber_proposal_routes.router, prefix="/api/v1", tags=["Cham
 app.include_router(chamber_trend_analyses_routes.router, prefix="/api/v1", tags=["Chamber Trend Analyses"])
 app.include_router(chamber_users_routes.router, prefix="/api/v1", tags=["Chamber Users"])
 app.include_router(chamber_vendor_profiles_routes.router, prefix="/api/v1", tags=["Chamber Vendor Profiles"])
+app.include_router(vendor_intelligence_routes.router, prefix="/api/v1", tags=["Vendor Intelligence"])  # /vendors/intelligence BEFORE /{vendor_id} catch-all
 app.include_router(chamber_vendors_routes.router, prefix="/api/v1", tags=["Chamber Vendors"])
 app.include_router(comment_routes.router, prefix="/api/v1", tags=["Comments"])
 app.include_router(compliance_audits_routes.router, prefix="/api/v1", tags=["Compliance Audits"])
@@ -243,7 +244,6 @@ app.include_router(compliance_engine_routes.list_router, prefix="/api/v1", tags=
 app.include_router(hallucination_routes.router, prefix="/api/v1", tags=["Hallucination Shield"])
 app.include_router(dashboard_impact_routes.router, prefix="/api/v1", tags=["Dashboard Impact"])
 app.include_router(board_brief_routes.router, prefix="/api/v1", tags=["Board Brief"])
-app.include_router(vendor_intelligence_routes.router, prefix="/api/v1", tags=["Vendor Intelligence"])  # before vendor_id catch-all
 app.include_router(vscore_routes.router, prefix="/api/v1", tags=["vScore"])  # vendor sub-endpoints
 
 if __name__ == "__main__":
