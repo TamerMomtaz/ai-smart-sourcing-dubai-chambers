@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
 const TEAL = 'var(--color-accent)';
@@ -328,6 +328,92 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
   );
 };
 
+const VSCORE_TIER_COLORS = {
+  platinum: '#0D9488', gold: '#B8904A', silver: '#3B82F6', bronze: '#F59E0B', under_review: '#EF4444',
+};
+const VSCORE_TIER_LABELS = {
+  platinum: 'Platinum', gold: 'Gold', silver: 'Silver', bronze: 'Bronze', under_review: 'Under Review',
+};
+
+const VendorContextBanner = ({ evaluation }) => {
+  const [vendorData, setVendorData] = useState(null);
+
+  useEffect(() => {
+    if (!evaluation?.proposal?.submitter_id) return;
+    const fetchVendorVscore = async () => {
+      try {
+        const { data } = await api.get(`/api/v1/vendors/${evaluation.proposal.submitter_id}/vscore`);
+        setVendorData(data);
+      } catch {
+        // Not critical
+      }
+    };
+    fetchVendorVscore();
+  }, [evaluation?.proposal?.submitter_id]);
+
+  if (!vendorData) return null;
+
+  const tier = vendorData.vscore_tier;
+  const tierColor = VSCORE_TIER_COLORS[tier] || '#94A3B8';
+  const tierLabel = VSCORE_TIER_LABELS[tier] || tier;
+  const engCount = vendorData.engagements?.length || 0;
+  const certCount = (vendorData.flags || []).filter(f =>
+    ['iso_27001', 'iso_9001', 'iso_14001', 'soc2_type2', 'desc_audit'].includes(f.flag_type)
+  ).length;
+
+  if (tier === 'under_review') {
+    return (
+      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 flex items-center gap-3">
+        <span className="text-lg">⚠</span>
+        <div className="flex-1">
+          <span className="text-red-400 text-sm">
+            This vendor is under review — vScore: <span className="font-bold">{vendorData.vscore}</span>. Enhanced due diligence recommended.
+          </span>
+        </div>
+        <Link to={`/vendors/${vendorData.vendor_id}`} className="text-red-400 hover:underline text-sm">
+          View Dossier →
+        </Link>
+      </div>
+    );
+  }
+
+  if (engCount === 0) {
+    return (
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6 flex items-center gap-3">
+        <span className="text-lg">🆕</span>
+        <span className="text-blue-400 text-sm">First-time vendor — limited engagement history</span>
+        <Link to={`/vendors/${vendorData.vendor_id}`} className="text-blue-400 hover:underline text-sm ml-auto">
+          View Dossier →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#1E293B] border border-gray-700/50 rounded-xl p-4 mb-6 flex items-center gap-3 flex-wrap">
+      <span className="text-lg">⚡</span>
+      <Link to={`/vendors/${vendorData.vendor_id}`} className="font-semibold text-white hover:underline">
+        {vendorData.vendor_name}
+      </Link>
+      <span className="text-gray-400 text-sm">—</span>
+      <span className="text-sm">
+        <span className="text-gray-400">vScore: </span>
+        <span className="font-bold" style={{ color: tierColor }}>{vendorData.vscore}</span>
+      </span>
+      <span
+        className="px-2 py-0.5 rounded-full text-xs font-bold"
+        style={{ backgroundColor: `${tierColor}20`, color: tierColor }}
+      >
+        {tierLabel}
+      </span>
+      <span className="text-gray-500 text-sm">|</span>
+      <span className="text-gray-400 text-sm">{engCount} prior engagements</span>
+      <span className="text-gray-500 text-sm">|</span>
+      <span className="text-gray-400 text-sm">{certCount} certifications on file</span>
+    </div>
+  );
+};
+
 const EvaluationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -380,6 +466,9 @@ const EvaluationDetail = () => {
             ← Back to Evaluations
           </button>
         </div>
+
+        {/* Vendor Context Banner */}
+        <VendorContextBanner evaluation={evaluation} />
 
         {/* Proposal Info */}
         {evaluation.proposal && (
