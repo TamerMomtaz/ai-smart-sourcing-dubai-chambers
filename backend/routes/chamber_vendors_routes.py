@@ -506,7 +506,7 @@ async def get_vendor_reputation(
         # Fetch submission history from chamber_proposals
         proposals_response = (
             supabase.table("chamber_proposals")
-            .select("id, title, composite_score, submission_date, status, compliance_score, grounding_score")
+            .select("id, title, composite_score, submission_date, status, compliance_score")
             .eq("submitter_id", str(vendor_id))
             .order("submission_date", desc=True)
             .execute()
@@ -521,7 +521,6 @@ async def get_vendor_reputation(
                 "date": p.get("submission_date"),
                 "status": p.get("status", "submitted"),
                 "compliance": p.get("compliance_score"),
-                "grounding": p.get("grounding_score"),
             })
 
         desc_certified = vendor.get("desc_certified", False) or vendor.get("is_desc_approved", False)
