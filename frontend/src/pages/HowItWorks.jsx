@@ -508,8 +508,8 @@ const STAGE_CONTENT = {
     render: () => {
       /* Animated vScore gauge count-up */
       const VScoreDemo = () => {
-        const [val, setVal] = React.useState(300);
-        React.useEffect(() => {
+        const [val, setVal] = useState(300);
+        useEffect(() => {
           const duration = 2000;
           const start = performance.now();
           const animate = (now) => {
