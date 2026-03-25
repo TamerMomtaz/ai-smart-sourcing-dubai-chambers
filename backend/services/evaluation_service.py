@@ -20,7 +20,7 @@ def get_by_proposal_id(user_id: UUID, proposal_id: UUID) -> Optional[Dict[str, A
     proposal = proposal_response.data
 
     # Get user info to check permissions
-    user_response = supabase.table("users").select(
+    user_response = supabase.table("chamber_users").select(
         "id, role, business_group_id"
     ).eq("id", str(user_id)).maybe_single().execute()
 
@@ -166,7 +166,7 @@ def list_by_proposal_ids(
     proposal_ids_str = [str(pid) for pid in proposal_ids]
 
     # Get user role for access control
-    user_response = supabase.table("users").select(
+    user_response = supabase.table("chamber_users").select(
         "id, role, business_group_id"
     ).eq("id", str(user_id)).maybe_single().execute()
 

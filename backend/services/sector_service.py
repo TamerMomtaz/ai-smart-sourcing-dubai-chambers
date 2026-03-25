@@ -10,16 +10,16 @@ def get_sector_dashboard(user_id: str, sector: str) -> Optional[Dict[str, Any]]:
     Returns None if sector has no data or user lacks permissions.
     """
     # Verify user has analyst+ permissions
-    user_response = supabase.table("users").select("role").eq("id", user_id).single().execute()
+    user_response = supabase.table("chamber_users").select("role").eq("id", user_id).single().execute()
     if not user_response.data:
         return None
     
     user_role = user_response.data.get("role")
-    if user_role not in ["analyst", "executive", "compliance_officer", "business_group_lead"]:
+    if user_role not in ["analyst", "executive", "compliance_officer", "business_group_lead", "admin"]:
         return None
 
     # Get total proposals for sector
-    proposals_response = supabase.table("proposals").select("id, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, technology_type, maturity_level, submitter_id").eq("sector", sector).execute()
+    proposals_response = supabase.table("chamber_proposals").select("id, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, technology_type, maturity_level, submitter_id").eq("sector", sector).execute()
     
     if not proposals_response.data:
         return None
@@ -88,7 +88,7 @@ def get_sector_dashboard(user_id: str, sector: str) -> Optional[Dict[str, Any]]:
     proposal_ids = [p["id"] for p in top_proposal_data]
     proposal_titles = {}
     if proposal_ids:
-        proposals_title_response = supabase.table("proposals").select("id, title").in_("id", proposal_ids).execute()
+        proposals_title_response = supabase.table("chamber_proposals").select("id, title").in_("id", proposal_ids).execute()
         if proposals_title_response.data:
             for pt in proposals_title_response.data:
                 proposal_titles[pt["id"]] = pt["title"]
