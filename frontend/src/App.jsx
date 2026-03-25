@@ -12,6 +12,7 @@ import ProposalDetail from './pages/ProposalDetail';
 import VendorsList from './pages/VendorsList';
 import VendorForm from './pages/VendorForm';
 import VendorDetail from './pages/VendorDetail';
+import VendorIntelligence from './pages/VendorIntelligence';
 import BusinessGroupsList from './pages/BusinessGroupsList';
 import BusinessGroupForm from './pages/BusinessGroupForm';
 import BusinessGroupDetail from './pages/BusinessGroupDetail';
@@ -103,6 +104,7 @@ function App() {
             <Route path="proposals/:id" element={<ProposalDetail />} />
             <Route path="proposals/:id/edit" element={<ProposalForm />} />
             <Route path="vendors" element={<VendorsList />} />
+            <Route path="vendor-intelligence" element={<VendorIntelligence />} />
             <Route path="vendors/new" element={<VendorForm />} />
             <Route path="vendors/:id" element={<VendorDetail />} />
             <Route path="vendors/:id/edit" element={<VendorForm />} />

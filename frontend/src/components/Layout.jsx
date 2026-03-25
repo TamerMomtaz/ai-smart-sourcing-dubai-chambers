@@ -41,6 +41,7 @@ function Layout() {
     { name: 'Dashboard', href: '/dashboard', icon: '📊', key: 'dashboard' },
     { name: 'Proposals', href: '/proposals', icon: '📝', key: 'proposals' },
     { name: 'Vendors', href: '/vendors', icon: '🏢', key: 'vendors' },
+    { name: 'Vendor Intelligence', href: '/vendor-intelligence', icon: '🛡️', key: 'vendor-intelligence' },
     { name: 'Evaluations', href: '/evaluations', icon: '⭐', key: 'evaluations' },
     { name: 'Compare', href: '/compare', icon: '⚖️', key: 'compare' },
     { name: 'Compliance Audits', href: '/compliance-audits', icon: '🔒', key: 'compliance-audits' },

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
-import ReputationGauge from '../components/VendorReputationBadge';
+import VScoreCircle from '../components/VScoreCircle';
 
 const DESCShieldIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -122,9 +122,11 @@ const VendorsList = () => {
                       </div>
                     )}
                   </div>
-                  {v.reputation_score != null && (
-                    <ReputationGauge score={v.reputation_score} tier={v.reputation_tier} size={56} />
-                  )}
+                  {v.vscore != null ? (
+                    <VScoreCircle score={v.vscore} tier={v.vscore_tier} size={56} />
+                  ) : v.reputation_score != null ? (
+                    <VScoreCircle score={v.reputation_score} tier={v.reputation_tier} size={56} legacy />
+                  ) : null}
                 </div>
                 <div className="space-y-2 text-sm text-ink/70 mb-4">
                   <div>📍 {v.country}</div>

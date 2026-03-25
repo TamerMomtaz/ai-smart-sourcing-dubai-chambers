@@ -59,7 +59,9 @@ from routes import (
     proposal_ingest_routes,
     hallucination_routes,
     dashboard_impact_routes,
-    board_brief_routes
+    board_brief_routes,
+    vendor_intelligence_routes,
+    vscore_routes
 )
 
 # Configure logging
@@ -241,6 +243,8 @@ app.include_router(compliance_engine_routes.list_router, prefix="/api/v1", tags=
 app.include_router(hallucination_routes.router, prefix="/api/v1", tags=["Hallucination Shield"])
 app.include_router(dashboard_impact_routes.router, prefix="/api/v1", tags=["Dashboard Impact"])
 app.include_router(board_brief_routes.router, prefix="/api/v1", tags=["Board Brief"])
+app.include_router(vendor_intelligence_routes.router, prefix="/api/v1", tags=["Vendor Intelligence"])  # before vendor_id catch-all
+app.include_router(vscore_routes.router, prefix="/api/v1", tags=["vScore"])  # vendor sub-endpoints
 
 if __name__ == "__main__":
     import uvicorn

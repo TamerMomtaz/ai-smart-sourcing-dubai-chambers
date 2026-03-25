@@ -45,6 +45,8 @@ class VendorResponse(BaseModel):
     desc_provider_name: Optional[str] = Field(None, description="DESC certified provider name")
     reputation_score: Optional[float] = Field(None, description="Vendor reputation score 0-100")
     reputation_tier: Optional[str] = Field(None, description="Reputation tier: trusted, established, emerging, new, flagged")
+    vscore: Optional[int] = Field(None, description="vScore 300-900")
+    vscore_tier: Optional[str] = Field(None, description="vScore tier: platinum, gold, silver, bronze, under_review")
 
 
 class VendorProfileUpdate(BaseModel):

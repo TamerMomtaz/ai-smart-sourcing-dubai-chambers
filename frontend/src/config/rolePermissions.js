@@ -1,17 +1,17 @@
 export const ROLE_SIDEBAR_ITEMS = {
   admin: [
-    'how-it-works', 'dashboard', 'proposals', 'evaluations',
-    'compliance-audits', 'vendors', 'documents', 'business-groups',
-    'trend-analyses', 'ai-interactions', 'users', 'board-brief',
-    'compare', 'api-docs'
+    'how-it-works', 'dashboard', 'proposals', 'vendors',
+    'vendor-intelligence', 'evaluations', 'compare',
+    'compliance-audits', 'documents', 'business-groups',
+    'trend-analyses', 'ai-interactions', 'api-docs', 'users'
   ],
   analyst: [
     'how-it-works', 'dashboard', 'proposals', 'evaluations',
-    'trend-analyses', 'ai-interactions', 'documents', 'api-docs'
+    'vendor-intelligence', 'trend-analyses', 'ai-interactions', 'documents', 'api-docs'
   ],
   compliance_officer: [
     'how-it-works', 'dashboard', 'compliance-audits', 'evaluations',
-    'vendors', 'ai-interactions', 'documents'
+    'vendors', 'vendor-intelligence', 'ai-interactions', 'documents'
   ],
   vendor: [
     'how-it-works', 'dashboard', 'proposals', 'documents',
@@ -19,7 +19,7 @@ export const ROLE_SIDEBAR_ITEMS = {
   ],
   executive: [
     'how-it-works', 'dashboard', 'board-brief', 'trend-analyses',
-    'evaluations', 'ai-interactions', 'proposals'
+    'evaluations', 'vendor-intelligence', 'ai-interactions', 'proposals'
   ]
 };
 
@@ -42,6 +42,7 @@ export const ROUTE_TO_KEY = {
   '/dashboard': 'dashboard',
   '/proposals': 'proposals',
   '/vendors': 'vendors',
+  '/vendor-intelligence': 'vendor-intelligence',
   '/evaluations': 'evaluations',
   '/compare': 'compare',
   '/compliance-audits': 'compliance-audits',

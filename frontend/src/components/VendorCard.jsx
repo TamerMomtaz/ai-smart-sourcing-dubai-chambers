@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ReputationGauge from './VendorReputationBadge';
+import VScoreCircle from './VScoreCircle';
 
 const DESCShieldIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -39,9 +39,11 @@ const VendorCard = ({ vendor }) => {
             )}
           </div>
           <div className="flex items-start gap-2">
-            {vendor.reputation_score != null && (
-              <ReputationGauge score={vendor.reputation_score} tier={vendor.reputation_tier} size={52} />
-            )}
+            {vendor.vscore != null ? (
+              <VScoreCircle score={vendor.vscore} tier={vendor.vscore_tier} size={52} />
+            ) : vendor.reputation_score != null ? (
+              <VScoreCircle score={vendor.reputation_score} tier={vendor.reputation_tier} size={52} legacy />
+            ) : null}
             {vendor.onboarding_status && !vendor.reputation_score && (
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-body font-medium ${
                 vendor.onboarding_status === 'active' ? 'bg-teal/10 text-teal' :
