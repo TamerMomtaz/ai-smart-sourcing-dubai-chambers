@@ -97,6 +97,7 @@ const ProposalsList = () => {
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     sector: searchParams.get('sector') || '',
+    desc_only: searchParams.get('desc_only') === 'true',
   });
   const [formData, setFormData] = useState({
     title: '',
@@ -133,6 +134,7 @@ const ProposalsList = () => {
       const params = new URLSearchParams({ page: page.toString(), page_size: pageSize.toString() });
       if (filters.status) params.append('status', filters.status);
       if (filters.sector) params.append('sector', filters.sector);
+      if (filters.desc_only) params.append('desc_only', 'true');
       const res = await api.get(`/api/v1/proposals?${params.toString()}`);
       const proposalsList = res.data.proposals || [];
       setProposals(proposalsList);
@@ -170,6 +172,7 @@ const ProposalsList = () => {
     const params = new URLSearchParams({ page: '1' });
     if (newFilters.status) params.set('status', newFilters.status);
     if (newFilters.sector) params.set('sector', newFilters.sector);
+    if (newFilters.desc_only) params.set('desc_only', 'true');
     setSearchParams(params);
   };
 
@@ -322,7 +325,7 @@ const ProposalsList = () => {
         )}
 
         {/* Filters */}
-        <div className="bg-[#1E293B] rounded-xl p-4 mb-6 flex gap-4">
+        <div className="bg-[#1E293B] rounded-xl p-4 mb-6 flex flex-wrap items-center gap-4">
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -347,6 +350,14 @@ const ProposalsList = () => {
               <option key={bg.id} value={bg.name}>{bg.name}</option>
             ))}
           </select>
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none ml-auto">
+            <span className="text-sm font-medium text-gray-400">DESC Vendors Only</span>
+            <div className="relative">
+              <input type="checkbox" checked={filters.desc_only} onChange={(e) => handleFilterChange('desc_only', e.target.checked)} className="sr-only peer" />
+              <div className="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+            </div>
+          </label>
         </div>
 
         {/* Table */}

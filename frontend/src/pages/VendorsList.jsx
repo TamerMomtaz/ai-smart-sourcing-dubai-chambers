@@ -21,6 +21,17 @@ const DESCCertifiedBadge = ({ providerName }) => (
   </div>
 );
 
+const DescToggle = ({ enabled, onChange }) => (
+  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+    <span className="text-sm font-medium text-ink/80">Show DESC Certified Only</span>
+    <div className="relative">
+      <input type="checkbox" checked={enabled} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+      <div className="w-9 h-5 bg-cream rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
+      <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+    </div>
+  </label>
+);
+
 const VendorsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -28,6 +39,7 @@ const VendorsList = () => {
   const [vendors, setVendors] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [descOnly, setDescOnly] = useState(false);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 20;
@@ -90,28 +102,31 @@ const VendorsList = () => {
         )}
 
         <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              placeholder="Search vendors..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1 border border-cream rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal"
-            />
-            <button onClick={handleSearch} className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal/90 transition">
-              Search
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-1 space-x-2">
+              <input
+                type="text"
+                placeholder="Search vendors..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="flex-1 border border-cream rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal"
+              />
+              <button onClick={handleSearch} className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal/90 transition">
+                Search
+              </button>
+            </div>
+            <DescToggle enabled={descOnly} onChange={setDescOnly} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vendors.length === 0 ? (
+          {(descOnly ? vendors.filter(v => v.is_desc_approved || v.desc_certified) : vendors).length === 0 ? (
             <div className="col-span-full text-center p-8 text-ink/60">
               No vendors found
             </div>
           ) : (
-            vendors.map((v) => (
+            (descOnly ? vendors.filter(v => v.is_desc_approved || v.desc_certified) : vendors).map((v) => (
               <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition relative">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
