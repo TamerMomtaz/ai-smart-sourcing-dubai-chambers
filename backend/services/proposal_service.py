@@ -60,7 +60,7 @@ def list_proposals(
         query = supabase.table("chamber_proposals").select(
             "id, title, submitter_id, submission_date, status, sector, "
             "technology_type, maturity_level, composite_score, is_duplicate, "
-            "requires_manual_review",
+            "requires_manual_review, evaluation_timestamp, updated_at",
             count="exact"
         )
         

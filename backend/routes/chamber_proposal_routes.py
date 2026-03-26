@@ -105,7 +105,7 @@ async def list_chamber_proposals(
         offset = (page - 1) * page_size
 
         query = supabase.table("chamber_proposals").select(
-            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, composite_score, is_duplicate, requires_manual_review",
+            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, composite_score, is_duplicate, requires_manual_review, evaluation_timestamp, updated_at",
             count="exact",
         )
 
@@ -460,6 +460,100 @@ async def check_duplicate_chamber_proposal(
             is_duplicate=result["is_duplicate"],
             similar_proposals=result.get("similar_proposals", []),
         )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "InternalServerError", "detail": str(e), "code": 500},
+        )
+
+
+@router.post(
+    "/{proposal_id}/request-revision",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "Revision requested successfully"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden - vendor role required or not owner"},
+        404: {"model": ErrorResponse, "description": "Proposal not found"},
+        409: {"model": ErrorResponse, "description": "Proposal not in evaluated state"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+)
+async def request_revision(
+    proposal_id: UUID,
+    payload: dict,
+    current_user: UserInfo = Depends(get_current_user),
+):
+    """Vendor requests revision on their evaluated proposal."""
+    try:
+        if current_user.role not in ["vendor", "admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "Forbidden", "detail": "Only vendors can request revisions", "code": 403},
+            )
+
+        proposal_response = supabase.table("chamber_proposals").select(
+            "id, submitter_id, status"
+        ).eq("id", str(proposal_id)).single().execute()
+
+        if not proposal_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"error": "NotFound", "detail": "Proposal not found", "code": 404},
+            )
+
+        proposal = proposal_response.data
+
+        if current_user.role == "vendor" and str(proposal["submitter_id"]) != str(current_user.id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "Forbidden", "detail": "Access denied to this proposal", "code": 403},
+            )
+
+        if proposal["status"] not in ("evaluated", "needs_improvement", "under_review", "shortlisted"):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "Conflict", "detail": f"Cannot request revision on proposal with status '{proposal['status']}'", "code": 409},
+            )
+
+        # Update proposal status
+        update_response = supabase.table("chamber_proposals").update({
+            "status": "revision_requested",
+        }).eq("id", str(proposal_id)).execute()
+
+        if not update_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"error": "InternalServerError", "detail": "Failed to update proposal status", "code": 500},
+            )
+
+        # Add comment with vendor's notes
+        notes = payload.get("notes", "").strip() if isinstance(payload, dict) else ""
+        comment_text = f"Vendor requested revision{': ' + notes if notes else ''}"
+
+        # Look up or create chamber_users record for vendor
+        user_check = supabase.table("chamber_users").select("id").eq("id", str(current_user.id)).maybe_single().execute()
+        if user_check.data:
+            comment_user_id = str(current_user.id)
+        else:
+            comment_user_id = None
+
+        if comment_user_id:
+            supabase.table("chamber_comments").insert({
+                "proposal_id": str(proposal_id),
+                "user_id": comment_user_id,
+                "comment_text": comment_text,
+                "visibility": "vendor_visible",
+            }).execute()
+
+        return {
+            "proposal_id": str(proposal_id),
+            "status": "revision_requested",
+            "message": "Revision requested successfully",
+        }
 
     except HTTPException:
         raise

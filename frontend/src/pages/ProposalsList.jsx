@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+import { useUserRole } from '../lib/userRole';
 
 const TEAL = 'var(--color-accent)';
 
@@ -54,6 +55,7 @@ const STATUS_COLORS = {
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
   requires_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   requires_manual_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  revision_requested: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   draft: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
   submitted: 'bg-blue-400/20 text-blue-300 border-blue-400/30',
 };
@@ -85,8 +87,68 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
+// --- Status timeline for vendor view ---
+const TIMELINE_STEPS = [
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'evaluated', label: 'Evaluated' },
+  { key: 'final', label: 'Shortlisted / Under Review' },
+];
+
+const getTimelineStep = (status) => {
+  if (['queued', 'submitted', 'evaluating'].includes(status)) return 0;
+  if (['evaluated', 'needs_improvement', 'revision_requested'].includes(status)) return 1;
+  if (['shortlisted', 'under_review', 'approved', 'rejected', 'requires_review', 'requires_manual_review'].includes(status)) return 2;
+  return 0;
+};
+
+const ProposalTimeline = ({ status, evaluationTimestamp, submissionDate, updatedAt }) => {
+  const currentStep = getTimelineStep(status);
+
+  const timestamps = [
+    submissionDate ? new Date(submissionDate).toLocaleDateString() : null,
+    evaluationTimestamp ? new Date(evaluationTimestamp).toLocaleDateString() : null,
+    currentStep >= 2 && updatedAt ? new Date(updatedAt).toLocaleDateString() : null,
+  ];
+
+  return (
+    <div className="flex items-center gap-1 min-w-[200px]">
+      {TIMELINE_STEPS.map((step, idx) => {
+        const isActive = idx <= currentStep;
+        const isCurrent = idx === currentStep;
+        return (
+          <React.Fragment key={step.key}>
+            <div className="flex flex-col items-center">
+              <div
+                className={`w-3 h-3 rounded-full border-2 ${
+                  isCurrent
+                    ? 'bg-[#3B82F6] border-[#3B82F6] ring-2 ring-blue-500/30'
+                    : isActive
+                    ? 'bg-emerald-500 border-emerald-500'
+                    : 'bg-gray-700 border-gray-600'
+                }`}
+                title={`${step.label}${timestamps[idx] ? ' — ' + timestamps[idx] : ''}`}
+              />
+              <span className={`text-[9px] mt-0.5 whitespace-nowrap ${isActive ? 'text-gray-300' : 'text-gray-600'}`}>
+                {step.label.split(' / ')[0]}
+              </span>
+              {timestamps[idx] && (
+                <span className="text-[8px] text-gray-500">{timestamps[idx]}</span>
+              )}
+            </div>
+            {idx < TIMELINE_STEPS.length - 1 && (
+              <div className={`flex-1 h-0.5 min-w-[16px] mt-[-12px] ${idx < currentStep ? 'bg-emerald-500' : 'bg-gray-700'}`} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
 const ProposalsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { role: userRole } = useUserRole();
+  const isVendor = userRole === 'vendor';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [proposals, setProposals] = useState([]);
@@ -98,6 +160,10 @@ const ProposalsList = () => {
   const [auditingId, setAuditingId] = useState(null);
   const [toast, setToast] = useState(null);
   const [commentCounts, setCommentCounts] = useState({});
+  const [revisionId, setRevisionId] = useState(null);
+  const [revisionNotes, setRevisionNotes] = useState('');
+  const [showRevisionModal, setShowRevisionModal] = useState(false);
+  const [requestingRevision, setRequestingRevision] = useState(false);
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     sector: searchParams.get('sector') || '',
@@ -296,6 +362,31 @@ const ProposalsList = () => {
     setIngestData(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleRequestRevision = async () => {
+    if (!revisionId) return;
+    try {
+      setRequestingRevision(true);
+      await api.post(`/api/v1/proposals/${revisionId}/request-revision`, {
+        notes: revisionNotes,
+      });
+      setToast({ message: 'Revision requested successfully!', type: 'success' });
+      setShowRevisionModal(false);
+      setRevisionId(null);
+      setRevisionNotes('');
+      fetchProposals();
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setRequestingRevision(false);
+    }
+  };
+
+  const openRevisionModal = (proposalId) => {
+    setRevisionId(proposalId);
+    setRevisionNotes('');
+    setShowRevisionModal(true);
+  };
+
   return (
     <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -346,6 +437,7 @@ const ProposalsList = () => {
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="requires_review">Requires Review</option>
+            <option value="revision_requested">Revision Requested</option>
           </select>
           <select
             value={filters.sector}
@@ -382,6 +474,7 @@ const ProposalsList = () => {
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Title</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Status</th>
+                  {isVendor && <th className="text-left p-4 text-gray-400 font-medium text-sm">Progress</th>}
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Score</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Submitted</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Actions</th>
@@ -421,6 +514,16 @@ const ProposalsList = () => {
                           {p.status?.replace(/_/g, ' ')}
                         </span>
                       </td>
+                      {isVendor && (
+                        <td className="p-4">
+                          <ProposalTimeline
+                            status={p.status}
+                            evaluationTimestamp={p.evaluation_timestamp}
+                            submissionDate={p.submission_date}
+                            updatedAt={p.updated_at}
+                          />
+                        </td>
+                      )}
                       <td className="p-4">
                         <span className="inline-flex items-center">
                           <ScoreBadge score={p.composite_score} />
@@ -430,14 +533,38 @@ const ProposalsList = () => {
                       <td className="p-4 text-gray-400 text-sm">
                         {p.submission_date ? new Date(p.submission_date).toLocaleDateString() : '—'}
                       </td>
-                      <td className="p-4 flex gap-2 items-center">
+                      <td className="p-4 flex gap-2 items-center flex-wrap">
                         <Link
                           to={`/proposals/${p.id}`}
                           className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium px-3 py-1 rounded border border-[#3B82F6]/30 hover:bg-[#3B82F6]/10 transition"
                         >
                           View
                         </Link>
-                        {(p.status === 'queued' || p.status === 'submitted') && (
+                        {/* Vendor: View Evaluation link when evaluated */}
+                        {isVendor && p.composite_score != null && (
+                          <Link
+                            to={`/proposals/${p.id}#evaluation`}
+                            className="text-emerald-400 hover:text-emerald-300 text-sm font-medium px-3 py-1 rounded border border-emerald-500/30 hover:bg-emerald-500/10 transition"
+                          >
+                            View Evaluation
+                          </Link>
+                        )}
+                        {/* Vendor: Request Revision button on evaluated proposals */}
+                        {isVendor && ['evaluated', 'needs_improvement', 'under_review', 'shortlisted'].includes(p.status) && (
+                          <button
+                            onClick={() => openRevisionModal(p.id)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-3 py-1 rounded transition"
+                          >
+                            Request Revision
+                          </button>
+                        )}
+                        {isVendor && p.status === 'revision_requested' && (
+                          <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-3 py-1 rounded-full text-xs font-medium">
+                            Revision Pending
+                          </span>
+                        )}
+                        {/* Non-vendor actions */}
+                        {!isVendor && (p.status === 'queued' || p.status === 'submitted') && (
                           evaluatingId === p.id ? (
                             <span className="flex items-center gap-2 text-blue-400 text-sm">
                               <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></span>
@@ -452,40 +579,42 @@ const ProposalsList = () => {
                             </button>
                           )
                         )}
-                        {p.status === 'evaluating' && (
+                        {!isVendor && p.status === 'evaluating' && (
                           <span className="flex items-center gap-2 text-blue-400 text-sm opacity-70">
                             <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></span>
                             Evaluating...
                           </span>
                         )}
-                        {(p.status === 'evaluated' || p.status === 'approved' || p.status === 'rejected') && p.composite_score != null && (
+                        {!isVendor && (p.status === 'evaluated' || p.status === 'approved' || p.status === 'rejected') && p.composite_score != null && (
                           <ScoreBadge score={p.composite_score} />
                         )}
-                        {(p.status === 'requires_review' || p.status === 'requires_manual_review') && (
+                        {!isVendor && (p.status === 'requires_review' || p.status === 'requires_manual_review') && (
                           <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-medium">
                             Needs Review
                           </span>
                         )}
-                        {auditingId === p.id ? (
-                          <span className="flex items-center gap-2 text-[var(--color-accent)] text-sm">
-                            <span className="animate-spin inline-block w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full"></span>
-                            Running DESC compliance audit...
-                          </span>
-                        ) : p.has_audit === true ? (
-                          <button
-                            onClick={() => handleAudit(p.id)}
-                            title="Click to re-audit"
-                            className="bg-[var(--color-accent)] text-white px-2 py-0.5 rounded-full text-xs font-bold hover:bg-[var(--color-accent-hover)] transition cursor-pointer"
-                          >
-                            {p.audit_score != null ? p.audit_score : 'Audited'}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleAudit(p.id)}
-                            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition"
-                          >
-                            Audit
-                          </button>
+                        {!isVendor && (
+                          auditingId === p.id ? (
+                            <span className="flex items-center gap-2 text-[var(--color-accent)] text-sm">
+                              <span className="animate-spin inline-block w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full"></span>
+                              Running DESC compliance audit...
+                            </span>
+                          ) : p.has_audit === true ? (
+                            <button
+                              onClick={() => handleAudit(p.id)}
+                              title="Click to re-audit"
+                              className="bg-[var(--color-accent)] text-white px-2 py-0.5 rounded-full text-xs font-bold hover:bg-[var(--color-accent-hover)] transition cursor-pointer"
+                            >
+                              {p.audit_score != null ? p.audit_score : 'Audited'}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleAudit(p.id)}
+                              className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition"
+                            >
+                              Audit
+                            </button>
+                          )
                         )}
                       </td>
                     </tr>
@@ -665,6 +794,48 @@ const ProposalsList = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Request Revision Modal */}
+      {showRevisionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1E293B] rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Request Revision</h2>
+              <button
+                onClick={() => { setShowRevisionModal(false); setRevisionId(null); setRevisionNotes(''); }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Explain what you'd like revised in your proposal evaluation. The review team will be notified.
+            </p>
+            <textarea
+              rows={4}
+              value={revisionNotes}
+              onChange={(e) => setRevisionNotes(e.target.value)}
+              placeholder="Describe the changes or concerns..."
+              className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleRequestRevision}
+                disabled={requestingRevision}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 rounded-lg disabled:opacity-50 transition-colors"
+              >
+                {requestingRevision ? 'Submitting...' : 'Submit Revision Request'}
+              </button>
+              <button
+                onClick={() => { setShowRevisionModal(false); setRevisionId(null); setRevisionNotes(''); }}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

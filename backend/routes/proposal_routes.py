@@ -30,6 +30,7 @@ from services import (
     duplicate_check_service,
     comment_service,
 )
+from database import supabase
 
 logger = logging.getLogger(__name__)
 
@@ -462,6 +463,90 @@ async def run_duplicate_check(
         raise
     except Exception as e:
         logger.error(f"Error running duplicate check: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "InternalError", "detail": "An unexpected error occurred", "code": "INTERNAL_ERROR"},
+        )
+
+
+@router.post(
+    "/{proposal_id}/request-revision",
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden - vendor role required or not owner"},
+        404: {"model": ErrorResponse, "description": "Proposal not found"},
+        409: {"model": ErrorResponse, "description": "Proposal not in an evaluable state"},
+    },
+)
+async def request_revision(
+    proposal_id: UUID,
+    payload: dict,
+    current_user: dict = Depends(get_current_user),
+):
+    """Vendor requests revision on their evaluated proposal."""
+    try:
+        user_id = str(current_user["id"])
+        user_role = current_user.get("role", "").strip()
+
+        if user_role not in ("vendor", "admin"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "Forbidden", "detail": "Only vendors can request revisions", "code": "VENDOR_ONLY"},
+            )
+
+        proposal_response = supabase.table("chamber_proposals").select(
+            "id, submitter_id, status"
+        ).eq("id", str(proposal_id)).single().execute()
+
+        if not proposal_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"error": "NotFound", "detail": "Proposal not found", "code": "PROPOSAL_NOT_FOUND"},
+            )
+
+        proposal = proposal_response.data
+
+        if user_role == "vendor" and str(proposal["submitter_id"]) != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "Forbidden", "detail": "Access denied to this proposal", "code": "ACCESS_DENIED"},
+            )
+
+        if proposal["status"] not in ("evaluated", "needs_improvement", "under_review", "shortlisted"):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "Conflict", "detail": f"Cannot request revision on proposal with status '{proposal['status']}'", "code": "INVALID_STATUS"},
+            )
+
+        # Update proposal status
+        supabase.table("chamber_proposals").update({
+            "status": "revision_requested",
+        }).eq("id", str(proposal_id)).execute()
+
+        # Add comment with vendor's notes
+        notes = payload.get("notes", "").strip() if isinstance(payload, dict) else ""
+        comment_text = f"Vendor requested revision{': ' + notes if notes else ''}"
+
+        user_check = supabase.table("chamber_users").select("id").eq("id", user_id).maybe_single().execute()
+        if user_check.data:
+            supabase.table("chamber_comments").insert({
+                "proposal_id": str(proposal_id),
+                "user_id": user_id,
+                "comment_text": comment_text,
+                "visibility": "vendor_visible",
+            }).execute()
+
+        return {
+            "proposal_id": str(proposal_id),
+            "status": "revision_requested",
+            "message": "Revision requested successfully",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error requesting revision: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "InternalError", "detail": "An unexpected error occurred", "code": "INTERNAL_ERROR"},

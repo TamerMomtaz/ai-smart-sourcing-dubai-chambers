@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { ROLE_BADGES } from '../config/rolePermissions';
+import { useUserRole } from '../lib/userRole';
 
 // --- Animated counter hook ---
 function useCountUp(target, duration = 1500) {
@@ -239,6 +240,8 @@ const ImpactMeter = ({ impact, timeline }) => {
 
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
+  const { role: userRole } = useUserRole();
+  const isVendor = userRole === 'vendor';
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -246,6 +249,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [impact, setImpact] = useState(null);
   const [timeline, setTimeline] = useState(null);
+  const [vendorSummary, setVendorSummary] = useState(null);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -270,6 +274,17 @@ const Dashboard = () => {
         setStats(statsRes.data);
         setImpact(impactRes.data);
         setTimeline(timelineRes.data?.timeline || null);
+
+        // Fetch vendor-specific summary if vendor role
+        if (userRes.data?.role === 'vendor') {
+          try {
+            const vendorRes = await api.get('/api/v1/dashboard/vendor-summary');
+            setVendorSummary(vendorRes.data);
+          } catch {
+            // Non-critical
+          }
+        }
+
         setLoading(false);
       } catch (err) {
         const is403 = err?.response?.status === 403;
@@ -328,16 +343,114 @@ const Dashboard = () => {
               )}
             </p>
           </div>
-          <button
-            onClick={() => window.open('/board-brief', '_blank')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors shadow-md"
-          >
-            <span>📄</span> Executive Board Brief
-          </button>
+          {!isVendor && (
+            <button
+              onClick={() => window.open('/board-brief', '_blank')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors shadow-md"
+            >
+              <span>📄</span> Executive Board Brief
+            </button>
+          )}
         </header>
 
         {/* σI Impact Meter — ABOVE existing stats */}
-        <ImpactMeter impact={impact} timeline={timeline} />
+        {!isVendor && <ImpactMeter impact={impact} timeline={timeline} />}
+
+        {/* Vendor-specific summary cards */}
+        {isVendor && vendorSummary && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Your Proposals */}
+            <Link to="/proposals" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">📋</span>
+                <span className="font-heading text-4xl text-teal">{vendorSummary.proposal_count || 0}</span>
+              </div>
+              <h3 className="text-ink/70 text-sm font-medium">Your Proposals</h3>
+              {vendorSummary.status_counts && Object.keys(vendorSummary.status_counts).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {Object.entries(vendorSummary.status_counts).map(([status, count]) => (
+                    <span key={status} className="inline-block bg-cream text-ink/60 px-2 py-0.5 rounded text-xs">
+                      {status.replace(/_/g, ' ')}: {count}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Link>
+
+            {/* Your vScore */}
+            <Link to="/vendor-intelligence" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">⭐</span>
+                <span className="font-heading text-4xl text-gold">
+                  {vendorSummary.vscore?.average_compliance_score != null
+                    ? vendorSummary.vscore.average_compliance_score.toFixed(1)
+                    : '—'}
+                </span>
+              </div>
+              <h3 className="text-ink/70 text-sm font-medium">Your vScore</h3>
+              <div className="mt-2 text-xs text-ink/50">
+                {vendorSummary.vscore?.submission_count || 0} submissions
+                {vendorSummary.vscore?.is_desc_approved && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                    DESC Approved
+                  </span>
+                )}
+              </div>
+            </Link>
+
+            {/* Your Latest Evaluation */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">📊</span>
+                <span className={`font-heading text-4xl ${
+                  vendorSummary.latest_evaluation?.composite_score > 70
+                    ? 'text-teal'
+                    : vendorSummary.latest_evaluation?.composite_score >= 40
+                    ? 'text-gold'
+                    : vendorSummary.latest_evaluation?.composite_score != null
+                    ? 'text-burgundy'
+                    : 'text-ink/30'
+                }`}>
+                  {vendorSummary.latest_evaluation?.composite_score != null
+                    ? vendorSummary.latest_evaluation.composite_score.toFixed(1)
+                    : '—'}
+                </span>
+              </div>
+              <h3 className="text-ink/70 text-sm font-medium">Latest Evaluation</h3>
+              {vendorSummary.latest_evaluation && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-ink/50">Relevance</span>
+                    <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.relevance_score?.toFixed(1) || '—'}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-ink/50">Feasibility</span>
+                    <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.feasibility_score?.toFixed(1) || '—'}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-ink/50">Sector Alignment</span>
+                    <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.sector_alignment_score?.toFixed(1) || '—'}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-ink/50">Compliance</span>
+                    <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.compliance_score?.toFixed(1) || '—'}</span>
+                  </div>
+                  {vendorSummary.latest_evaluation.proposal_id && (
+                    <Link
+                      to={`/proposals/${vendorSummary.latest_evaluation.proposal_id}`}
+                      className="block mt-2 text-xs text-teal hover:underline"
+                    >
+                      View full evaluation →
+                    </Link>
+                  )}
+                </div>
+              )}
+              {!vendorSummary.latest_evaluation && (
+                <p className="mt-2 text-xs text-ink/40">No evaluations yet</p>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           <StatCard
