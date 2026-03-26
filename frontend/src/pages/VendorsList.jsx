@@ -15,7 +15,7 @@ const DESCCertifiedBadge = ({ providerName }) => (
     <DESCShieldIcon size={14} />
     <span>DESC Certified</span>
     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-      {providerName ? `${providerName} — ` : ''}This vendor meets DESC ISR V3, AI Security, and CSP standards
+      {providerName ? `${providerName} — ` : ''}This vendor meets DESC ISR V3 Controls, DESC AI Security Policy (5-Phase Lifecycle), and DESC CSP Standards
       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
     </div>
   </div>

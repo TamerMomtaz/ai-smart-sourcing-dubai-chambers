@@ -492,9 +492,9 @@ async def get_audit_report_data(
                     "sub_score": 100.0 if passed else 0.0,
                 }
             framework_results = [
-                _flag_framework("ISR V3", "isr_v3_compliance"),
-                _flag_framework("AI Security Policy", "ai_security_policy_compliance"),
-                _flag_framework("CSP Standards", "csp_standards_compliance"),
+                _flag_framework("DESC ISR V3 Controls", "isr_v3_compliance"),
+                _flag_framework("DESC AI Security Policy (5-Phase Lifecycle)", "ai_security_policy_compliance"),
+                _flag_framework("DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)", "csp_standards_compliance"),
             ]
             total_pass = sum(f["pass_count"] for f in framework_results)
             total_fail = sum(f["fail_count"] for f in framework_results)
