@@ -19,6 +19,8 @@ const StatusBadge = ({ status }) => {
         return 'bg-emerald-500/10 text-emerald-600';
       case 'needs_improvement':
         return 'bg-red-500/10 text-red-600';
+      case 'revision_requested':
+        return 'bg-purple-500/10 text-purple-600';
       case 'evaluated':
         return 'bg-blue-500/10 text-blue-600';
       case 'approved':
