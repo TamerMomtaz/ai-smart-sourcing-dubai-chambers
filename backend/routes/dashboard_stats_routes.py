@@ -40,12 +40,13 @@ async def get_dashboard_stats(
         pending_count = 0
         approved_count = 0
         rejected_count = 0
+        shortlisted_count = 0
         score_sum = 0.0
         score_count = 0
 
         for p in proposals:
             s = p.get("status", "")
-            if s in ("evaluated", "approved", "rejected"):
+            if s in ("evaluated", "approved", "rejected", "shortlisted", "under_review", "needs_improvement"):
                 evaluated_count += 1
             if s == "queued":
                 pending_count += 1
@@ -53,6 +54,8 @@ async def get_dashboard_stats(
                 approved_count += 1
             if s == "rejected":
                 rejected_count += 1
+            if s == "shortlisted":
+                shortlisted_count += 1
             cs = p.get("composite_score")
             if cs is not None:
                 score_sum += float(cs)
@@ -94,6 +97,7 @@ async def get_dashboard_stats(
             "pending_evaluation": pending_count,
             "approved": approved_count,
             "rejected": rejected_count,
+            "shortlisted": shortlisted_count,
             "compliance_audits": compliance_audits_count,
             "average_score": average_score,
             "recent_proposals": recent_result.data or [],

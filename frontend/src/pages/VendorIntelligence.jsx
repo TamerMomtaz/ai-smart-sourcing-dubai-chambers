@@ -553,7 +553,14 @@ const VendorIntelligence = () => {
                     <tr key={v.id} className="border-t border-[var(--color-border,#e5e7eb)] hover:bg-[var(--color-table-header-bg,#f9fafb)] transition">
                       <td className="px-4 py-3 font-bold text-[var(--color-muted,#6b7280)]">{i + 1}</td>
                       <td className="px-4 py-3">
-                        <div className="font-semibold text-[var(--color-text)]">{v.name}</div>
+                        <div className="font-semibold text-[var(--color-text)]">
+                          {v.name}
+                          {v.has_shortlisted_proposal && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30">
+                              Shortlisted
+                            </span>
+                          )}
+                        </div>
                         {v.is_desc_approved && (
                           <span className="text-emerald-500 text-xs">DESC Certified</span>
                         )}
