@@ -160,6 +160,7 @@ async def list_proposals(
     page_size: int = Query(20, ge=1, le=100),
     status_filter: Optional[str] = Query(None, alias="status"),
     sector: Optional[str] = Query(None),
+    desc_only: bool = Query(False, description="Filter to DESC-certified vendors only"),
     current_user: dict = Depends(get_current_user),
 ):
     """List proposals with optional status filter."""
@@ -180,6 +181,17 @@ async def list_proposals(
             query = query.eq("status", status_filter)
         if sector:
             query = query.eq("sector", sector)
+
+        # Filter to DESC-certified vendors only
+        if desc_only:
+            desc_vendor_result = supabase.table("chamber_vendors").select("id").eq("is_desc_approved", True).execute()
+            desc_vendor_ids = [v["id"] for v in (desc_vendor_result.data or [])]
+            if not desc_vendor_ids:
+                return {
+                    "proposals": [],
+                    "pagination": {"total": 0, "page": page, "page_size": page_size, "total_pages": 0},
+                }
+            query = query.in_("submitter_id", desc_vendor_ids)
 
         query = query.order("submission_date", desc=True).range(offset, offset + page_size - 1)
         result = query.execute()
@@ -224,6 +236,19 @@ async def list_proposals(
 
             for p in proposals:
                 print(f"Proposal {p['id']}: has_audit={p.get('has_audit')}, audit_score={p.get('audit_score')}")
+
+        # Enrich proposals with vendor DESC certification status
+        if proposals:
+            submitter_ids = list({str(p["submitter_id"]) for p in proposals if p.get("submitter_id")})
+            vendor_desc_map = {}
+            if submitter_ids:
+                vendor_desc_result = supabase.table("chamber_vendors").select(
+                    "id, is_desc_approved"
+                ).in_("id", submitter_ids).execute()
+                for v in (vendor_desc_result.data or []):
+                    vendor_desc_map[v["id"]] = v.get("is_desc_approved", False)
+            for p in proposals:
+                p["vendor_desc_certified"] = vendor_desc_map.get(str(p.get("submitter_id")), False)
 
         return {
             "proposals": proposals,

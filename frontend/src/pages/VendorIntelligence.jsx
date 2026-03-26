@@ -393,6 +393,7 @@ const VendorIntelligence = () => {
   const [sortKey, setSortKey] = useState('vscore');
   const [sortDir, setSortDir] = useState('desc');
   const [methodologyOpen, setMethodologyOpen] = useState(false);
+  const [descOnly, setDescOnly] = useState(false);
 
   useEffect(() => {
     if (role !== 'vendor') {
@@ -420,6 +421,9 @@ const VendorIntelligence = () => {
   const sortedVendors = useMemo(() => {
     if (!data?.vendors) return [];
     let filtered = data.vendors;
+    if (descOnly) {
+      filtered = filtered.filter(v => v.is_desc_approved);
+    }
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter(v => v.name?.toLowerCase().includes(q));
@@ -436,7 +440,7 @@ const VendorIntelligence = () => {
       }
       return sortDir === 'desc' ? bVal - aVal : aVal - bVal;
     });
-  }, [data, search, sortKey, sortDir]);
+  }, [data, search, sortKey, sortDir, descOnly]);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -505,13 +509,23 @@ const VendorIntelligence = () => {
         <div className="bg-[var(--color-card-bg,#fff)] rounded-xl shadow-md overflow-hidden mb-8">
           <div className="p-4 border-b border-[var(--color-border,#e5e7eb)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="font-heading text-xl text-[var(--color-text)]">Vendor Leaderboard</h2>
-            <input
-              type="text"
-              placeholder="Search vendors..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="border border-[var(--color-border,#d1d5db)] rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] bg-[var(--color-input-bg,#fff)] text-[var(--color-text)]"
-            />
+            <div className="flex items-center gap-4">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                <span className="text-sm font-medium text-[var(--color-muted,#6b7280)]">Show DESC Certified Only</span>
+                <div className="relative">
+                  <input type="checkbox" checked={descOnly} onChange={(e) => setDescOnly(e.target.checked)} className="sr-only peer" />
+                  <div className="w-9 h-5 bg-[var(--color-border,#d1d5db)] rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+                </div>
+              </label>
+              <input
+                type="text"
+                placeholder="Search vendors..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="border border-[var(--color-border,#d1d5db)] rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] bg-[var(--color-input-bg,#fff)] text-[var(--color-text)]"
+              />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
