@@ -20,6 +20,7 @@ from routes import (
     chamber_comments_routes,
     chamber_compliance_audits_routes,
     compliance_engine_routes,
+    dashboard_engagements_routes,
     dashboard_stats_routes,
     chamber_desc_certified_providers_routes,
     chamber_documents_routes,
@@ -221,6 +222,7 @@ app.include_router(duplicate_check_routes.router, prefix="/api/v1", tags=["Dupli
 app.include_router(evaluate_routes.router, prefix="/api/v1", tags=["Evaluate"])
 app.include_router(evaluation_config_routes.router, prefix="/api/v1", tags=["Evaluation Config"])
 app.include_router(evaluation_routes.router, prefix="/api/v1", tags=["Evaluations"])
+app.include_router(dashboard_engagements_routes.router, prefix="/api/v1", tags=["Dashboard Engagements"])
 app.include_router(dashboard_stats_routes.router, prefix="/api/v1", tags=["Dashboard Stats"])
 app.include_router(executive_routes.router, prefix="/api/v1", tags=["Executive Dashboard"])
 app.include_router(extracted_data_routes.router, prefix="/api/v1", tags=["Extracted Data"])
