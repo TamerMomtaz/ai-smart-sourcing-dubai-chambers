@@ -122,9 +122,9 @@ const ComplianceAuditsList = () => {
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Proposal</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Score</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Status</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">ISR v3</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">AI Security</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">CSP</th>
+                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC ISR V3 Controls</th>
+                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC AI Security Policy (5-Phase Lifecycle)</th>
+                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Data Residency</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Date</th>
                 <th className="text-left p-4 text-gray-400 text-sm font-medium">Actions</th>

@@ -350,15 +350,15 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.isr_v3_compliance ? '✅' : '❌'}</span>
-              <p className="text-gray-300 text-sm mt-1 font-medium">ISR V3</p>
+              <p className="text-gray-300 text-sm mt-1 font-medium">DESC ISR V3 Controls</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.ai_security_policy_compliance ? '✅' : '❌'}</span>
-              <p className="text-gray-300 text-sm mt-1 font-medium">AI Security</p>
+              <p className="text-gray-300 text-sm mt-1 font-medium">DESC AI Security Policy (5-Phase Lifecycle)</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.csp_standards_compliance ? '✅' : '❌'}</span>
-              <p className="text-gray-300 text-sm mt-1 font-medium">CSP Standards</p>
+              <p className="text-gray-300 text-sm mt-1 font-medium">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50 text-center">
               <span className="text-2xl">{audit.data_residency_verified ? '✅' : '❌'}</span>

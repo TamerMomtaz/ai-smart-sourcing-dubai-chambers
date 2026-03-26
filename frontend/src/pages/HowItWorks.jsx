@@ -293,9 +293,8 @@ const STAGE_CONTENT = {
     render: () => (
       <div>
         <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Automated review against three DESC frameworks: ISR V3, AI Security
-          Policy (covering the full lifecycle: design, develop, deploy, monitor,
-          dispose), and Cloud Service Provider Standards.
+          Automated review against three DESC frameworks: DESC ISR V3 Controls, DESC AI Security
+          Policy (5-Phase Lifecycle), and DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5).
         </p>
         <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
           Each control is checked individually with pass, fail, or warning status
@@ -304,9 +303,9 @@ const STAGE_CONTENT = {
         {/* Visual: framework badges */}
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {[
-            { name: 'ISR V3', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
-            { name: 'AI Security', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
-            { name: 'CSP', status: 'Warning', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
+            { name: 'DESC ISR V3 Controls', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
+            { name: 'DESC AI Security Policy (5-Phase Lifecycle)', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
+            { name: 'DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)', status: 'Warning', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
           ].map((fw, i) => (
             <div key={fw.name} style={{
               padding: '10px 20px', borderRadius: '8px', background: fw.bg,

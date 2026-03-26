@@ -68,9 +68,9 @@ const ComplianceAuditForm = () => {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal"
             >
-              <option value="isr_v3">ISR v3</option>
-              <option value="ai_security_policy">AI Security Policy</option>
-              <option value="csp_standards">CSP Standards</option>
+              <option value="isr_v3">DESC ISR V3 Controls</option>
+              <option value="ai_security_policy">DESC AI Security Policy (5-Phase Lifecycle)</option>
+              <option value="csp_standards">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</option>
               <option value="comprehensive">Comprehensive</option>
             </select>
           </div>

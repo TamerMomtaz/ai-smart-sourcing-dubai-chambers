@@ -263,19 +263,19 @@ const ComplianceAuditDetail = () => {
               <p className={`text-2xl font-bold ${audit?.isr_v3_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.isr_v3_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-[#94A3B8] text-xs mt-1">ISR V3</p>
+              <p className="text-[#94A3B8] text-xs mt-1">DESC ISR V3 Controls</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.ai_security_policy_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.ai_security_policy_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-[#94A3B8] text-xs mt-1">AI Security</p>
+              <p className="text-[#94A3B8] text-xs mt-1">DESC AI Security Policy (5-Phase Lifecycle)</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.csp_standards_compliance ? 'text-emerald-400' : 'text-red-400'}`}>
                 {audit?.csp_standards_compliance ? 'Pass' : 'Fail'}
               </p>
-              <p className="text-[#94A3B8] text-xs mt-1">CSP Standards</p>
+              <p className="text-[#94A3B8] text-xs mt-1">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</p>
             </div>
             <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
               <p className={`text-2xl font-bold ${audit?.remediation_required ? 'text-amber-400' : 'text-emerald-400'}`}>

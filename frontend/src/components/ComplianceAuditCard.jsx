@@ -16,9 +16,9 @@ const ComplianceAuditCard = ({ audit }) => {
 
   const getAuditTypeLabel = (type) => {
     const labels = {
-      isr_v3: 'ISR v3',
-      ai_security_policy: 'AI Security Policy',
-      csp_standards: 'CSP Standards',
+      isr_v3: 'DESC ISR V3 Controls',
+      ai_security_policy: 'DESC AI Security Policy (5-Phase Lifecycle)',
+      csp_standards: 'DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)',
       comprehensive: 'Comprehensive'
     };
     return labels[type] || type;
@@ -52,19 +52,19 @@ const ComplianceAuditCard = ({ audit }) => {
             <span className={`text-lg ${getComplianceColor(audit.isr_v3_compliance)}`}>
               {getComplianceIcon(audit.isr_v3_compliance)}
             </span>
-            <span className="text-sm font-body text-ink/60">ISR v3</span>
+            <span className="text-sm font-body text-ink/60">DESC ISR V3 Controls</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className={`text-lg ${getComplianceColor(audit.ai_security_policy_compliance)}`}>
               {getComplianceIcon(audit.ai_security_policy_compliance)}
             </span>
-            <span className="text-sm font-body text-ink/60">AI Security</span>
+            <span className="text-sm font-body text-ink/60">DESC AI Security Policy (5-Phase Lifecycle)</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className={`text-lg ${getComplianceColor(audit.csp_standards_compliance)}`}>
               {getComplianceIcon(audit.csp_standards_compliance)}
             </span>
-            <span className="text-sm font-body text-ink/60">CSP Standards</span>
+            <span className="text-sm font-body text-ink/60">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className={`text-lg ${getComplianceColor(audit.data_residency_verified)}`}>

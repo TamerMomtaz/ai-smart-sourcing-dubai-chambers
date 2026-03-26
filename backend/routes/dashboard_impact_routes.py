@@ -26,7 +26,7 @@ MANUAL_HOURS = {
 
 _OP_DESCRIPTIONS = {
     "proposal_evaluation": "AI evaluation of proposals across 4 scoring dimensions",
-    "compliance_check": "DESC compliance audit against ISR V3, AI Security Policy, CSP",
+    "compliance_check": "DESC compliance audit against DESC ISR V3 Controls, DESC AI Security Policy (5-Phase Lifecycle), DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)",
     "trend_analysis": "Market intelligence report with sector analysis and recommendations",
     "hallucination_check": "Source grounding verification of AI evaluation claims",
     "evaluation": "AI evaluation of proposals across 4 scoring dimensions",
@@ -34,7 +34,7 @@ _OP_DESCRIPTIONS = {
 
 _METHODOLOGY_ESTIMATES = {
     "proposal_evaluation": "3 hours \u2014 Read proposal, score 4 dimensions, write detailed reasoning with evidence",
-    "compliance_check": "8 hours \u2014 Review against 3 DESC frameworks (ISR V3, AI Security, CSP), document per-control findings",
+    "compliance_check": "8 hours \u2014 Review against 3 DESC frameworks (DESC ISR V3 Controls, DESC AI Security Policy, DESC CSP Standards), document per-control findings",
     "trend_analysis": "16 hours \u2014 Aggregate cross-proposal data, sector breakdown, D33 alignment, write 8+ recommendations",
     "hallucination_check": "2 hours \u2014 Cross-reference each AI claim against source documents, classify grounding",
 }
