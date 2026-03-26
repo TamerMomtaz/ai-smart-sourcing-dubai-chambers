@@ -127,14 +127,17 @@ async def get_vendor_intelligence(
             if vid not in narratives and h.get("ai_narrative"):
                 narratives[vid] = h["ai_narrative"][:200] + "..." if len(h.get("ai_narrative", "")) > 200 else h.get("ai_narrative", "")
 
-        # Fetch sectors from latest proposals per vendor
-        proposals_resp = supabase.table("chamber_proposals").select("submitter_id, sector").order("submission_date", desc=True).execute()
+        # Fetch sectors and shortlisted status from latest proposals per vendor
+        proposals_resp = supabase.table("chamber_proposals").select("submitter_id, sector, status").order("submission_date", desc=True).execute()
         proposals_data = proposals_resp.data or []
         vendor_sectors = {}
+        vendor_has_shortlisted = {}
         for p in proposals_data:
             sid = p.get("submitter_id")
             if sid and sid not in vendor_sectors and p.get("sector"):
                 vendor_sectors[sid] = p["sector"]
+            if p.get("status") == "shortlisted" and sid:
+                vendor_has_shortlisted[sid] = True
 
         # Build distribution
         distribution = {"platinum": 0, "gold": 0, "silver": 0, "bronze": 0, "under_review": 0}
@@ -164,6 +167,7 @@ async def get_vendor_intelligence(
                 "flag_count_positive": flag_pos_counts.get(vid, 0),
                 "flag_count_negative": flag_neg_counts.get(vid, 0),
                 "latest_narrative_snippet": narratives.get(vid, ""),
+                "has_shortlisted_proposal": vendor_has_shortlisted.get(vid, False),
             })
 
         return {

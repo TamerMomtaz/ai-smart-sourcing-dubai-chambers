@@ -150,7 +150,16 @@ class EvaluationEngine:
             requires_review = True
             review_reason = review_reason or "Compliance score below 40 - regulatory risk"
 
-        new_status = "requires_manual_review" if requires_review else "evaluated"
+        if requires_review:
+            new_status = "requires_manual_review"
+        elif composite_score >= 80:
+            new_status = "shortlisted"
+        elif composite_score >= 60:
+            new_status = "under_review"
+        elif composite_score < 60:
+            new_status = "needs_improvement"
+        else:
+            new_status = "evaluated"
 
         # 5. Save to chamber_evaluations
         evaluation = create_evaluation(

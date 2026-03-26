@@ -25,10 +25,12 @@ def update_proposal_status(
     valid_transitions = {
         "submitted": ["queued_for_evaluation", "rejected"],
         "queued_for_evaluation": ["evaluating", "rejected"],
-        "evaluating": ["evaluated", "failed", "rejected"],
-        "evaluated": ["under_review", "approved", "rejected", "requires_manual_review"],
-        "under_review": ["approved", "rejected", "requires_manual_review"],
-        "requires_manual_review": ["under_review", "approved", "rejected"],
+        "evaluating": ["evaluated", "failed", "rejected", "shortlisted", "under_review", "needs_improvement"],
+        "evaluated": ["under_review", "approved", "rejected", "requires_manual_review", "shortlisted"],
+        "shortlisted": ["approved", "rejected", "under_review"],
+        "under_review": ["approved", "rejected", "requires_manual_review", "shortlisted"],
+        "needs_improvement": ["under_review", "rejected", "requires_manual_review"],
+        "requires_manual_review": ["under_review", "approved", "rejected", "shortlisted"],
         "approved": [],
         "rejected": []
     }

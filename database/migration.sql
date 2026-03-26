@@ -195,7 +195,7 @@ CREATE TABLE chamber_proposals (
   title text NOT NULL,
   submitter_id uuid NOT NULL REFERENCES chamber_vendors(id) ON DELETE CASCADE,
   submission_date timestamptz NOT NULL DEFAULT now(),
-  status text NOT NULL CHECK (status IN ('queued', 'evaluating', 'evaluated', 'approved', 'rejected', 'requires_review')) DEFAULT 'queued',
+  status text NOT NULL CHECK (status IN ('queued', 'submitted', 'evaluating', 'evaluated', 'approved', 'rejected', 'requires_review', 'requires_manual_review', 'shortlisted', 'under_review', 'needs_improvement')) DEFAULT 'queued',
   sector text,
   technology_type text,
   maturity_level text CHECK (maturity_level IN ('concept', 'prototype', 'mvp', 'production', 'scaled')),

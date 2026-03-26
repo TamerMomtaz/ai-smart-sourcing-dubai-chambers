@@ -46,10 +46,14 @@ const ProposalShieldBadge = ({ proposalId }) => {
 const STATUS_COLORS = {
   queued: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   evaluating: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  evaluated: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  evaluated: 'bg-blue-400/20 text-blue-300 border-blue-400/30',
+  shortlisted: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  under_review: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  needs_improvement: 'bg-red-500/20 text-red-400 border-red-500/30',
   approved: 'bg-emerald-600/20 text-emerald-300 border-emerald-600/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
   requires_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  requires_manual_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   draft: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
   submitted: 'bg-blue-400/20 text-blue-300 border-blue-400/30',
 };
@@ -336,6 +340,9 @@ const ProposalsList = () => {
             <option value="submitted">Submitted</option>
             <option value="evaluating">Evaluating</option>
             <option value="evaluated">Evaluated</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="under_review">Under Review</option>
+            <option value="needs_improvement">Needs Improvement</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="requires_review">Requires Review</option>
