@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getErrorMessage } from '../lib/api';
+import LivePulseBanner from '../components/LivePulseBanner';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -52,6 +53,8 @@ function Login() {
           <h1 className="font-heading text-4xl text-teal mb-2">AI Smart Sourcing</h1>
           <p className="font-body text-ink/70">Dubai Chambers Smart Sourcing Platform</p>
         </div>
+
+        <LivePulseBanner />
 
         <div className="bg-white rounded-xl shadow-md p-8">
           <h2 className="font-heading text-2xl text-ink mb-6">Sign In</h2>

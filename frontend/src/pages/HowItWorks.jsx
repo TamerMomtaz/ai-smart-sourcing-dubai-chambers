@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import api from '../lib/api';
+import LivePulseBanner from '../components/LivePulseBanner';
 
 const STAGES = [
   { id: 0, name: 'Welcome', sidebar: null },
@@ -145,17 +146,13 @@ function HeroSection({ onStart, impact, session }) {
           Dubai Chambers | by Tamer Momtaz
         </p>
 
-        {/* Live stats */}
-        {show(5) && impact && (
+        {/* Live Pulse stats */}
+        {show(5) && (
           <div style={{
-            display: 'flex', gap: '24px', justifyContent: 'center',
-            marginBottom: '32px', fontSize: '13px', color: '#64748B',
-            opacity: show(5) ? 1 : 0, transition: 'opacity 1s ease-out',
-            flexWrap: 'wrap'
+            marginBottom: '32px', maxWidth: '560px', width: '100%',
+            opacity: show(5) ? 1 : 0, transition: 'opacity 1s ease-out'
           }}>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.summary?.total_proposals || '—'}</span> proposals processed</span>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>{impact.time_saved?.total_hours || '—'}</span> analyst-hours saved</span>
-            <span><span style={{ color: '#0D9488', fontFamily: 'monospace' }}>${impact.ai_performance?.total_cost_usd || '—'}</span> total AI cost</span>
+            <LivePulseBanner />
           </div>
         )}
 
