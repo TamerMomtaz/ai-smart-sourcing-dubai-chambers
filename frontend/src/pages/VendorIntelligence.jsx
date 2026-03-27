@@ -165,22 +165,22 @@ const MyVScoreView = () => {
   const negativeFlags = (vscore?.flags || []).filter(f => !positiveTypes.includes(f.flag_type) && f.severity !== 'info');
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-heading text-4xl text-[var(--color-accent)]">My vScore</h1>
+          <h1 className="font-heading text-3xl md:text-4xl text-[var(--color-accent)]">My vScore</h1>
           <p className="text-[var(--color-muted,#6b7280)] font-body mt-1">Your supplier credit score — powered by σI</p>
         </div>
 
         {/* Score Header */}
         {vscore && vscore.vscore != null && (
           <div className="space-y-4">
-            <div className="bg-[#1E293B] rounded-xl p-8 shadow-lg">
-              <div className="flex items-center gap-8">
+            <div className="bg-[#1E293B] rounded-xl p-5 md:p-8 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
                 <VScoreGauge score={vscore.vscore} tier={vscore.vscore_tier} size={120} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white">{vendor?.name || 'Your Company'}</h2>
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-white">{vendor?.name || 'Your Company'}</h2>
                     {vscore.score_change !== 0 && (
                       <span className={`text-sm font-bold ${vscore.score_change > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {vscore.score_change > 0 ? '+' : ''}{vscore.score_change} {vscore.score_change > 0 ? '↑' : '↓'}
@@ -348,14 +348,14 @@ const MyVScoreView = () => {
                     { label: 'Claim Integrity', weight: 15, desc: 'Hallucination Shield grounding scores', color: '#8B5CF6' },
                     { label: 'Entity Intelligence', weight: 10, desc: 'Related company risks and tenure', color: '#EC4899' },
                   ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
+                    <div key={item.label} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                       <div className="w-12 text-right text-sm font-bold" style={{ color: item.color }}>{item.weight}%</div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-[80px]">
                         <div className="h-2 bg-[var(--color-table-header-bg,#f1f5f9)] rounded-full overflow-hidden">
                           <div className="h-full rounded-full" style={{ width: `${item.weight}%`, backgroundColor: item.color }} />
                         </div>
                       </div>
-                      <div className="w-56">
+                      <div className="w-full sm:w-56">
                         <span className="text-sm text-[var(--color-text)] font-medium">{item.label}</span>
                         <span className="text-xs text-[var(--color-muted,#6b7280)] ml-2">— {item.desc}</span>
                       </div>
@@ -476,12 +476,12 @@ const VendorIntelligence = () => {
   const totalCerts = Object.values(data?.certifications_summary || {}).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="font-heading text-4xl text-[var(--color-accent)]">Vendor Intelligence — vScore</h1>
+            <h1 className="font-heading text-3xl md:text-4xl text-[var(--color-accent)]">Vendor Intelligence — vScore</h1>
             <p className="text-[var(--color-muted,#6b7280)] font-body mt-1">Supplier credit scoring powered by σI</p>
           </div>
           <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
@@ -514,8 +514,8 @@ const VendorIntelligence = () => {
                 <span className="text-sm font-medium text-[var(--color-muted,#6b7280)]">Show DESC Certified Only</span>
                 <div className="relative">
                   <input type="checkbox" checked={descOnly} onChange={(e) => setDescOnly(e.target.checked)} className="sr-only peer" />
-                  <div className="w-9 h-5 bg-[var(--color-border,#d1d5db)] rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
-                  <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+                  <div className="w-11 h-6 bg-[var(--color-border,#d1d5db)] rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform" />
                 </div>
               </label>
               <input
@@ -528,7 +528,7 @@ const VendorIntelligence = () => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ minWidth: '800px' }}>
               <thead>
                 <tr className="bg-[var(--color-table-header-bg,#f9fafb)] text-left">
                   <th className="px-4 py-3 font-semibold text-[var(--color-muted,#6b7280)]">Rank</th>

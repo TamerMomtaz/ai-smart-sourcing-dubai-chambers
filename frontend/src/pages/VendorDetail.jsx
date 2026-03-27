@@ -179,10 +179,10 @@ const VendorDetail = () => {
   });
 
   return (
-    <div className="min-h-screen bg-cream p-8">
+    <div className="min-h-screen bg-cream p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="font-heading text-4xl text-ink">{vendor.name}</h1>
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h1 className="font-heading text-3xl md:text-4xl text-ink">{vendor.name}</h1>
           <button
             onClick={() => navigate('/vendors')}
             className="text-teal hover:underline font-body"
@@ -195,12 +195,12 @@ const VendorDetail = () => {
         {vscore && vscore.vscore != null && (
           <div className="mb-6 space-y-4">
             {/* Score Header */}
-            <div className="bg-[#1E293B] rounded-xl p-8 shadow-lg">
-              <div className="flex items-center gap-8">
+            <div className="bg-[#1E293B] rounded-xl p-5 md:p-8 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
                 <VScoreGauge score={vscore.vscore} tier={vscore.vscore_tier} size={120} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white">vScore Dossier</h2>
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-white">vScore Dossier</h2>
                     {vscore.score_change !== 0 && (
                       <span className={`text-sm font-bold ${vscore.score_change > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {vscore.score_change > 0 ? '+' : ''}{vscore.score_change} {vscore.score_change > 0 ? '↑' : '↓'}
@@ -412,16 +412,16 @@ const VendorDetail = () => {
                     { label: 'Claim Integrity', weight: 15, desc: 'Hallucination Shield grounding scores', color: '#8B5CF6' },
                     { label: 'Entity Intelligence', weight: 10, desc: 'Related company risks and tenure', color: '#EC4899' },
                   ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
+                    <div key={item.label} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                       <div className="w-12 text-right text-sm font-bold" style={{ color: item.color }}>
                         {item.weight}%
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-[80px]">
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full rounded-full" style={{ width: `${item.weight}%`, backgroundColor: item.color }} />
                         </div>
                       </div>
-                      <div className="w-56">
+                      <div className="w-full sm:w-56">
                         <span className="text-sm text-gray-600">{item.label}</span>
                         <span className="text-xs text-gray-400 ml-1">— {item.desc}</span>
                       </div>
@@ -439,10 +439,10 @@ const VendorDetail = () => {
         {/* Reputation Profile Section (legacy, shown if no vscore) */}
         {(!vscore || vscore.vscore == null) && reputation && reputation.reputation_score != null && (
           <div className="mb-6 space-y-4">
-            <div className="bg-[#1E293B] rounded-xl p-8 shadow-lg">
-              <div className="flex items-center gap-8">
+            <div className="bg-[#1E293B] rounded-xl p-5 md:p-8 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
                 <ReputationGauge score={reputation.reputation_score} tier={reputation.reputation_tier} size={96} />
-                <div>
+                <div className="text-center sm:text-left">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold text-white">Reputation Profile</h2>
                     <span
@@ -462,8 +462,8 @@ const VendorDetail = () => {
         )}
 
         {/* Existing Vendor Info */}
-        <div className="bg-white rounded-xl shadow-sm p-8 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-sm p-5 md:p-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <span className="text-gray-600 font-body text-sm">Company Registration</span>
               <p className="text-ink font-semibold mt-1">{vendor.company_registration || 'N/A'}</p>

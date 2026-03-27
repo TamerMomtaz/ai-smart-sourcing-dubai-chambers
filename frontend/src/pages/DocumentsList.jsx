@@ -90,7 +90,7 @@ const DocumentsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-white">Documents</h1>

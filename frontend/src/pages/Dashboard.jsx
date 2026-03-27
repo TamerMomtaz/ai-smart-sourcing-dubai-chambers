@@ -476,7 +476,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-cream p-8">
+      <div className="min-h-screen bg-cream p-4 md:p-8">
         <div className="max-w-4xl mx-auto bg-burgundy/10 border border-burgundy rounded-lg p-6">
           <h2 className="font-heading text-2xl text-burgundy mb-2">Error Loading Dashboard</h2>
           <p className="text-ink">{error}</p>
@@ -486,12 +486,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream p-8">
+    <div className="min-h-screen bg-cream p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <DemoBanner />
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-heading text-4xl text-teal mb-2">Dashboard</h1>
+            <h1 className="font-heading text-3xl md:text-4xl text-teal mb-2">Dashboard</h1>
             <p className="text-ink/70 flex items-center gap-2">
               Welcome back, {user?.full_name || 'User'}
               {user?.role && ROLE_BADGES[user.role] && (
@@ -610,7 +610,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
           <StatCard
             title="Total Proposals"
             value={stats?.total_proposals || 0}

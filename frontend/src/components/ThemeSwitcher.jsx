@@ -30,8 +30,8 @@ function ThemeSwitcher() {
           onClick={() => switchTheme(t.id)}
           title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
           style={{
-            width: 24,
-            height: 24,
+            width: 32,
+            height: 32,
             borderRadius: '50%',
             backgroundColor: t.color,
             border: active === t.id ? '2px solid white' : '2px solid transparent',
