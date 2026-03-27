@@ -62,7 +62,8 @@ from routes import (
     dashboard_impact_routes,
     board_brief_routes,
     vendor_intelligence_routes,
-    vscore_routes
+    vscore_routes,
+    incident_routes
 )
 
 # Configure logging
@@ -247,6 +248,7 @@ app.include_router(hallucination_routes.router, prefix="/api/v1", tags=["Halluci
 app.include_router(dashboard_impact_routes.router, prefix="/api/v1", tags=["Dashboard Impact"])
 app.include_router(board_brief_routes.router, prefix="/api/v1", tags=["Board Brief"])
 app.include_router(vscore_routes.router, prefix="/api/v1", tags=["vScore"])  # vendor sub-endpoints
+app.include_router(incident_routes.router, prefix="/api/v1", tags=["Incident Management"])
 
 if __name__ == "__main__":
     import uvicorn
