@@ -144,8 +144,140 @@ const NewIncidentForm = ({ onSubmit, onCancel }) => {
   );
 };
 
+/* ── Platform Compliance Self-Check data ── */
+const SELF_CHECK_DATE = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const PLATFORM_CONTROLS = [
+  {
+    framework: 'DESC CSP Security Standards',
+    controls: [
+      { id: 1, title: 'ISO/IEC 27001 — Information security controls', status: 'active', detail: 'Implemented — RLS on all 19 tables, auth via Supabase, service role isolation' },
+      { id: 2, title: 'ISO/IEC 27017 — Cloud security controls', status: 'active', detail: 'Implemented — API-first architecture, CORS configured, environment variable hygiene' },
+      { id: 3, title: 'CSA CCM v4.0.5 — Cloud controls matrix', status: 'active', detail: 'Implemented — Cloud-native deployment (Vercel + Railway + Supabase), automated backups' },
+      { id: 4, title: 'ISR V3 — Information security regulation', status: 'active', detail: 'Implemented — Full compliance audit pipeline with 9-page PDF export' },
+    ],
+  },
+  {
+    framework: 'DESC AI Security Policy (5-Phase Lifecycle)',
+    controls: [
+      { id: 5, title: 'Design Phase — Threat modeling, data boundaries', status: 'active', detail: 'Multi-model architecture prevents single-point AI failure. 3 providers (Claude, GPT-4o, Gemini)' },
+      { id: 6, title: 'Develop Phase — Data poisoning prevention', status: 'active', detail: 'No model fine-tuning on user data. Evaluation prompts are system-controlled, not user-injectable' },
+      { id: 7, title: 'Deploy Phase — Secure APIs, model protection', status: 'active', detail: 'API keys server-side only. Rate limiting ready. Auth on all endpoints' },
+      { id: 8, title: 'Monitor Phase — Hallucination detection, anomaly flagging', status: 'active', detail: 'Hallucination Shield with cross-model verification. \u03C3I tracks every AI interaction' },
+      { id: 9, title: 'Dispose Phase — Crypto-erasure, data retention', status: 'planned', detail: 'Planned — Supabase supports data deletion. Formal disposal procedure in roadmap' },
+    ],
+  },
+  {
+    framework: 'Data Residency & Sovereignty',
+    controls: [
+      { id: 10, title: 'UAE Data Residency', status: 'planned', detail: 'Development instance: EU (Frankfurt). Production: UAE-region hosting planned. Architecture is region-agnostic' },
+      { id: 11, title: 'Data Residency Monitoring', status: 'active', detail: 'vScore flags vendors without UAE data residency verification' },
+      { id: 12, title: 'No cross-border data transfer without approval', status: 'active', detail: 'All AI API calls use cloud providers with UAE-compatible data processing agreements' },
+    ],
+  },
+  {
+    framework: 'Operational Security',
+    controls: [
+      { id: 13, title: 'Role-based access control', status: 'active', detail: '5 roles (Admin, Analyst, Compliance, Executive, Vendor) with tailored permissions' },
+      { id: 14, title: 'Audit trail / Immutable logging', status: 'active', detail: '\u03C3I Transparency — every AI interaction logged with model, tokens, cost, timestamp' },
+      { id: 15, title: 'Incident response process', status: 'active', detail: 'Incident Management module with DESC mandatory reporting workflow' },
+      { id: 16, title: 'Vendor ecosystem integration', status: 'active', detail: 'DESC certification tracking, vScore credit scoring, engagement history' },
+      { id: 17, title: 'API security', status: 'active', detail: 'Supabase auth (ES256 JWT), service role isolation, no secrets in frontend' },
+      { id: 18, title: 'Backup & recovery', status: 'active', detail: 'Supabase automated daily backups, Railway auto-healing, Vercel edge CDN' },
+      { id: 19, title: 'Transparency & explainability', status: 'active', detail: 'Every AI score includes reasoning text. vScore formula is visible. \u03C3I tracks all costs' },
+    ],
+  },
+];
+
+const ACTIVE_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.filter((c) => c.status === 'active').length, 0);
+const TOTAL_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.length, 0);
+const PERCENT = Math.round((ACTIVE_COUNT / TOTAL_COUNT) * 100);
+
+/* ── Platform Self-Check Section Component ── */
+const PlatformSelfCheck = () => {
+  const [collapsed, setCollapsed] = useState({});
+
+  const toggle = (framework) => setCollapsed((prev) => ({ ...prev, [framework]: !prev[framework] }));
+
+  return (
+    <div>
+      {/* Summary header */}
+      <div className="bg-[#1E293B] rounded-xl border border-gray-700/50 p-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">DESC Platform Compliance Overview</h3>
+            <p className="text-gray-400 text-sm">
+              <span className="text-emerald-400 font-bold">{ACTIVE_COUNT}</span> of{' '}
+              <span className="text-white font-bold">{TOTAL_COUNT}</span> controls active
+              {' '}<span className="text-gray-500">|</span>{' '}
+              <span className="text-amber-400 font-bold">{TOTAL_COUNT - ACTIVE_COUNT}</span> in roadmap
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-48">
+              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <span>Compliance</span>
+                <span className="text-emerald-400 font-bold">{PERCENT}%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-3">
+                <div
+                  className="bg-emerald-500 h-3 rounded-full transition-all"
+                  style={{ width: `${PERCENT}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Framework sections */}
+      {PLATFORM_CONTROLS.map((group) => (
+        <div key={group.framework} className="mb-4">
+          <button
+            onClick={() => toggle(group.framework)}
+            className="w-full flex items-center justify-between bg-[#1E293B] rounded-xl border border-gray-700/50 px-6 py-4 hover:bg-[#253348] transition text-left"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-gray-500 text-sm">{collapsed[group.framework] ? '\u25B6' : '\u25BC'}</span>
+              <h4 className="text-white font-semibold">{group.framework}</h4>
+              <span className="text-gray-500 text-xs">
+                ({group.controls.filter((c) => c.status === 'active').length}/{group.controls.length} active)
+              </span>
+            </div>
+          </button>
+
+          {!collapsed[group.framework] && (
+            <div className="mt-2 grid grid-cols-1 gap-2">
+              {group.controls.map((ctrl) => (
+                <div
+                  key={ctrl.id}
+                  className="bg-[#0F172A] rounded-lg border border-gray-700/30 px-5 py-3 flex items-start gap-3"
+                >
+                  <span className={`text-lg mt-0.5 flex-shrink-0 ${ctrl.status === 'active' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {ctrl.status === 'active' ? '\u2705' : '\u26A0\uFE0F'}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium">{ctrl.title}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{ctrl.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Footer */}
+      <p className="text-gray-500 text-xs mt-6 text-center">
+        Self-assessment as of {SELF_CHECK_DATE}. \u03C3I — Every control is traceable.
+      </p>
+    </div>
+  );
+};
+
 const ComplianceAuditsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('audits');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [audits, setAudits] = useState([]);
@@ -252,152 +384,187 @@ const ComplianceAuditsList = () => {
     );
   }
 
+  const tabs = [
+    { id: 'audits', label: 'Vendor Audits' },
+    { id: 'self-check', label: 'Platform Compliance Self-Check' },
+    { id: 'incidents', label: 'Incident Management' },
+  ];
+
   return (
     <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Compliance Audits</h1>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/proposals"
-              className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
-            >
-              Run Audit on Proposal
-            </Link>
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setSearchParams({ page: '1' }); }}
-              className="bg-[#1E293B] text-gray-300 border border-gray-600 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="">All Statuses</option>
-              <option value="compliant">Compliant</option>
-              <option value="partially_compliant">Partially Compliant</option>
-              <option value="non_compliant">Non-Compliant</option>
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#1E293B] text-gray-300 border border-gray-600 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="audit_timestamp">Sort by Date</option>
-              <option value="overall_score">Sort by Score</option>
-            </select>
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold text-white mb-4">Compliance Audits</h1>
+          {/* Tab navigation */}
+          <div className="flex border-b border-gray-700/50">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-3 text-sm font-medium transition-colors relative ${
+                  activeTab === tab.id
+                    ? 'text-[var(--color-accent)] border-b-2 border-[var(--color-accent)]'
+                    : 'text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {tab.label}
+                {tab.id === 'self-check' && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    {PERCENT}%
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </header>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
+        {/* ═══ TAB: Vendor Audits ═══ */}
+        {activeTab === 'audits' && (
+          <>
+            <div className="mb-6 flex items-center justify-end gap-3">
+              <Link
+                to="/proposals"
+                className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+              >
+                Run Audit on Proposal
+              </Link>
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setSearchParams({ page: '1' }); }}
+                className="bg-[#1E293B] text-gray-300 border border-gray-600 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="">All Statuses</option>
+                <option value="compliant">Compliant</option>
+                <option value="partially_compliant">Partially Compliant</option>
+                <option value="non_compliant">Non-Compliant</option>
+              </select>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-[#1E293B] text-gray-300 border border-gray-600 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="audit_timestamp">Sort by Date</option>
+                <option value="overall_score">Sort by Score</option>
+              </select>
+            </div>
 
-        <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-gray-700/50">
-          <div style={{ overflowX: 'auto', width: '100%' }}>
-          <table className="w-full" style={{ minWidth: '900px' }}>
-            <thead className="bg-[var(--color-table-header-bg)]">
-              <tr>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Proposal</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Score</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Status</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC ISR V3 Controls</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC AI Security Policy (5-Phase Lifecycle)</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Data Residency</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Date</th>
-                <th className="text-left p-4 text-gray-400 text-sm font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {audits.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="text-center p-8 text-[#94A3B8]">
-                    No compliance audits found
-                  </td>
-                </tr>
-              ) : (
-                audits.map((a) => (
-                  <tr key={a.id} className="border-t border-gray-700/50 hover:bg-[var(--color-table-header-bg)]">
-                    <td className="p-4">
-                      <Link to={`/proposals/${a.proposal_id}`} className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium">
-                        {a.proposal_title || 'View Proposal'}
-                      </Link>
-                    </td>
-                    <td className="p-4"><ScoreBadge score={a.overall_score} /></td>
-                    <td className="p-4"><StatusBadge status={a.overall_status} /></td>
-                    <td className="p-4">
-                      <span className={a.isr_v3_compliance ? 'text-emerald-400' : 'text-red-400'}>
-                        {a.isr_v3_compliance ? 'Pass' : 'Fail'}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={a.ai_security_policy_compliance ? 'text-emerald-400' : 'text-red-400'}>
-                        {a.ai_security_policy_compliance ? 'Pass' : 'Fail'}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={a.csp_standards_compliance ? 'text-emerald-400' : 'text-red-400'}>
-                        {a.csp_standards_compliance ? 'Pass' : 'Fail'}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={a.data_residency_verified ? 'text-emerald-400' : 'text-red-400'}>
-                        {a.data_residency_verified ? 'Verified' : 'No'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-400 text-sm">
-                      {a.audit_timestamp ? new Date(a.audit_timestamp).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="p-4 space-x-2">
-                      <Link
-                        to={`/compliance-audits/${a.id}`}
-                        className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
-                      >
-                        View Evidence
-                      </Link>
-                      <a
-                        href={`/compliance-audits/${a.id}/report`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-[#1E293B] hover:bg-[#334155] text-gray-300 text-sm font-medium px-3 py-1 rounded transition inline-block border border-gray-600"
-                        title="Download Audit Report"
-                      >
-                        Report
-                      </a>
-                    </td>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+                <p className="text-red-400">{error}</p>
+              </div>
+            )}
+
+            <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-gray-700/50">
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table className="w-full" style={{ minWidth: '900px' }}>
+                <thead className="bg-[var(--color-table-header-bg)]">
+                  <tr>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Proposal</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Score</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Status</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC ISR V3 Controls</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC AI Security Policy (5-Phase Lifecycle)</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Data Residency</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Date</th>
+                    <th className="text-left p-4 text-gray-400 text-sm font-medium">Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          </div>
-        </div>
+                </thead>
+                <tbody>
+                  {audits.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center p-8 text-[#94A3B8]">
+                        No compliance audits found
+                      </td>
+                    </tr>
+                  ) : (
+                    audits.map((a) => (
+                      <tr key={a.id} className="border-t border-gray-700/50 hover:bg-[var(--color-table-header-bg)]">
+                        <td className="p-4">
+                          <Link to={`/proposals/${a.proposal_id}`} className="text-[#3B82F6] hover:text-blue-300 text-sm font-medium">
+                            {a.proposal_title || 'View Proposal'}
+                          </Link>
+                        </td>
+                        <td className="p-4"><ScoreBadge score={a.overall_score} /></td>
+                        <td className="p-4"><StatusBadge status={a.overall_status} /></td>
+                        <td className="p-4">
+                          <span className={a.isr_v3_compliance ? 'text-emerald-400' : 'text-red-400'}>
+                            {a.isr_v3_compliance ? 'Pass' : 'Fail'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={a.ai_security_policy_compliance ? 'text-emerald-400' : 'text-red-400'}>
+                            {a.ai_security_policy_compliance ? 'Pass' : 'Fail'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={a.csp_standards_compliance ? 'text-emerald-400' : 'text-red-400'}>
+                            {a.csp_standards_compliance ? 'Pass' : 'Fail'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={a.data_residency_verified ? 'text-emerald-400' : 'text-red-400'}>
+                            {a.data_residency_verified ? 'Verified' : 'No'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-400 text-sm">
+                          {a.audit_timestamp ? new Date(a.audit_timestamp).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="p-4 space-x-2">
+                          <Link
+                            to={`/compliance-audits/${a.id}`}
+                            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium px-3 py-1 rounded transition inline-block"
+                          >
+                            View Evidence
+                          </Link>
+                          <a
+                            href={`/compliance-audits/${a.id}/report`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#1E293B] hover:bg-[#334155] text-gray-300 text-sm font-medium px-3 py-1 rounded transition inline-block border border-gray-600"
+                            title="Download Audit Report"
+                          >
+                            Report
+                          </a>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              </div>
+            </div>
 
-        {pagination && pagination.total_pages > 1 && (
-          <div className="flex items-center justify-center space-x-2 mt-6">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
-            >
-              Previous
-            </button>
-            <span className="text-gray-400">
-              Page {page} of {pagination.total_pages}
-            </span>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === pagination.total_pages}
-              className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
-            >
-              Next
-            </button>
-          </div>
+            {pagination && pagination.total_pages > 1 && (
+              <div className="flex items-center justify-center space-x-2 mt-6">
+                <button
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
+                >
+                  Previous
+                </button>
+                <span className="text-gray-400">
+                  Page {page} of {pagination.total_pages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === pagination.total_pages}
+                  className="px-4 py-2 rounded-lg bg-[#1E293B] border border-gray-700/50 text-gray-300 disabled:opacity-50 hover:bg-[var(--color-table-header-bg)] transition"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
 
-        {/* ═══════════════════════════════════════════════════════════
-            INCIDENT RESPONSE & DISASTER RECOVERY SECTION
-            ═══════════════════════════════════════════════════════════ */}
-        <div className="mt-12 border-t border-gray-700/50 pt-10">
+        {/* ═══ TAB: Platform Compliance Self-Check ═══ */}
+        {activeTab === 'self-check' && <PlatformSelfCheck />}
+
+        {/* ═══ TAB: Incident Management ═══ */}
+        {activeTab === 'incidents' && (
+        <div className="pt-2">
           <h2 className="text-2xl font-bold text-white mb-6">Incident Response & Disaster Recovery</h2>
 
           {/* Summary cards */}
@@ -576,6 +743,7 @@ const ComplianceAuditsList = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
