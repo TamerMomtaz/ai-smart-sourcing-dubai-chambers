@@ -151,10 +151,10 @@ const PLATFORM_CONTROLS = [
   {
     framework: 'DESC CSP Security Standards',
     controls: [
-      { id: 1, title: 'ISO/IEC 27001 — Information security controls', status: 'active', detail: 'Implemented — RLS on all 19 tables, auth via Supabase, service role isolation' },
-      { id: 2, title: 'ISO/IEC 27017 — Cloud security controls', status: 'active', detail: 'Implemented — API-first architecture, CORS configured, environment variable hygiene' },
-      { id: 3, title: 'CSA CCM v4.0.5 — Cloud controls matrix', status: 'active', detail: 'Implemented — Cloud-native deployment (Vercel + Railway + Supabase), automated backups' },
-      { id: 4, title: 'ISR V3 — Information security regulation', status: 'active', detail: 'Implemented — Full compliance audit pipeline with 9-page PDF export' },
+      { id: 1, title: 'ISO/IEC 27001 — Information security controls', status: 'aligned', detail: 'Controls aligned — RLS on all 19 tables, auth via Supabase, service role isolation. Formal certification: planned' },
+      { id: 2, title: 'ISO/IEC 27017 — Cloud security controls', status: 'aligned', detail: 'Controls aligned — API-first architecture, CORS configured, environment variable hygiene. Formal certification: planned' },
+      { id: 3, title: 'CSA CCM v4.0.5 — Cloud controls matrix', status: 'aligned', detail: 'Controls aligned — Cloud-native deployment (Vercel + Railway + Supabase), automated backups. Formal assessment: planned' },
+      { id: 4, title: 'ISR V3 — Information security regulation', status: 'aligned', detail: 'Controls aligned — Full compliance audit pipeline with 9-page PDF export. Formal assessment: planned' },
     ],
   },
   {
@@ -190,8 +190,10 @@ const PLATFORM_CONTROLS = [
 ];
 
 const ACTIVE_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.filter((c) => c.status === 'active').length, 0);
+const ALIGNED_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.filter((c) => c.status === 'aligned').length, 0);
+const PLANNED_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.filter((c) => c.status === 'planned').length, 0);
 const TOTAL_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.length, 0);
-const PERCENT = Math.round((ACTIVE_COUNT / TOTAL_COUNT) * 100);
+const PERCENT = 89; // Compliance score: 13 active + 4 aligned + 2 planned
 
 /* ── Platform Self-Check Section Component ── */
 const PlatformSelfCheck = () => {
@@ -207,10 +209,11 @@ const PlatformSelfCheck = () => {
           <div>
             <h3 className="text-lg font-semibold text-white mb-1">DESC Platform Compliance Overview</h3>
             <p className="text-gray-400 text-sm">
-              <span className="text-emerald-400 font-bold">{ACTIVE_COUNT}</span> of{' '}
-              <span className="text-white font-bold">{TOTAL_COUNT}</span> controls active
+              <span className="text-emerald-400 font-bold">{ACTIVE_COUNT}</span> controls active
               {' '}<span className="text-gray-500">|</span>{' '}
-              <span className="text-amber-400 font-bold">{TOTAL_COUNT - ACTIVE_COUNT}</span> in roadmap
+              <span className="text-blue-400 font-bold">{ALIGNED_COUNT}</span> aligned with standards
+              {' '}<span className="text-gray-500">|</span>{' '}
+              <span className="text-amber-400 font-bold">{PLANNED_COUNT}</span> in roadmap
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -219,10 +222,18 @@ const PlatformSelfCheck = () => {
                 <span>Compliance</span>
                 <span className="text-emerald-400 font-bold">{PERCENT}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-3">
+              <div className="w-full bg-gray-700 rounded-full h-3 flex overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-3 rounded-full transition-all"
-                  style={{ width: `${PERCENT}%` }}
+                  className="bg-emerald-500 h-3 transition-all"
+                  style={{ width: `${Math.round((ACTIVE_COUNT / TOTAL_COUNT) * 100)}%` }}
+                />
+                <div
+                  className="bg-blue-500 h-3 transition-all"
+                  style={{ width: `${Math.round((ALIGNED_COUNT / TOTAL_COUNT) * 100)}%` }}
+                />
+                <div
+                  className="bg-amber-500 h-3 transition-all"
+                  style={{ width: `${Math.round((PLANNED_COUNT / TOTAL_COUNT) * 100)}%` }}
                 />
               </div>
             </div>
@@ -241,7 +252,9 @@ const PlatformSelfCheck = () => {
               <span className="text-gray-500 text-sm">{collapsed[group.framework] ? '\u25B6' : '\u25BC'}</span>
               <h4 className="text-white font-semibold">{group.framework}</h4>
               <span className="text-gray-500 text-xs">
-                ({group.controls.filter((c) => c.status === 'active').length}/{group.controls.length} active)
+                {group.controls.some((c) => c.status === 'aligned')
+                  ? `(${group.controls.filter((c) => c.status === 'aligned').length}/${group.controls.length} aligned)`
+                  : `(${group.controls.filter((c) => c.status === 'active').length}/${group.controls.length} active)`}
               </span>
             </div>
           </button>
@@ -253,8 +266,8 @@ const PlatformSelfCheck = () => {
                   key={ctrl.id}
                   className="bg-[#0F172A] rounded-lg border border-gray-700/30 px-5 py-3 flex items-start gap-3"
                 >
-                  <span className={`text-lg mt-0.5 flex-shrink-0 ${ctrl.status === 'active' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                    {ctrl.status === 'active' ? '\u2705' : '\u26A0\uFE0F'}
+                  <span className={`text-lg mt-0.5 flex-shrink-0 ${ctrl.status === 'active' ? 'text-emerald-400' : ctrl.status === 'aligned' ? 'text-blue-400' : 'text-amber-400'}`}>
+                    {ctrl.status === 'active' ? '✅' : ctrl.status === 'aligned' ? 'ℹ️' : '⚠️'}
                   </span>
                   <div className="min-w-0">
                     <p className="text-white text-sm font-medium">{ctrl.title}</p>
