@@ -163,7 +163,7 @@ const PLATFORM_CONTROLS = [
       { id: 5, title: 'Design Phase — Threat modeling, data boundaries', status: 'active', detail: 'Multi-model architecture prevents single-point AI failure. 3 providers (Claude, GPT-4o, Gemini)' },
       { id: 6, title: 'Develop Phase — Data poisoning prevention', status: 'active', detail: 'No model fine-tuning on user data. Evaluation prompts are system-controlled, not user-injectable' },
       { id: 7, title: 'Deploy Phase — Secure APIs, model protection', status: 'active', detail: 'API keys server-side only. Rate limiting ready. Auth on all endpoints' },
-      { id: 8, title: 'Monitor Phase — Hallucination detection, anomaly flagging', status: 'active', detail: 'Hallucination Shield with cross-model verification. \u03C3I tracks every AI interaction' },
+      { id: 8, title: 'Monitor Phase — Hallucination detection, anomaly flagging', status: 'active', detail: 'Hallucination Shield with cross-model verification. σI tracks every AI interaction' },
       { id: 9, title: 'Dispose Phase — Crypto-erasure, data retention', status: 'planned', detail: 'Planned — Supabase supports data deletion. Formal disposal procedure in roadmap' },
     ],
   },
@@ -179,12 +179,12 @@ const PLATFORM_CONTROLS = [
     framework: 'Operational Security',
     controls: [
       { id: 13, title: 'Role-based access control', status: 'active', detail: '5 roles (Admin, Analyst, Compliance, Executive, Vendor) with tailored permissions' },
-      { id: 14, title: 'Audit trail / Immutable logging', status: 'active', detail: '\u03C3I Transparency — every AI interaction logged with model, tokens, cost, timestamp' },
+      { id: 14, title: 'Audit trail / Immutable logging', status: 'active', detail: 'σI Transparency — every AI interaction logged with model, tokens, cost, timestamp' },
       { id: 15, title: 'Incident response process', status: 'active', detail: 'Incident Management module with DESC mandatory reporting workflow' },
       { id: 16, title: 'Vendor ecosystem integration', status: 'active', detail: 'DESC certification tracking, vScore credit scoring, engagement history' },
       { id: 17, title: 'API security', status: 'active', detail: 'Supabase auth (ES256 JWT), service role isolation, no secrets in frontend' },
       { id: 18, title: 'Backup & recovery', status: 'active', detail: 'Supabase automated daily backups, Railway auto-healing, Vercel edge CDN' },
-      { id: 19, title: 'Transparency & explainability', status: 'active', detail: 'Every AI score includes reasoning text. vScore formula is visible. \u03C3I tracks all costs' },
+      { id: 19, title: 'Transparency & explainability', status: 'active', detail: 'Every AI score includes reasoning text. vScore formula is visible. σI tracks all costs' },
     ],
   },
 ];
@@ -282,7 +282,7 @@ const PlatformSelfCheck = () => {
 
       {/* Footer */}
       <p className="text-gray-500 text-xs mt-6 text-center">
-        Self-assessment as of {SELF_CHECK_DATE}. \u03C3I — Every control is traceable.
+        Self-assessment as of {SELF_CHECK_DATE}. σI — Every control is traceable.
       </p>
     </div>
   );

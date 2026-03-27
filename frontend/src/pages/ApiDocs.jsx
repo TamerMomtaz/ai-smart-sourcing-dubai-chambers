@@ -72,7 +72,7 @@ const ENDPOINTS = [
     ],
   },
   {
-    category: '\u03C3I Transparency',
+    category: 'σI Transparency',
     endpoints: [
       {
         method: 'GET', path: '/api/v1/dashboard/impact', description: 'Impact metrics (hours saved, cost)',

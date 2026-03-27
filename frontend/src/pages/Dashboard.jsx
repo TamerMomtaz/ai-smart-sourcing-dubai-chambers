@@ -4,6 +4,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { ROLE_BADGES } from '../config/rolePermissions';
 import { useUserRole } from '../lib/userRole';
+import DemoBanner from '../components/DemoBanner';
 
 // --- Animated counter hook ---
 function useCountUp(target, duration = 1500) {
@@ -487,6 +488,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-cream p-8">
       <div className="max-w-7xl mx-auto">
+        <DemoBanner />
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-heading text-4xl text-teal mb-2">Dashboard</h1>
