@@ -238,6 +238,153 @@ const ImpactMeter = ({ impact, timeline }) => {
   );
 };
 
+// --- Pilot & Engagement Outcomes Section ---
+const OUTCOME_COLORS = {
+  exceeded: { bg: 'bg-emerald-700', label: 'Exceeded' },
+  completed: { bg: 'bg-emerald-500', label: 'Completed' },
+  ongoing: { bg: 'bg-blue-500', label: 'Ongoing' },
+  partial: { bg: 'bg-amber-500', label: 'Partial' },
+  failed: { bg: 'bg-red-500', label: 'Failed' },
+  cancelled: { bg: 'bg-gray-400', label: 'Cancelled' },
+};
+
+const OUTCOME_BADGE = {
+  exceeded: 'bg-emerald-100 text-emerald-800',
+  completed: 'bg-emerald-50 text-emerald-700',
+  ongoing: 'bg-blue-100 text-blue-800',
+  partial: 'bg-amber-100 text-amber-800',
+  failed: 'bg-red-100 text-red-800',
+  cancelled: 'bg-gray-100 text-gray-600',
+};
+
+const TYPE_BADGE = {
+  pilot: 'bg-indigo-100 text-indigo-700',
+  contract: 'bg-teal-100 text-teal-700',
+  poc: 'bg-purple-100 text-purple-700',
+  trial: 'bg-cyan-100 text-cyan-700',
+};
+
+const EngagementOutcomes = ({ data }) => {
+  if (!data) return null;
+
+  const { metrics, distribution, recent_engagements } = data;
+  const total = Object.values(distribution).reduce((s, v) => s + v, 0);
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+      <h2 className="font-heading text-xl text-teal mb-5">Pilot & Engagement Outcomes</h2>
+
+      {/* ROW 1 — Metric cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-50 rounded-lg p-4 text-center">
+          <div className="text-blue-600 font-mono text-3xl font-bold">{metrics.active_pilots}</div>
+          <div className="text-xs text-gray-500 mt-1">Active Pilots</div>
+        </div>
+        <div className="bg-emerald-50 rounded-lg p-4 text-center">
+          <div className="text-emerald-600 font-mono text-3xl font-bold">{metrics.completed_engagements}</div>
+          <div className="text-xs text-gray-500 mt-1">Completed Engagements</div>
+        </div>
+        <div className="bg-amber-50 rounded-lg p-4 text-center">
+          <div className="text-amber-600 font-mono text-3xl font-bold">
+            {metrics.avg_delivery_rating != null ? `★ ${metrics.avg_delivery_rating}/5` : '—'}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Avg Delivery Rating</div>
+        </div>
+        <div className="bg-teal-50 rounded-lg p-4 text-center">
+          <div className="text-teal font-mono text-3xl font-bold">{metrics.success_rate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Success Rate</div>
+        </div>
+      </div>
+
+      {/* ROW 2 — Stacked outcome bar */}
+      {total > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
+            <span>Outcome Distribution</span>
+            <span className="ml-auto">{total} total</span>
+          </div>
+          <div className="flex h-6 rounded-full overflow-hidden">
+            {Object.entries(OUTCOME_COLORS).map(([key, { bg }]) => {
+              const count = distribution[key] || 0;
+              if (count === 0) return null;
+              const pct = (count / total) * 100;
+              return (
+                <div
+                  key={key}
+                  className={`${bg} relative group`}
+                  style={{ width: `${pct}%` }}
+                  title={`${OUTCOME_COLORS[key].label}: ${count}`}
+                />
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-2">
+            {Object.entries(OUTCOME_COLORS).map(([key, { bg, label }]) => {
+              const count = distribution[key] || 0;
+              if (count === 0) return null;
+              return (
+                <div key={key} className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <span className={`inline-block w-3 h-3 rounded-sm ${bg}`} />
+                  {label} ({count})
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ROW 3 — Recent engagements list */}
+      {recent_engagements && recent_engagements.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-600 mb-3">Recent Engagements</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-left text-xs text-gray-400">
+                  <th className="pb-2 font-medium">Vendor</th>
+                  <th className="pb-2 font-medium">Engagement</th>
+                  <th className="pb-2 font-medium">Type</th>
+                  <th className="pb-2 font-medium">Outcome</th>
+                  <th className="pb-2 font-medium text-right">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent_engagements.map((eng) => (
+                  <tr key={eng.id} className="border-b border-gray-50">
+                    <td className="py-2 text-ink/80 font-medium">{eng.vendor_name}</td>
+                    <td className="py-2 text-ink/70">{eng.engagement_title || '—'}</td>
+                    <td className="py-2">
+                      {eng.engagement_type && (
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${TYPE_BADGE[eng.engagement_type] || 'bg-gray-100 text-gray-600'}`}>
+                          {eng.engagement_type}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2">
+                      {eng.outcome && (
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${OUTCOME_BADGE[eng.outcome] || 'bg-gray-100 text-gray-600'}`}>
+                          {eng.outcome}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 text-ink/50 text-right whitespace-nowrap">
+                      {eng.date ? new Date(eng.date).toLocaleDateString() : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {total === 0 && (
+        <p className="text-ink/50 text-sm">No engagement data available yet.</p>
+      )}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
   const { role: userRole } = useUserRole();
@@ -250,6 +397,7 @@ const Dashboard = () => {
   const [impact, setImpact] = useState(null);
   const [timeline, setTimeline] = useState(null);
   const [vendorSummary, setVendorSummary] = useState(null);
+  const [engagements, setEngagements] = useState(null);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -274,6 +422,14 @@ const Dashboard = () => {
         setStats(statsRes.data);
         setImpact(impactRes.data);
         setTimeline(timelineRes.data?.timeline || null);
+
+        // Fetch engagement outcomes (non-critical)
+        try {
+          const engRes = await api.get('/api/v1/dashboard/engagements');
+          setEngagements(engRes.data);
+        } catch {
+          // Non-critical
+        }
 
         // Fetch vendor-specific summary if vendor role
         if (userRes.data?.role === 'vendor') {
@@ -490,6 +646,9 @@ const Dashboard = () => {
             color="gold"
           />
         </div>
+
+        {/* Pilot & Engagement Outcomes */}
+        <EngagementOutcomes data={engagements} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6">
