@@ -705,7 +705,7 @@ const ProposalDetail = () => {
   const aiCost = proposal?.ai_cost;
 
   return (
-    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
       {toast && (
         <div className={`fixed top-6 right-6 z-50 ${toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-2xl`}>
           {toast.message}

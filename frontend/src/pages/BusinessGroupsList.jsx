@@ -49,7 +49,7 @@ const BusinessGroupsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-white">Business Groups</h1>

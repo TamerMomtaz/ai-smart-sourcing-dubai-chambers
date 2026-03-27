@@ -259,3 +259,24 @@
     opacity: 1;
   }
 }
+
+/* ─── Mobile Responsive Styles ─── */
+@media (max-width: 768px) {
+  /* Page titles — prevent overflow on small screens */
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2.25rem) !important;
+    word-break: break-word;
+  }
+
+  /* Ensure all buttons/links meet 44px touch target */
+  .mobile-tap-target,
+  a[class*="rounded-lg"],
+  button[class*="rounded-lg"] {
+    min-height: 44px;
+  }
+}
+
+/* Board Brief and Audit Report: ensure print layout is NOT affected */
+@media print {
+  .mobile-header { display: none !important; }
+}

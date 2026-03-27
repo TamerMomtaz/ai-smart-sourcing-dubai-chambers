@@ -252,10 +252,10 @@ const ProposalCompare = () => {
   // ─── Selection Mode ───
   if (!comparing) {
     return (
-      <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+      <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
           <header className="mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">Compare Proposals</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Compare Proposals</h1>
             <p className="text-gray-400 text-sm">
               Select 2 or 3 evaluated proposals to compare their scores, shield results, and compliance side by side.
             </p>
@@ -295,7 +295,7 @@ const ProposalCompare = () => {
               </div>
 
               {/* Floating compare bar */}
-              <div className="fixed bottom-0 left-0 right-0 z-40 lg:pl-64">
+              <div className="fixed bottom-0 left-0 right-0 z-40 md:pl-64">
                 <div className="bg-[#1E293B]/95 backdrop-blur-sm border-t border-gray-700/50 px-6 py-4">
                   <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="text-gray-300 text-sm">
@@ -353,12 +353,12 @@ const ProposalCompare = () => {
   const colCount = selected.length;
 
   return (
-    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">Proposal Comparison</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Proposal Comparison</h1>
             <p className="text-gray-400 text-sm">Side-by-side analysis of {colCount} proposals</p>
           </div>
           <div className="flex items-center gap-3">
@@ -378,8 +378,21 @@ const ProposalCompare = () => {
           </div>
         </header>
 
-        {/* Proposal Headers */}
-        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `160px repeat(${colCount}, 1fr)` }}>
+        {/* Proposal Headers — mobile stacked */}
+        <div className="md:hidden grid grid-cols-1 gap-4 mb-6">
+          {selected.map(({ proposal, evaluation, shield }) => (
+            <div key={proposal.id} className="bg-[#1E293B] rounded-xl p-5 border border-gray-700/50">
+              <h3 className="text-white font-semibold text-base mb-1">{proposal.title}</h3>
+              <p className="text-gray-400 text-xs capitalize mb-3">{proposal.sector}</p>
+              <div className="flex items-center gap-3">
+                <ScoreBadge score={evaluation?.composite_score} large />
+                {shield && <ShieldBadge shieldData={shield} />}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Proposal Headers — desktop grid */}
+        <div className="hidden md:grid gap-4 mb-6" style={{ gridTemplateColumns: `160px repeat(${colCount}, 1fr)` }}>
           <div></div>
           {selected.map(({ proposal, evaluation, shield }) => (
             <div key={proposal.id} className="bg-[#1E293B] rounded-xl p-5 border border-gray-700/50">
@@ -394,7 +407,7 @@ const ProposalCompare = () => {
         </div>
 
         {/* Scores Section */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50 mb-6">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <h3 className="text-white font-semibold text-lg mb-4">Score Breakdown</h3>
           <ComparisonRow
             label="Composite Score"
@@ -424,9 +437,9 @@ const ProposalCompare = () => {
         </div>
 
         {/* Visual Score Bars */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50 mb-6">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <h3 className="text-white font-semibold text-lg mb-4">Visual Comparison</h3>
-          <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
+          <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${colCount}, minmax(200px, 1fr))` }}>
             {selected.map(({ proposal, evaluation }) => (
               <div key={proposal.id}>
                 <p className="text-gray-300 text-sm font-medium mb-3 truncate">{proposal.title}</p>
@@ -442,7 +455,7 @@ const ProposalCompare = () => {
         </div>
 
         {/* Shield Results */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50 mb-6">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <div className="flex items-center gap-2 mb-4">
             <ShieldIcon size={18} color={TEAL} />
             <h3 className="text-white font-semibold text-lg">Hallucination Shield</h3>
@@ -509,7 +522,7 @@ const ProposalCompare = () => {
         </div>
 
         {/* Compliance Audits */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50 mb-6">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <h3 className="text-white font-semibold text-lg mb-4">Compliance Status</h3>
           <div className="grid gap-4" style={{ gridTemplateColumns: `160px repeat(${colCount}, 1fr)` }}>
             <div className="text-gray-400 text-sm font-medium">Status</div>
@@ -548,7 +561,7 @@ const ProposalCompare = () => {
         </div>
 
         {/* Proposal Details */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50 mb-6">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <h3 className="text-white font-semibold text-lg mb-4">Proposal Details</h3>
           <ComparisonRow
             label="Status"
@@ -583,7 +596,7 @@ const ProposalCompare = () => {
         </div>
 
         {/* Safety Checks */}
-        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50">
+        <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 overflow-x-auto">
           <h3 className="text-white font-semibold text-lg mb-4">Safety Checks</h3>
           <div className="grid gap-4 items-center border-b border-gray-700/30 py-3" style={{ gridTemplateColumns: `160px repeat(${colCount}, 1fr)` }}>
             <div className="text-gray-400 text-sm font-medium">Hallucination Check</div>

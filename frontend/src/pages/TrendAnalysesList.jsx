@@ -321,7 +321,7 @@ const TrendAnalysesList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-8">
+    <div className="min-h-screen bg-[var(--color-table-header-bg)] p-4 md:p-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="max-w-7xl mx-auto">

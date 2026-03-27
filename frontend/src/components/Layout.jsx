@@ -92,14 +92,14 @@ function Layout() {
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-ink/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-ink/50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-md transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-md transform transition-transform duration-200 ease-in-out md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -119,7 +119,7 @@ function Layout() {
                   <li key={item.name} className="relative">
                     <Link
                       to={item.href}
-                      className={`flex items-center px-4 py-2 rounded-lg font-body text-sm transition-colors ${
+                      className={`flex items-center px-4 py-3 rounded-lg font-body text-sm transition-colors min-h-[44px] ${
                         isActive(item.href)
                           ? 'bg-teal text-white'
                           : 'text-ink hover:bg-teal/10 hover:text-teal'
@@ -152,7 +152,7 @@ function Layout() {
             <button
               onClick={handleSignOut}
               disabled={loggingOut}
-              className="w-full px-4 py-2 bg-burgundy text-white rounded-lg font-body text-sm hover:bg-burgundy/90 transition-colors disabled:opacity-50"
+              className="w-full px-4 py-2 min-h-[44px] bg-burgundy text-white rounded-lg font-body text-sm hover:bg-burgundy/90 transition-colors disabled:opacity-50"
             >
               {loggingOut ? 'Signing out...' : 'Sign Out'}
             </button>
@@ -161,13 +161,14 @@ function Layout() {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="md:pl-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-ink/10 sticky top-0 z-30">
-          <div className="px-4 py-4 flex items-center justify-between">
+          <div className="px-4 py-3 flex items-center justify-between min-h-[52px]">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-ink hover:text-teal transition-colors"
+              className="md:hidden text-ink hover:text-teal transition-colors p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Open menu"
             >
               <svg
                 className="w-6 h-6"
@@ -183,12 +184,16 @@ function Layout() {
                 />
               </svg>
             </button>
-            <div className="flex-1"></div>
+            <h1 className="md:hidden font-heading text-lg text-teal flex-1 text-center">AI Smart Sourcing</h1>
+            <div className="md:hidden w-9 h-9 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
+              {(user?.email || 'U').charAt(0).toUpperCase()}
+            </div>
+            <div className="hidden md:block flex-1"></div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-6" style={{ overflowX: 'auto', minWidth: 0 }}>
+        <main className="p-4 md:p-6" style={{ overflowX: 'auto', minWidth: 0 }}>
           {isRouteAllowed ? (
             <Outlet />
           ) : (
