@@ -18,7 +18,8 @@ const STAGES = [
   { id: 11, name: 'Users', sidebar: 'Users' },
   { id: 12, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
   { id: 13, name: 'Vendor Intelligence — vScore', sidebar: 'Vendor Intelligence' },
-  { id: 14, name: 'Finale', sidebar: null },
+  { id: 14, name: 'Incident Response & Platform Compliance', sidebar: 'Compliance Audits' },
+  { id: 15, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
@@ -35,6 +36,7 @@ const TOOLTIPS = {
   11: 'Users — role-based access management',
   12: 'ΣI Transparency — full AI cost and environmental accountability',
   13: 'Vendor Intelligence — supplier credit scoring with vScore',
+  14: 'Incident Response — platform self-audit and DESC compliance',
 };
 
 /* ─── Particle Field ─── */
@@ -604,6 +606,93 @@ const STAGE_CONTENT = {
       );
     }
   },
+
+  14: {
+    title: "Incident Response & Platform Compliance",
+    render: () => {
+      /* Animated compliance arc */
+      const ComplianceArc = () => {
+        const [active, setActive] = useState(0);
+        useEffect(() => {
+          const duration = 1500;
+          const start = performance.now();
+          const animate = (now) => {
+            const pct = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - pct, 3);
+            setActive(Math.round(eased * 17));
+            if (pct < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }, []);
+
+        const pct = (active / 19) * 100;
+        return (
+          <div style={{
+            width: '120px', height: '120px', borderRadius: '50%',
+            background: `conic-gradient(#0D9488 ${pct}%, #1E293B ${pct}%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px', animation: 'slideUp 0.6s ease-out'
+          }}>
+            <div style={{
+              width: '90px', height: '90px', borderRadius: '50%',
+              background: '#fff', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '12px', color: '#64748B' }}>DESC</span>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: '#0D9488' }}>
+                {active}/19
+              </span>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div>
+          <ComplianceArc />
+          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
+            The platform doesn't just audit vendors — it audits itself.
+            A live DESC compliance self-check shows{' '}
+            <strong style={{color:'#0F172A'}}>17 of 19 controls active</strong>.
+            An incident management system tracks, resolves, and reports security
+            events to DESC.
+          </p>
+          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
+            Because responsible AI means being accountable for your own platform,
+            not just the solutions you evaluate.
+          </p>
+
+          {/* Example incident cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[
+              { severity: 'Low', title: 'Rate-limit threshold reached', status: 'Resolved', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
+              { severity: 'Medium', title: 'Unusual API token pattern detected', status: 'Mitigated', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
+              { severity: 'High', title: 'Data residency flag — model endpoint outside UAE', status: 'Escalated', color: '#A32D2D', bg: 'rgba(163,45,45,0.15)' },
+            ].map((inc, i) => (
+              <div key={inc.title} style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '10px 16px', borderRadius: '8px', background: inc.bg,
+                animation: `slideUp 0.5s ease-out ${0.4 * i + 1.5}s both`
+              }}>
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  background: `${inc.color}30`, color: inc.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '11px', fontWeight: 700, flexShrink: 0
+                }}>
+                  {inc.severity[0]}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', color: '#0F172A', fontWeight: 500 }}>{inc.title}</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>{inc.status}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+  },
 };
 
 /* ─── Stage Card ─── */
@@ -893,7 +982,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 14));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 15));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -912,14 +1001,14 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={12} total={13} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+          <NavigationBar current={12} total={14} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
   }
 
-  // Render finale if stage 14
-  if (currentStage === 14) {
+  // Render finale if stage 15
+  if (currentStage === 15) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -927,19 +1016,19 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(13)}
+          onBack={() => setCurrentStage(14)}
         />
       </div>
     );
   }
 
-  // Stages 1-11, 13: normal content cards
+  // Stages 1-11, 13-14: normal content cards
   return (
     <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={13} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 13} />
+      <NavigationBar current={currentStage} total={14} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 14} />
     </div>
   );
 }
