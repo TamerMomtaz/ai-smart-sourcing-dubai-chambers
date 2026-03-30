@@ -474,16 +474,17 @@ const ProposalsList = () => {
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Title</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Status</th>
-                  {isVendor && <th className="text-left p-4 text-gray-400 font-medium text-sm">Progress</th>}
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Score</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Grounding</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Submitted</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Actions</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Compliance</th>
                 </tr>
               </thead>
               <tbody>
                 {proposals.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-12 text-gray-500">
+                    <td colSpan={8} className="text-center p-12 text-gray-500">
                       No proposals found. Submit your first proposal!
                     </td>
                   </tr>
@@ -514,21 +515,11 @@ const ProposalsList = () => {
                           {p.status?.replace(/_/g, ' ')}
                         </span>
                       </td>
-                      {isVendor && (
-                        <td className="p-4">
-                          <ProposalTimeline
-                            status={p.status}
-                            evaluationTimestamp={p.evaluation_timestamp}
-                            submissionDate={p.submission_date}
-                            updatedAt={p.updated_at}
-                          />
-                        </td>
-                      )}
                       <td className="p-4">
-                        <span className="inline-flex items-center">
-                          <ScoreBadge score={p.composite_score} />
-                          {p.composite_score != null && <ProposalShieldBadge proposalId={p.id} />}
-                        </span>
+                        <ScoreBadge score={p.composite_score} />
+                      </td>
+                      <td className="p-4">
+                        {p.composite_score != null && <ProposalShieldBadge proposalId={p.id} />}
                       </td>
                       <td className="p-4 text-gray-400 text-sm">
                         {p.submission_date ? new Date(p.submission_date).toLocaleDateString() : '—'}
@@ -540,7 +531,6 @@ const ProposalsList = () => {
                         >
                           View
                         </Link>
-                        {/* Vendor: View Evaluation link when evaluated */}
                         {isVendor && p.composite_score != null && (
                           <Link
                             to={`/proposals/${p.id}#evaluation`}
@@ -549,7 +539,6 @@ const ProposalsList = () => {
                             View Evaluation
                           </Link>
                         )}
-                        {/* Vendor: Request Revision button on evaluated proposals */}
                         {isVendor && ['evaluated', 'needs_improvement', 'under_review', 'shortlisted'].includes(p.status) && (
                           <button
                             onClick={() => openRevisionModal(p.id)}
@@ -563,7 +552,6 @@ const ProposalsList = () => {
                             Revision Pending
                           </span>
                         )}
-                        {/* Non-vendor actions */}
                         {!isVendor && (p.status === 'queued' || p.status === 'submitted') && (
                           evaluatingId === p.id ? (
                             <span className="flex items-center gap-2 text-blue-400 text-sm">
@@ -590,11 +578,13 @@ const ProposalsList = () => {
                             Needs Review
                           </span>
                         )}
+                      </td>
+                      <td className="p-4">
                         {!isVendor && (
                           auditingId === p.id ? (
                             <span className="flex items-center gap-2 text-[var(--color-accent)] text-sm">
                               <span className="animate-spin inline-block w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full"></span>
-                              Running DESC compliance audit...
+                              Auditing...
                             </span>
                           ) : p.has_audit === true ? (
                             <button
