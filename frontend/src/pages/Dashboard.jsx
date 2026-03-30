@@ -386,6 +386,90 @@ const EngagementOutcomes = ({ data }) => {
   );
 };
 
+// --- Sector Intelligence Section ---
+const SectorIntelligence = ({ sectors }) => {
+  if (!sectors || sectors.length === 0) return null;
+
+  const scoreColor = (score) => {
+    if (score >= 80) return { text: 'text-emerald-400', border: 'border-emerald-500', bg: 'bg-emerald-500' };
+    if (score >= 60) return { text: 'text-amber-400', border: 'border-amber-500', bg: 'bg-amber-500' };
+    return { text: 'text-red-400', border: 'border-red-500', bg: 'bg-red-500' };
+  };
+
+  return (
+    <div className="mb-8">
+      <div className="mb-5">
+        <h2 className="font-heading text-2xl text-teal">Sector Intelligence</h2>
+        <p className="text-ink/50 text-sm mt-1">Innovation pipeline health by sector</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {sectors.map((s) => {
+          const colors = scoreColor(s.avg_score);
+          return (
+            <div
+              key={s.sector}
+              className={`bg-white rounded-xl shadow-md p-5 border-l-4 ${colors.border}`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="font-heading text-base text-ink/90 leading-tight">{s.sector}</h3>
+                <div className="text-right flex-shrink-0 ml-3">
+                  <div className={`font-mono text-2xl font-bold leading-none ${colors.text}`}>
+                    {s.avg_score}
+                  </div>
+                  <div className="text-[10px] text-ink/40 mt-0.5">avg score</div>
+                </div>
+              </div>
+
+              {/* vScore */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs text-ink/50">vScore</span>
+                <span className="font-mono text-lg font-semibold text-teal">{s.avg_vscore}</span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+                <div
+                  className={`h-2 rounded-full ${colors.bg} transition-all duration-500`}
+                  style={{ width: `${Math.min(s.avg_score, 100)}%` }}
+                />
+              </div>
+
+              {/* Status pills */}
+              <div className="flex flex-wrap gap-1.5">
+                {s.shortlisted > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                    {s.shortlisted} shortlisted
+                  </span>
+                )}
+                {s.under_review > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                    {s.under_review} under review
+                  </span>
+                )}
+                {s.flagged > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    {s.flagged} flagged
+                  </span>
+                )}
+                {s.desc_certified > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700">
+                    {s.desc_certified} DESC certified
+                  </span>
+                )}
+                {s.top_tier > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    {s.top_tier} top tier
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
   const { role: userRole } = useUserRole();
@@ -399,6 +483,7 @@ const Dashboard = () => {
   const [timeline, setTimeline] = useState(null);
   const [vendorSummary, setVendorSummary] = useState(null);
   const [engagements, setEngagements] = useState(null);
+  const [sectors, setSectors] = useState(null);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -424,10 +509,17 @@ const Dashboard = () => {
         setImpact(impactRes.data);
         setTimeline(timelineRes.data?.timeline || null);
 
-        // Fetch engagement outcomes (non-critical)
+        // Fetch engagement outcomes and sector intelligence (non-critical)
         try {
           const engRes = await api.get('/api/v1/dashboard/engagements');
           setEngagements(engRes.data);
+        } catch {
+          // Non-critical
+        }
+
+        try {
+          const sectorsRes = await api.get('/api/v1/dashboard/sectors');
+          setSectors(sectorsRes.data);
         } catch {
           // Non-critical
         }
@@ -651,6 +743,9 @@ const Dashboard = () => {
 
         {/* Pilot & Engagement Outcomes */}
         <EngagementOutcomes data={engagements} />
+
+        {/* Sector Intelligence */}
+        <SectorIntelligence sectors={sectors} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6">
