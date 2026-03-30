@@ -386,8 +386,11 @@ const EngagementOutcomes = ({ data }) => {
   );
 };
 
-// --- Sector Intelligence Section ---
+// --- Sector Intelligence Section (v2) ---
 const SectorIntelligence = ({ sectors }) => {
+  const [sortBy, setSortBy] = useState('avg_score_desc');
+  const [filterBy, setFilterBy] = useState('all');
+
   if (!sectors || sectors.length === 0) return null;
 
   const scoreColor = (score) => {
@@ -396,22 +399,127 @@ const SectorIntelligence = ({ sectors }) => {
     return { text: 'text-red-400', border: 'border-red-500', bg: 'bg-red-500' };
   };
 
+  // --- Summary metrics ---
+  const activeSectorCount = sectors.length;
+  const strongest = sectors.reduce((a, b) => (a.avg_score >= b.avg_score ? a : b), sectors[0]);
+  const weakest = sectors.reduce((a, b) => (a.avg_score <= b.avg_score ? a : b), sectors[0]);
+  const zeroDescCount = sectors.filter(s => (s.desc_certified || 0) === 0).length;
+
+  // --- Filtering ---
+  const filtered = sectors.filter(s => {
+    if (filterBy === 'flagged') return (s.flagged || 0) > 0;
+    if (filterBy === 'missing_desc') return (s.desc_certified || 0) < (s.total_vendor_count || 0);
+    if (filterBy === 'top_tier') return (s.top_tier || 0) > 0;
+    return true;
+  });
+
+  // --- Sorting ---
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'avg_score_desc') return b.avg_score - a.avg_score;
+    if (sortBy === 'avg_vscore_desc') return (b.avg_vscore || 0) - (a.avg_vscore || 0);
+    if (sortBy === 'most_proposals') return (b.proposal_count || 0) - (a.proposal_count || 0);
+    if (sortBy === 'most_risk') {
+      const riskDiff = (b.flagged || 0) - (a.flagged || 0);
+      return riskDiff !== 0 ? riskDiff : a.avg_score - b.avg_score;
+    }
+    return 0;
+  });
+
+  const weakestColor = weakest.avg_score < 75 ? 'text-red-500' : weakest.avg_score < 80 ? 'text-amber-500' : 'text-ink/70';
+
   return (
     <div className="mb-8">
+      {/* Summary row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">🏭</span>
+            <span className="font-heading text-3xl text-teal">{activeSectorCount}</span>
+          </div>
+          <h3 className="text-ink/70 text-sm">Active Sectors</h3>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">🏆</span>
+            <span className="font-heading text-3xl text-emerald-500">{strongest.avg_score}</span>
+          </div>
+          <h3 className="text-ink/70 text-sm truncate">{strongest.sector}</h3>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">⚠️</span>
+            <span className={`font-heading text-3xl ${weakestColor}`}>{weakest.avg_score}</span>
+          </div>
+          <h3 className="text-ink/70 text-sm truncate">{weakest.sector}</h3>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">🔍</span>
+            <span className={`font-heading text-3xl ${zeroDescCount > 0 ? 'text-red-500' : 'text-teal'}`}>{zeroDescCount}</span>
+          </div>
+          <h3 className="text-ink/70 text-sm">No DESC Vendors</h3>
+        </div>
+      </div>
+
       <div className="mb-5">
         <h2 className="font-heading text-2xl text-teal">Sector Intelligence</h2>
         <p className="text-ink/50 text-sm mt-1">Innovation pipeline health by sector</p>
       </div>
+
+      {/* Sort & filter controls */}
+      <div className="bg-[var(--color-table-header-bg,#1E293B)] rounded-xl p-4 mb-5 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">Sort by</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-[var(--color-table-header-bg,#0F172A)] text-white border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          >
+            <option value="avg_score_desc">Avg score (high→low)</option>
+            <option value="avg_vscore_desc">Avg vScore (high→low)</option>
+            <option value="most_proposals">Most proposals</option>
+            <option value="most_risk">Most risk (flagged first)</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={filterBy}
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="bg-[var(--color-table-header-bg,#0F172A)] text-white border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          >
+            <option value="all">All sectors</option>
+            <option value="flagged">Sectors with flagged proposals</option>
+            <option value="missing_desc">Sectors missing DESC vendors</option>
+            <option value="top_tier">Sectors with top-tier vendors</option>
+          </select>
+        </div>
+        <span className="text-sm text-gray-400 ml-auto">
+          Showing {sorted.length} of {sectors.length} sectors
+        </span>
+      </div>
+
+      {/* Sector grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {sectors.map((s) => {
+        {sorted.map((s, idx) => {
           const colors = scoreColor(s.avg_score);
+          const totalVendors = s.total_vendor_count || 0;
+          const descCount = s.desc_certified || 0;
+          const descPct = totalVendors > 0 ? Math.round((descCount / totalVendors) * 100) : 0;
+          const descColorClass = descPct === 0 ? 'text-red-500' : descPct === 100 ? 'text-emerald-500' : 'text-ink/50';
+
           return (
             <div
               key={s.sector}
-              className={`bg-white rounded-xl shadow-md p-5 border-l-4 ${colors.border}`}
+              className={`bg-white rounded-xl shadow-md p-5 border-l-4 ${colors.border} relative`}
             >
+              {/* Rank badge */}
+              <span className="absolute top-2 right-3 text-[10px] text-ink/30 font-mono">#{idx + 1}</span>
+
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-heading text-base text-ink/90 leading-tight">{s.sector}</h3>
+                <div>
+                  <h3 className="font-heading text-base text-ink/90 leading-tight">{s.sector}</h3>
+                  <span className="text-[11px] text-ink/40">{s.proposal_count || 0} proposals</span>
+                </div>
                 <div className="text-right flex-shrink-0 ml-3">
                   <div className={`font-mono text-2xl font-bold leading-none ${colors.text}`}>
                     {s.avg_score}
@@ -435,7 +543,7 @@ const SectorIntelligence = ({ sectors }) => {
               </div>
 
               {/* Status pills */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {s.shortlisted > 0 && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
                     {s.shortlisted} shortlisted
@@ -461,6 +569,12 @@ const SectorIntelligence = ({ sectors }) => {
                     {s.top_tier} top tier
                   </span>
                 )}
+              </div>
+
+              {/* DESC coverage line */}
+              <div className={`text-xs border-t border-gray-100 pt-2 ${descColorClass}`}>
+                DESC: {descCount} of {totalVendors} vendors certified ({descPct}%)
+                {descPct === 0 && totalVendors > 0 && <span className="ml-1 font-semibold">— gap identified</span>}
               </div>
             </div>
           );
