@@ -585,9 +585,6 @@ const ProposalsList = () => {
                             Evaluating...
                           </span>
                         )}
-                        {!isVendor && (p.status === 'evaluated' || p.status === 'approved' || p.status === 'rejected') && p.composite_score != null && (
-                          <ScoreBadge score={p.composite_score} />
-                        )}
                         {!isVendor && (p.status === 'requires_review' || p.status === 'requires_manual_review') && (
                           <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-medium">
                             Needs Review
