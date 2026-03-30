@@ -125,7 +125,11 @@ async def create_vendor(
 async def list_vendors(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    sector: Optional[str] = Query(None, description="Filter by sector"),
+    search: Optional[str] = Query(None, description="Search by name, email, or registration"),
+    sector: Optional[str] = Query(None, description="Filter by sector (from proposals)"),
+    vscore_tier: Optional[str] = Query(None, description="Filter by vScore tier"),
+    country: Optional[str] = Query(None, description="Filter by country"),
+    sort_by: Optional[str] = Query(None, description="Sort: vscore_desc, score_desc, name_asc, created_desc"),
     current_user: dict = Depends(get_current_user),
 ):
     """List vendors with pagination. Analyst/executive/business_group_lead access."""
@@ -150,7 +154,11 @@ async def list_vendors(
             user_role=user_role,
             page=page,
             page_size=page_size,
+            search=search,
             sector=sector,
+            vscore_tier=vscore_tier,
+            country=country,
+            sort_by=sort_by,
         )
 
         if vendor_data is None:

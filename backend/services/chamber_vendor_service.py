@@ -73,23 +73,55 @@ async def list_vendors(
     is_desc_approved: Optional[bool] = None,
     country: Optional[str] = None,
     search: Optional[str] = None,
+    vscore_tier: Optional[str] = None,
+    sector: Optional[str] = None,
+    sort_by: Optional[str] = None,
     **kwargs,
 ) -> tuple[List[Dict[str, Any]], int]:
     """List chamber vendors with pagination and filters."""
     offset = (page - 1) * page_size
 
+    # If sector filter is set, find matching vendor IDs from proposals
+    sector_vendor_ids: Optional[List[str]] = None
+    if sector:
+        proposals_resp = (
+            supabase.table("chamber_proposals")
+            .select("submitter_id")
+            .eq("sector", sector)
+            .execute()
+        )
+        sector_vendor_ids = list({
+            p["submitter_id"] for p in (proposals_resp.data or [])
+            if p.get("submitter_id")
+        })
+        if not sector_vendor_ids:
+            return [], 0
+
     query = supabase.table("chamber_vendors").select("*", count="exact")
 
+    if sector_vendor_ids is not None:
+        query = query.in_("id", sector_vendor_ids)
     if onboarding_status:
         query = query.eq("onboarding_status", onboarding_status)
     if is_desc_approved is not None:
         query = query.eq("is_desc_approved", is_desc_approved)
     if country:
         query = query.eq("country", country)
+    if vscore_tier:
+        query = query.eq("vscore_tier", vscore_tier)
     if search:
         query = query.or_(f"name.ilike.%{search}%,contact_email.ilike.%{search}%,company_registration.ilike.%{search}%")
 
-    query = query.order("created_at", desc=True)
+    # Sorting
+    if sort_by == "vscore_desc":
+        query = query.order("vscore", desc=True, nullsfirst=False)
+    elif sort_by == "score_desc":
+        query = query.order("average_compliance_score", desc=True, nullsfirst=False)
+    elif sort_by == "name_asc":
+        query = query.order("name", desc=False)
+    else:
+        query = query.order("created_at", desc=True)
+
     query = query.range(offset, offset + page_size - 1)
 
     response = query.execute()
