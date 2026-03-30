@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import VScoreCircle from '../components/VScoreCircle';
@@ -23,7 +23,7 @@ const DESCCertifiedBadge = ({ providerName }) => (
 
 const DescToggle = ({ enabled, onChange }) => (
   <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-    <span className="text-sm font-medium text-ink/80">Show DESC Certified Only</span>
+    <span className="text-sm font-medium text-ink/80">DESC Certified Only</span>
     <div className="relative">
       <input type="checkbox" checked={enabled} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
       <div className="w-9 h-5 bg-cream rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
@@ -32,21 +32,83 @@ const DescToggle = ({ enabled, onChange }) => (
   </label>
 );
 
+const TIER_OPTIONS = [
+  { value: '', label: 'All Tiers' },
+  { value: 'platinum', label: 'Platinum' },
+  { value: 'gold', label: 'Gold' },
+  { value: 'silver', label: 'Silver' },
+  { value: 'bronze', label: 'Bronze' },
+  { value: 'under_review', label: 'Under Review' },
+];
+
+const COUNTRY_OPTIONS = [
+  { value: '', label: 'All Countries' },
+  { value: 'UAE', label: 'UAE' },
+  { value: 'Saudi Arabia', label: 'Saudi Arabia' },
+  { value: 'India', label: 'India' },
+  { value: 'UK', label: 'UK' },
+  { value: 'Egypt', label: 'Egypt' },
+  { value: 'Netherlands', label: 'Netherlands' },
+];
+
+const SORT_OPTIONS = [
+  { value: '', label: 'Newest' },
+  { value: 'vscore_desc', label: 'vScore (High\u2192Low)' },
+  { value: 'score_desc', label: 'Score (High\u2192Low)' },
+  { value: 'name_asc', label: 'Name (A\u2192Z)' },
+];
+
+const FilterChip = ({ label, onRemove }) => (
+  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teal/10 text-teal text-sm font-medium">
+    {label}
+    <button onClick={onRemove} className="ml-0.5 hover:text-teal/70 transition" aria-label={`Remove ${label}`}>
+      &times;
+    </button>
+  </span>
+);
+
+const SelectFilter = ({ value, onChange, options, className = '' }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className={`border border-cream rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal bg-white ${className}`}
+  >
+    {options.map((o) => (
+      <option key={o.value} value={o.value}>{o.label}</option>
+    ))}
+  </select>
+);
+
+const PAGE_SIZE = 12;
+
 const VendorsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [pagination, setPagination] = useState(null);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [descOnly, setDescOnly] = useState(false);
 
+  // Filter state from URL
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = 20;
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const sector = searchParams.get('sector') || '';
+  const vscoreTier = searchParams.get('vscore_tier') || '';
+  const country = searchParams.get('country') || '';
+  const sortBy = searchParams.get('sort_by') || '';
+  const descOnly = searchParams.get('desc_only') === '1';
+
+  // Sectors loaded from business groups
+  const [sectors, setSectors] = useState([]);
+
+  useEffect(() => {
+    api.get('/api/v1/business-groups')
+      .then((res) => setSectors(res.data.business_groups || []))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchVendors();
-  }, [page, searchParams]);
+  }, [searchParams]);
 
   const fetchVendors = async () => {
     try {
@@ -54,10 +116,15 @@ const VendorsList = () => {
       setError(null);
       const params = new URLSearchParams({
         page: page.toString(),
-        page_size: pageSize.toString()
+        page_size: PAGE_SIZE.toString(),
       });
-      if (search) params.append('search', search);
-      
+      const searchVal = searchParams.get('search');
+      if (searchVal) params.append('search', searchVal);
+      if (sector) params.append('sector', sector);
+      if (vscoreTier) params.append('vscore_tier', vscoreTier);
+      if (country) params.append('country', country);
+      if (sortBy) params.append('sort_by', sortBy);
+
       const res = await api.get(`/api/v1/vendors?${params.toString()}`);
       setVendors(res.data.vendors || []);
       setPagination(res.data.pagination);
@@ -68,25 +135,56 @@ const VendorsList = () => {
     }
   };
 
-  const handleSearch = () => {
-    const params = new URLSearchParams({ page: '1' });
-    if (search) params.set('search', search);
+  const updateParams = useCallback((updates) => {
+    const params = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+      else params.delete(k);
+    });
+    // Reset to page 1 when filters change (unless only page itself is changing)
+    if (!('page' in updates)) params.set('page', '1');
     setSearchParams(params);
+  }, [searchParams, setSearchParams]);
+
+  const handleSearch = () => {
+    updateParams({ search: search || null });
   };
 
   const handlePageChange = (newPage) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
-    setSearchParams(params);
+    updateParams({ page: newPage.toString() });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-pulse text-teal font-heading text-2xl">Loading vendors...</div>
-      </div>
-    );
+  const clearAllFilters = () => {
+    setSearch('');
+    setSearchParams({});
+  };
+
+  // Determine displayed vendors (DESC toggle is client-side on the already-fetched page)
+  const displayed = descOnly
+    ? vendors.filter((v) => v.is_desc_approved || v.desc_certified)
+    : vendors;
+
+  // Active filter chips
+  const activeFilters = [];
+  const searchVal = searchParams.get('search');
+  if (searchVal) activeFilters.push({ key: 'search', label: `Search: ${searchVal}`, param: 'search' });
+  if (sector) {
+    const sectorName = sectors.find((s) => s.name === sector)?.name || sector;
+    activeFilters.push({ key: 'sector', label: `Sector: ${sectorName}`, param: 'sector' });
   }
+  if (vscoreTier) {
+    const tierLabel = TIER_OPTIONS.find((t) => t.value === vscoreTier)?.label || vscoreTier;
+    activeFilters.push({ key: 'vscore_tier', label: `Tier: ${tierLabel}`, param: 'vscore_tier' });
+  }
+  if (country) {
+    activeFilters.push({ key: 'country', label: `Country: ${country}`, param: 'country' });
+  }
+  if (descOnly) activeFilters.push({ key: 'desc_only', label: 'DESC Certified Only', param: 'desc_only' });
+
+  const sectorOptions = [
+    { value: '', label: 'All Sectors' },
+    ...sectors.map((s) => ({ value: s.name, label: s.name })),
+  ];
 
   return (
     <div className="min-h-screen bg-cream p-4 md:p-8">
@@ -101,8 +199,10 @@ const VendorsList = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        {/* Filter Bar */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+          {/* Row 1: Search + DESC toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
             <div className="flex flex-1 space-x-2">
               <input
                 type="text"
@@ -110,56 +210,100 @@ const VendorsList = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="flex-1 border border-cream rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal"
+                className="flex-1 border border-cream rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal"
               />
-              <button onClick={handleSearch} className="bg-teal text-white px-6 py-2 rounded-lg hover:bg-teal/90 transition">
+              <button onClick={handleSearch} className="bg-teal text-white px-5 py-2 rounded-lg hover:bg-teal/90 transition text-sm">
                 Search
               </button>
             </div>
-            <DescToggle enabled={descOnly} onChange={setDescOnly} />
+            <DescToggle
+              enabled={descOnly}
+              onChange={(val) => updateParams({ desc_only: val ? '1' : null })}
+            />
+          </div>
+          {/* Row 2: Dropdowns */}
+          <div className="flex flex-wrap items-center gap-3">
+            <SelectFilter value={sector} onChange={(v) => updateParams({ sector: v || null })} options={sectorOptions} />
+            <SelectFilter value={vscoreTier} onChange={(v) => updateParams({ vscore_tier: v || null })} options={TIER_OPTIONS} />
+            <SelectFilter value={country} onChange={(v) => updateParams({ country: v || null })} options={COUNTRY_OPTIONS} />
+            <SelectFilter value={sortBy} onChange={(v) => updateParams({ sort_by: v || null })} options={SORT_OPTIONS} />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(descOnly ? vendors.filter(v => v.is_desc_approved || v.desc_certified) : vendors).length === 0 ? (
-            <div className="col-span-full text-center p-8 text-ink/60">
-              No vendors found
-            </div>
-          ) : (
-            (descOnly ? vendors.filter(v => v.is_desc_approved || v.desc_certified) : vendors).map((v) => (
-              <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition relative">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-heading text-xl text-teal">{v.name}</h3>
-                    {v.desc_certified && (
-                      <div className="mt-1">
-                        <DESCCertifiedBadge providerName={v.desc_provider_name} />
-                      </div>
-                    )}
-                  </div>
-                  {v.vscore != null ? (
-                    <VScoreCircle score={v.vscore} tier={v.vscore_tier} size={56} />
-                  ) : v.reputation_score != null ? (
-                    <VScoreCircle score={v.reputation_score} tier={v.reputation_tier} size={56} legacy />
-                  ) : null}
-                </div>
-                <div className="space-y-2 text-sm text-ink/70 mb-4">
-                  <div>📍 {v.country}</div>
-                  <div>📧 {v.contact_email}</div>
-                  {v.website && <div>🌐 {v.website}</div>}
-                  <div>📊 {v.submission_history_count || 0} submissions</div>
-                  {v.average_compliance_score && (
-                    <div>✅ Avg Score: {v.average_compliance_score.toFixed(1)}</div>
-                  )}
-                </div>
-                <Link to={`/vendors/${v.id}`} className="text-teal hover:underline text-sm font-medium">
-                  View Details →
-                </Link>
-              </div>
-            ))
+        {/* Active Filter Chips + Results Count */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {activeFilters.length > 0 && (
+            <>
+              {activeFilters.map((f) => (
+                <FilterChip
+                  key={f.key}
+                  label={f.label}
+                  onRemove={() => {
+                    if (f.param === 'search') setSearch('');
+                    updateParams({ [f.param]: null });
+                  }}
+                />
+              ))}
+              <button onClick={clearAllFilters} className="text-sm text-ink/50 hover:text-ink transition ml-1">
+                Clear All
+              </button>
+            </>
+          )}
+          {pagination && (
+            <span className="ml-auto text-sm text-ink/60">
+              Showing {displayed.length} of {pagination.total} vendor{pagination.total !== 1 ? 's' : ''}
+            </span>
           )}
         </div>
 
+        {/* Vendor Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-pulse text-teal font-heading text-2xl">Loading vendors...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayed.length === 0 ? (
+              <div className="col-span-full text-center p-8 text-ink/60">
+                No vendors found
+              </div>
+            ) : (
+              displayed.map((v) => (
+                <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition relative">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-heading text-xl text-teal">{v.name}</h3>
+                      {v.desc_certified && (
+                        <div className="mt-1">
+                          <DESCCertifiedBadge providerName={v.desc_provider_name} />
+                        </div>
+                      )}
+                    </div>
+                    {v.vscore != null ? (
+                      <VScoreCircle score={v.vscore} tier={v.vscore_tier} size={56} />
+                    ) : v.reputation_score != null ? (
+                      <VScoreCircle score={v.reputation_score} tier={v.reputation_tier} size={56} legacy />
+                    ) : null}
+                  </div>
+                  <div className="space-y-2 text-sm text-ink/70 mb-4">
+                    <div>📍 {v.country}</div>
+                    <div>📧 {v.contact_email}</div>
+                    {v.website && <div>🌐 {v.website}</div>}
+                    <div>📊 {v.submission_history_count || 0} submissions</div>
+                    {v.average_compliance_score && (
+                      <div>✅ Avg Score: {v.average_compliance_score.toFixed(1)}</div>
+                    )}
+                  </div>
+                  <Link to={`/vendors/${v.id}`} className="text-teal hover:underline text-sm font-medium">
+                    View Details →
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
           <div className="flex items-center justify-center space-x-2 mt-6">
             <button
