@@ -101,10 +101,14 @@ async def get_dashboard_sectors(
 
             avg_vscore = round(vscore_sum / vscore_count, 1) if vscore_count > 0 else 0
 
+            total_vendor_count = len(sd["vendor_ids"])
+
             result.append({
                 "sector": sector,
                 "avg_score": avg_score,
                 "avg_vscore": avg_vscore,
+                "proposal_count": sd["score_count"],
+                "total_vendor_count": total_vendor_count,
                 "shortlisted": sd["shortlisted"],
                 "under_review": sd["under_review"],
                 "flagged": sd["needs_improvement"],
