@@ -35,6 +35,7 @@ import AuditReport from './pages/AuditReport';
 import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
 import ApiDocs from './pages/ApiDocs';
+import VendorOnboard from './pages/VendorOnboard';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -92,6 +93,7 @@ function App() {
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/how-it-works" element={<HowItWorksStandalone />} />
           <Route path="/api-docs" element={<ApiDocsStandalone />} />
+          <Route path="/onboard/:token" element={<VendorOnboard />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/compliance-audits/:id/report" element={<PrivateRoute><AuditReport /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>

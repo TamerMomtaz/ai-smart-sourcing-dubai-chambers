@@ -65,7 +65,8 @@ from routes import (
     vendor_intelligence_routes,
     vscore_routes,
     incident_routes,
-    public_stats_routes
+    public_stats_routes,
+    vendor_invite_routes
 )
 
 # Configure logging
@@ -194,6 +195,9 @@ async def health_check():
     )
 
 # Register all route modules
+# NOTE: Public onboarding route registered first (no auth required).
+app.include_router(vendor_invite_routes.public_router, prefix="/api/v1", tags=["Vendor Onboarding (Public)"])
+
 # NOTE: proposal_submission_routes and business_groups_public_routes registered first
 # so their endpoints take priority over legacy routes with matching paths.
 app.include_router(proposal_submission_routes.router, prefix="/api/v1", tags=["Proposal Submission & AI Evaluation"])
@@ -241,6 +245,7 @@ app.include_router(sector_routes.router, prefix="/api/v1", tags=["Sector Dashboa
 app.include_router(status_routes.router, prefix="/api/v1", tags=["Status"])
 app.include_router(submit_routes.router, prefix="/api/v1", tags=["Submit"])
 app.include_router(user_routes.router, prefix="/api/v1", tags=["Users"])
+app.include_router(vendor_invite_routes.router, prefix="/api/v1", tags=["Vendor Invites"])
 app.include_router(vendor_routes.router, prefix="/api/v1", tags=["Vendors"])
 app.include_router(verify_routes.router, prefix="/api/v1", tags=["Verify"])
 app.include_router(proposal_document_routes.router, prefix="/api/v1", tags=["Proposal Documents"])
