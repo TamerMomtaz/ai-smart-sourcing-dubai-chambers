@@ -118,6 +118,12 @@ function Login() {
                 See how it works &rarr;
               </Link>
             </p>
+            <p className="text-sm font-body text-ink/50">
+              Are you a vendor?{' '}
+              <Link to="/apply" className="text-teal hover:underline">
+                Apply to join the platform &rarr;
+              </Link>
+            </p>
           </div>
         </div>
 

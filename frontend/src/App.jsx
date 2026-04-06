@@ -94,6 +94,7 @@ function App() {
           <Route path="/how-it-works" element={<HowItWorksStandalone />} />
           <Route path="/api-docs" element={<ApiDocsStandalone />} />
           <Route path="/onboard/:token" element={<VendorOnboard />} />
+          <Route path="/apply" element={<VendorOnboard />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/compliance-audits/:id/report" element={<PrivateRoute><AuditReport /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>
