@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { config } from '../config';
 
@@ -39,6 +39,7 @@ const ProgressBar = ({ current, total }) => (
 
 const VendorOnboard = () => {
   const { token } = useParams();
+  const navigate = useNavigate();
   const [invite, setInvite] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,8 @@ const VendorOnboard = () => {
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [descCertified, setDescCertified] = useState(false);
   const [certifications, setCertifications] = useState([]);
   const [dataResidency, setDataResidency] = useState('UAE');
@@ -103,6 +106,7 @@ const VendorOnboard = () => {
         contact_name: contactName,
         contact_email: contactEmail,
         contact_phone: contactPhone || null,
+        password,
         year_established: yearEstablished ? parseInt(yearEstablished, 10) : null,
         employee_count: employeeCount || null,
         desc_certified: descCertified,
@@ -125,7 +129,7 @@ const VendorOnboard = () => {
 
   const canProceed = () => {
     if (step === 0) return companyName && country;
-    if (step === 1) return contactName && contactEmail;
+    if (step === 1) return contactName && contactEmail && password.length >= 8 && password === confirmPassword;
     return true;
   };
 
@@ -160,7 +164,11 @@ const VendorOnboard = () => {
             <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           </div>
           <h2 className="font-heading text-2xl text-[#1A3A4A] mb-2">Welcome to AI Smart Sourcing!</h2>
-          <p className="text-gray-600 mb-4">Your profile has been created. You will receive login credentials shortly.</p>
+          <p className="text-gray-600 mb-4">Your account has been created. You can log in now with your email and password.</p>
+          <button onClick={() => navigate('/login')}
+            className="px-6 py-2.5 rounded-lg bg-[#C8A951] text-white text-sm font-bold hover:bg-[#B8993F] transition">
+            Go to Login
+          </button>
         </div>
         <Footer />
       </div>
@@ -249,6 +257,22 @@ const VendorOnboard = () => {
                   <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
                     placeholder="+971 50 123 4567"
                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951]" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951] ${password && password.length < 8 ? 'border-red-300' : 'border-gray-200'}`} />
+                  <p className="text-xs text-gray-400 mt-1">Minimum 8 characters</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                    className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951] ${confirmPassword && password !== confirmPassword ? 'border-red-300' : 'border-gray-200'}`} />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">Passwords must match</p>
+                  )}
                 </div>
               </div>
             </div>

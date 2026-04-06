@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
 import logging
+import os
 
+from supabase import create_client
 from auth import get_current_user
 from database import supabase
 
@@ -29,6 +31,7 @@ class OnboardRequest(BaseModel):
     contact_name: str
     contact_email: EmailStr
     contact_phone: Optional[str] = None
+    password: str
     year_established: Optional[int] = None
     employee_count: Optional[str] = None
     desc_certified: Optional[bool] = False
@@ -36,6 +39,13 @@ class OnboardRequest(BaseModel):
     previous_government_work: Optional[str] = None
     data_residency_country: Optional[str] = None
     brief_description: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
 
 
 # ---------- Table readiness check ----------
@@ -285,7 +295,48 @@ async def onboard_vendor(token: str, body: OnboardRequest):
     except Exception as e:
         logger.warning(f"Failed to create vendor profile (non-fatal): {e}")
 
-    # 4. Mark invite as completed
+    # 4. Create Supabase Auth user and chamber_users row
+    account_created = True
+    account_message = "Your account has been created. You can now log in."
+    try:
+        service_client = create_client(
+            os.environ["SUPABASE_URL"],
+            os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+        )
+
+        auth_response = service_client.auth.admin.create_user({
+            "email": str(body.contact_email),
+            "password": body.password,
+            "email_confirm": True,
+            "user_metadata": {
+                "full_name": body.contact_name,
+                "company": body.company_name,
+                "role": "vendor",
+            },
+        })
+        auth_user_id = auth_response.user.id
+
+        # Create chamber_users row
+        service_client.table("chamber_users").insert({
+            "id": str(auth_user_id),
+            "email": str(body.contact_email),
+            "role": "vendor",
+            "full_name": body.contact_name,
+            "chamber": "Dubai Chambers",
+        }).execute()
+
+    except Exception as e:
+        error_msg = str(e).lower()
+        if "already" in error_msg or "duplicate" in error_msg or "unique" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This email is already registered",
+            )
+        logger.error(f"Failed to create auth user: {e}")
+        account_created = False
+        account_message = "Profile created but account setup failed. Contact admin."
+
+    # 5. Mark invite as completed
     try:
         supabase.table("chamber_vendor_invites").update({
             "status": "completed",
@@ -297,5 +348,7 @@ async def onboard_vendor(token: str, body: OnboardRequest):
     return {
         "success": True,
         "vendor_id": vendor_id,
-        "message": "Welcome to AI Smart Sourcing",
+        "message": account_message,
+        "email": str(body.contact_email),
+        "account_created": account_created,
     }
