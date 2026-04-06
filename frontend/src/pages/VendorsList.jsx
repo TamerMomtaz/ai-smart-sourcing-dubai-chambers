@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+import { useUserRole } from '../lib/userRole';
 import VScoreCircle from '../components/VScoreCircle';
 
 const DESCShieldIcon = ({ size = 14 }) => (
@@ -81,12 +82,117 @@ const SelectFilter = ({ value, onChange, options, className = '' }) => (
 
 const PAGE_SIZE = 12;
 
+const InviteModal = ({ open, onClose, sectors }) => {
+  const [vendorName, setVendorName] = useState('');
+  const [vendorEmail, setVendorEmail] = useState('');
+  const [sector, setSector] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [err, setErr] = useState('');
+
+  const reset = () => {
+    setVendorName(''); setVendorEmail(''); setSector('');
+    setSubmitting(false); setInviteUrl(''); setCopied(false); setErr('');
+  };
+
+  const handleClose = () => { reset(); onClose(); };
+
+  const handleSubmit = async () => {
+    if (!vendorName || !vendorEmail) { setErr('Name and email are required'); return; }
+    setSubmitting(true); setErr('');
+    try {
+      const res = await api.post('/api/v1/vendors/invite', {
+        vendor_name: vendorName,
+        vendor_email: vendorEmail,
+        sector: sector,
+      });
+      const fullUrl = `${window.location.origin}${res.data.invite_url}`;
+      setInviteUrl(fullUrl);
+    } catch (e) {
+      setErr(getErrorMessage(e));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-heading text-2xl text-teal">Invite Vendor</h2>
+          <button onClick={handleClose} className="text-ink/40 hover:text-ink transition text-xl">&times;</button>
+        </div>
+
+        {!inviteUrl ? (
+          <>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-ink/70 mb-1">Vendor Name *</label>
+                <input type="text" value={vendorName} onChange={(e) => setVendorName(e.target.value)}
+                  className="w-full border border-cream rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal" placeholder="e.g. Acme Corp" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink/70 mb-1">Vendor Email *</label>
+                <input type="email" value={vendorEmail} onChange={(e) => setVendorEmail(e.target.value)}
+                  className="w-full border border-cream rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal" placeholder="vendor@company.com" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink/70 mb-1">Sector</label>
+                <select value={sector} onChange={(e) => setSector(e.target.value)}
+                  className="w-full border border-cream rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal bg-white">
+                  <option value="">Select sector...</option>
+                  {sectors.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                </select>
+              </div>
+            </div>
+            {err && <p className="text-burgundy text-sm mt-3">{err}</p>}
+            <button onClick={handleSubmit} disabled={submitting}
+              className="mt-5 w-full bg-teal text-white py-2.5 rounded-lg font-medium hover:bg-teal/90 transition disabled:opacity-50">
+              {submitting ? 'Generating...' : 'Generate Invite Link'}
+            </button>
+          </>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <p className="text-emerald-700 text-sm font-medium mb-1">Invite link generated. Valid for 30 days.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink/70 mb-1">Invite Link</label>
+              <input type="text" readOnly value={inviteUrl}
+                className="w-full border border-cream rounded-lg px-4 py-2 text-sm bg-gray-50 text-ink/80" />
+            </div>
+            <button onClick={handleCopy}
+              className="w-full bg-teal text-white py-2.5 rounded-lg font-medium hover:bg-teal/90 transition">
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+            <button onClick={handleClose}
+              className="w-full border border-cream text-ink/60 py-2.5 rounded-lg font-medium hover:bg-cream/50 transition">
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const VendorsList = () => {
+  const { role } = useUserRole();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [pagination, setPagination] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Filter state from URL
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -215,6 +321,11 @@ const VendorsList = () => {
               <button onClick={handleSearch} className="bg-teal text-white px-5 py-2 rounded-lg hover:bg-teal/90 transition text-sm">
                 Search
               </button>
+              {role === 'admin' && (
+                <button onClick={() => setShowInviteModal(true)} className="bg-[#C8A951] text-white px-5 py-2 rounded-lg hover:bg-[#B8993F] transition text-sm whitespace-nowrap font-medium">
+                  + Invite Vendor
+                </button>
+              )}
             </div>
             <DescToggle
               enabled={descOnly}
@@ -325,6 +436,7 @@ const VendorsList = () => {
             </button>
           </div>
         )}
+        <InviteModal open={showInviteModal} onClose={() => setShowInviteModal(false)} sectors={sectors} />
       </div>
     </div>
   );
