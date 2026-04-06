@@ -352,3 +352,121 @@ async def onboard_vendor(token: str, body: OnboardRequest):
         "email": str(body.contact_email),
         "account_created": account_created,
     }
+
+
+@public_router.post(
+    "/apply",
+    status_code=status.HTTP_201_CREATED,
+    summary="Public vendor application (no invite token required)",
+)
+async def apply_vendor(body: OnboardRequest):
+    """Public endpoint — allows vendors to apply without an invitation."""
+
+    # Validate required fields
+    if not body.company_name or not body.contact_name or not body.contact_email or not body.sector:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="company_name, contact_name, contact_email, and sector are required",
+        )
+
+    now = datetime.now(timezone.utc)
+
+    # 1. Create vendor record
+    vendor_id = str(uuid4())
+    vendor_data = {
+        "id": vendor_id,
+        "name": body.company_name,
+        "country": body.country,
+        "contact_email": str(body.contact_email),
+        "contact_phone": body.contact_phone,
+        "website": body.website,
+        "company_registration": "",
+        "is_desc_approved": body.desc_certified or False,
+        "onboarding_status": "submitted",
+        "submission_history_count": 0,
+        "api_access_enabled": False,
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat(),
+    }
+
+    try:
+        vendor_result = supabase.table("chamber_vendors").insert(vendor_data).execute()
+        if not vendor_result.data:
+            raise Exception("Vendor insert returned no data")
+    except Exception as e:
+        logger.error(f"Failed to create vendor: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "Internal Server Error",
+                "detail": "Failed to create vendor record",
+                "code": "VENDOR_CREATE_FAILED",
+            },
+        )
+
+    # 2. Create vendor profile with extended data
+    try:
+        profile_data = {
+            "id": str(uuid4()),
+            "vendor_id": vendor_id,
+            "team_size": body.employee_count,
+            "certifications": [c.strip() for c in body.certifications.split(",")] if body.certifications else [],
+            "year_established": body.year_established,
+            "data_residency_country": body.data_residency_country,
+            "previous_government_work": body.previous_government_work,
+            "brief_description": body.brief_description,
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat(),
+        }
+        supabase.table("chamber_vendor_profiles").insert(profile_data).execute()
+    except Exception as e:
+        logger.warning(f"Failed to create vendor profile (non-fatal): {e}")
+
+    # 3. Create Supabase Auth user and chamber_users row
+    account_created = True
+    account_message = "Your application has been submitted and your account has been created. You can now log in."
+    try:
+        service_client = create_client(
+            os.environ["SUPABASE_URL"],
+            os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+        )
+
+        auth_response = service_client.auth.admin.create_user({
+            "email": str(body.contact_email),
+            "password": body.password,
+            "email_confirm": True,
+            "user_metadata": {
+                "full_name": body.contact_name,
+                "company": body.company_name,
+                "role": "vendor",
+            },
+        })
+        auth_user_id = auth_response.user.id
+
+        # Create chamber_users row
+        service_client.table("chamber_users").insert({
+            "id": str(auth_user_id),
+            "email": str(body.contact_email),
+            "role": "vendor",
+            "full_name": body.contact_name,
+            "chamber": "Dubai Chambers",
+        }).execute()
+
+    except Exception as e:
+        error_msg = str(e).lower()
+        if "already" in error_msg or "duplicate" in error_msg or "unique" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This email is already registered",
+            )
+        logger.error(f"Failed to create auth user: {e}")
+        account_created = False
+        account_message = "Application submitted but account setup failed. Contact admin."
+
+    return {
+        "success": True,
+        "vendor_id": vendor_id,
+        "message": account_message,
+        "email": str(body.contact_email),
+        "account_created": account_created,
+    }

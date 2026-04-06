@@ -4,6 +4,7 @@ import axios from 'axios';
 import { config } from '../config';
 
 const apiBase = config.apiUrl || '';
+const isPublicApply = () => window.location.pathname === '/apply';
 
 const COUNTRIES = ['UAE', 'Saudi Arabia', 'Egypt', 'India', 'UK', 'Netherlands', 'Other'];
 const EMPLOYEE_COUNTS = ['1-10', '11-50', '51-200', '201-500', '500+'];
@@ -39,14 +40,16 @@ const ProgressBar = ({ current, total }) => (
 
 const VendorOnboard = () => {
   const { token } = useParams();
+  const publicMode = isPublicApply() || !token;
   const navigate = useNavigate();
   const [invite, setInvite] = useState(null);
   const [loadError, setLoadError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!publicMode);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [sectors, setSectors] = useState([]);
 
   // Form fields
   const [companyName, setCompanyName] = useState('');
@@ -67,7 +70,16 @@ const VendorOnboard = () => {
   const [govWorkDesc, setGovWorkDesc] = useState('');
   const [briefDesc, setBriefDesc] = useState('');
 
+  // Fetch sectors for public apply mode
   useEffect(() => {
+    if (!publicMode) return;
+    axios.get(`${apiBase}/api/v1/business-groups`)
+      .then((res) => setSectors(res.data.business_groups || []))
+      .catch(() => {});
+  }, [publicMode]);
+
+  useEffect(() => {
+    if (publicMode) return; // no token to validate
     const fetchInvite = async () => {
       try {
         const res = await axios.get(`${apiBase}/api/v1/vendors/onboard/${token}`);
@@ -86,7 +98,7 @@ const VendorOnboard = () => {
       }
     };
     fetchInvite();
-  }, [token]);
+  }, [token, publicMode]);
 
   const toggleCert = (cert) => {
     setCertifications((prev) =>
@@ -98,7 +110,7 @@ const VendorOnboard = () => {
     setSubmitting(true);
     setSubmitError('');
     try {
-      await axios.post(`${apiBase}/api/v1/vendors/onboard/${token}`, {
+      const payload = {
         company_name: companyName,
         country,
         sector,
@@ -114,7 +126,11 @@ const VendorOnboard = () => {
         previous_government_work: govWork ? (govWorkDesc || 'Yes') : null,
         data_residency_country: dataResidency,
         brief_description: briefDesc || null,
-      });
+      };
+      const url = publicMode
+        ? `${apiBase}/api/v1/vendors/apply`
+        : `${apiBase}/api/v1/vendors/onboard/${token}`;
+      await axios.post(url, payload);
       setSuccess(true);
     } catch (e) {
       setSubmitError(
@@ -128,7 +144,7 @@ const VendorOnboard = () => {
   };
 
   const canProceed = () => {
-    if (step === 0) return companyName && country;
+    if (step === 0) return companyName && country && sector;
     if (step === 1) return contactName && contactEmail && password.length >= 8 && password === confirmPassword;
     return true;
   };
@@ -180,9 +196,15 @@ const VendorOnboard = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-[#1A3A4A] to-[#2A5A6A] py-6 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="font-heading text-3xl text-white mb-1">AI Smart Sourcing</h1>
-          <p className="text-[#C8A951] text-lg font-medium">Vendor Onboarding</p>
-          <p className="text-white/70 text-sm mt-1">You've been invited to join the Dubai Chambers sourcing platform</p>
+          <h1 className="font-heading text-3xl text-white mb-1">
+            {publicMode ? 'AI Smart Sourcing — Vendor Application' : 'AI Smart Sourcing'}
+          </h1>
+          <p className="text-[#C8A951] text-lg font-medium">
+            {publicMode ? 'Apply to join the Dubai Chambers sourcing platform' : 'Vendor Onboarding'}
+          </p>
+          {!publicMode && (
+            <p className="text-white/70 text-sm mt-1">You've been invited to join the Dubai Chambers sourcing platform</p>
+          )}
         </div>
       </header>
 
@@ -196,9 +218,15 @@ const VendorOnboard = () => {
               <SectionHeader number={1} title="Company Information" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                  <input type="text" value={companyName} readOnly
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name {publicMode ? '*' : ''}</label>
+                  {publicMode ? (
+                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Your company name"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951]" />
+                  ) : (
+                    <input type="text" value={companyName} readOnly
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
@@ -208,9 +236,17 @@ const VendorOnboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sector</label>
-                  <input type="text" value={sector} readOnly
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sector {publicMode ? '*' : ''}</label>
+                  {publicMode ? (
+                    <select value={sector} onChange={(e) => setSector(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951] bg-white">
+                      <option value="">Select a sector...</option>
+                      {sectors.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                    </select>
+                  ) : (
+                    <input type="text" value={sector} readOnly
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
@@ -248,9 +284,15 @@ const VendorOnboard = () => {
                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951]" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input type="email" value={contactEmail} readOnly
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  {publicMode ? (
+                    <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="you@company.com"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951]" />
+                  ) : (
+                    <input type="email" value={contactEmail} readOnly
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-500" />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
@@ -381,7 +423,7 @@ const VendorOnboard = () => {
             ) : (
               <button onClick={handleSubmit} disabled={submitting || !canProceed()}
                 className="px-8 py-2.5 rounded-lg bg-[#C8A951] text-white text-sm font-bold hover:bg-[#B8993F] transition disabled:opacity-50">
-                {submitting ? 'Submitting...' : 'Complete Onboarding'}
+                {submitting ? 'Submitting...' : publicMode ? 'Submit Application' : 'Complete Onboarding'}
               </button>
             )}
           </div>
