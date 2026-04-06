@@ -38,33 +38,28 @@ class OnboardRequest(BaseModel):
     brief_description: Optional[str] = None
 
 
-# ---------- Ensure table exists ----------
+# ---------- Table readiness check ----------
 
-def _ensure_invites_table():
-    """Create chamber_vendor_invites table if it doesn't exist."""
+_table_ready = None  # cached after first successful check
+
+
+def _check_invites_table():
+    """Verify chamber_vendor_invites is reachable via PostgREST. Caches result."""
+    global _table_ready
+    if _table_ready:
+        return True
     try:
         supabase.table("chamber_vendor_invites").select("id").limit(1).execute()
-    except Exception:
-        logger.info("Creating chamber_vendor_invites table...")
-        supabase.postgrest.rpc("", {}).execute()  # no-op; table will be created via SQL below
-        try:
-            supabase.rpc("exec_sql", {"query": """
-                CREATE TABLE IF NOT EXISTS chamber_vendor_invites (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    token UUID UNIQUE NOT NULL,
-                    vendor_name TEXT NOT NULL,
-                    vendor_email TEXT NOT NULL,
-                    sector TEXT,
-                    status TEXT DEFAULT 'pending',
-                    created_at TIMESTAMPTZ DEFAULT now(),
-                    expires_at TIMESTAMPTZ DEFAULT (now() + interval '30 days'),
-                    completed_at TIMESTAMPTZ
-                );
-                GRANT ALL ON chamber_vendor_invites TO anon, authenticated;
-                NOTIFY pgrst, 'reload schema';
-            """}).execute()
-        except Exception as e:
-            logger.warning(f"Table creation via RPC failed (may already exist): {e}")
+        _table_ready = True
+        return True
+    except Exception as e:
+        logger.error(
+            "chamber_vendor_invites table is not accessible via PostgREST. "
+            "Run the migration: database/vendor_invite_migration.sql "
+            "then execute: NOTIFY pgrst, 'reload schema'; — error: %s",
+            e,
+        )
+        return False
 
 
 # ---------- POST /api/v1/vendors/invite  (auth required) ----------
@@ -86,6 +81,16 @@ async def invite_vendor(
                 "error": "Forbidden",
                 "detail": "Only admin or analyst can invite vendors",
                 "code": "INSUFFICIENT_PERMISSIONS",
+            },
+        )
+
+    if not _check_invites_table():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "Service Unavailable",
+                "detail": "Vendor invites table is not provisioned. Run database/vendor_invite_migration.sql",
+                "code": "TABLE_NOT_PROVISIONED",
             },
         )
 

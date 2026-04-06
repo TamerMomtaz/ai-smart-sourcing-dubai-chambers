@@ -150,6 +150,17 @@ async def startup_event():
         logger.info("✓ Database connection established")
     except Exception as e:
         logger.warning(f"⚠ Database connection check failed: {str(e)} — app will retry on first request")
+
+    # Verify chamber_vendor_invites table is accessible
+    try:
+        supabase.table("chamber_vendor_invites").select("id").limit(1).execute()
+        logger.info("✓ chamber_vendor_invites table accessible")
+    except Exception as e:
+        logger.warning(
+            "⚠ chamber_vendor_invites table NOT accessible — "
+            "run database/vendor_invite_migration.sql then: NOTIFY pgrst, 'reload schema'; — %s",
+            e,
+        )
     
     logger.info("✓ Application startup complete")
     logger.info("✓ CORS origins configured: ['*'] (all origins allowed)")
