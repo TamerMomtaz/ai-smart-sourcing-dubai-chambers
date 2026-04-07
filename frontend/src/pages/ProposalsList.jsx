@@ -529,6 +529,20 @@ const ProposalsList = () => {
                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[p.status] || STATUS_COLORS.draft}`}>
                           {p.status?.replace(/_/g, ' ')}
                         </span>
+                        {p.compliance_gate_status && (
+                          <span
+                            className="ml-1.5 inline-block text-xs"
+                            title={`Compliance gate: ${p.compliance_gate_status}`}
+                          >
+                            {p.compliance_gate_status === 'pass' && <span style={{ color: '#10B981' }}>&#10003;</span>}
+                            {p.compliance_gate_status === 'flagged' && <span style={{ color: '#F59E0B' }}>&#9888;</span>}
+                            {p.compliance_gate_status === 'fail' && <span style={{ color: '#EF4444' }}>&#10007;</span>}
+                            {p.compliance_gate_status === 'pending' && <span style={{ color: '#6B7280' }}>&#9675;</span>}
+                          </span>
+                        )}
+                        {!p.compliance_gate_status && (
+                          <span className="ml-1.5 inline-block text-xs" title="Compliance gate: pending" style={{ color: '#6B7280' }}>&#9675;</span>
+                        )}
                       </td>
                       <td className="p-4">
                         <ScoreBadge score={p.composite_score} />

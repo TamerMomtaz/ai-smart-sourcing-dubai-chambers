@@ -67,7 +67,8 @@ from routes import (
     incident_routes,
     public_stats_routes,
     vendor_invite_routes,
-    sourcing_case_routes
+    sourcing_case_routes,
+    compliance_gate_routes
 )
 
 # Configure logging
@@ -271,6 +272,7 @@ app.include_router(vscore_routes.router, prefix="/api/v1", tags=["vScore"])  # v
 app.include_router(incident_routes.router, prefix="/api/v1", tags=["Incident Management"])
 app.include_router(public_stats_routes.router, prefix="/api/v1", tags=["Public Stats"])
 app.include_router(sourcing_case_routes.router, prefix="/api/v1", tags=["Sourcing Cases"])
+app.include_router(compliance_gate_routes.router, prefix="/api/v1", tags=["Compliance Gate"])
 
 if __name__ == "__main__":
     import uvicorn

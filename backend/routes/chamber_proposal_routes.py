@@ -105,7 +105,7 @@ async def list_chamber_proposals(
         offset = (page - 1) * page_size
 
         query = supabase.table("chamber_proposals").select(
-            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, composite_score, is_duplicate, requires_manual_review, evaluation_timestamp, updated_at",
+            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, composite_score, is_duplicate, requires_manual_review, evaluation_timestamp, updated_at, compliance_gate_status",
             count="exact",
         )
 
@@ -183,7 +183,7 @@ async def get_chamber_proposal_by_id(
     """Get chamber proposal by ID with full details."""
     try:
         proposal_response = supabase.table("chamber_proposals").select(
-            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, language, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, evaluation_timestamp, is_duplicate, requires_manual_review, d33_alignment_metrics, business_group_id"
+            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, language, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, evaluation_timestamp, is_duplicate, requires_manual_review, d33_alignment_metrics, business_group_id, compliance_gate_result, compliance_gate_status"
         ).eq("id", str(proposal_id)).single().execute()
 
         if not proposal_response.data:
