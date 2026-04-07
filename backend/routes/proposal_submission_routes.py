@@ -36,6 +36,7 @@ class ProposalSubmitRequest(BaseModel):
         description="Proposal language",
     )
     description: Optional[str] = Field(None, description="Detailed proposal description")
+    sourcing_case_id: Optional[str] = Field(None, description="Linked sourcing case ID")
 
 
 class ProposalStatusPatch(BaseModel):
@@ -111,6 +112,8 @@ async def create_proposal(
         }
         if business_group_id:
             proposal_data["business_group_id"] = str(business_group_id)
+        if payload.sourcing_case_id:
+            proposal_data["sourcing_case_id"] = payload.sourcing_case_id
 
         result = supabase.table("chamber_proposals").insert(proposal_data).execute()
 

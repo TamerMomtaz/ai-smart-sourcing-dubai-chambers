@@ -13,6 +13,7 @@ def create_proposal(
     language: str,
     business_group_id: Optional[UUID] = None,
     description: Optional[str] = None,
+    sourcing_case_id: Optional[UUID] = None,
 ) -> Optional[Dict[str, Any]]:
     """Create new proposal (vendor-only operation)."""
     try:
@@ -29,11 +30,13 @@ def create_proposal(
             "requires_manual_review": False,
             "created_by": str(user_id),
         }
-        
+
         if business_group_id:
             proposal_data["business_group_id"] = str(business_group_id)
         if description:
             proposal_data["description"] = description
+        if sourcing_case_id:
+            proposal_data["sourcing_case_id"] = str(sourcing_case_id)
         
         response = supabase.table("chamber_proposals").insert(proposal_data).execute()
         

@@ -169,6 +169,8 @@ const ProposalsList = () => {
     sector: searchParams.get('sector') || '',
     desc_only: searchParams.get('desc_only') === 'true',
   });
+
+  const [sourcingCases, setSourcingCases] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     sector: '',
@@ -176,6 +178,7 @@ const ProposalsList = () => {
     maturity_level: '',
     language: 'en',
     description: '',
+    sourcing_case_id: '',
   });
 
   // PDF upload state
@@ -236,6 +239,18 @@ const ProposalsList = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchSourcingCases = async () => {
+      try {
+        const res = await api.get('/api/v1/sourcing-cases?status=open');
+        setSourcingCases(res.data.sourcing_cases || []);
+      } catch {
+        // non-critical
+      }
+    };
+    fetchSourcingCases();
+  }, []);
+
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
@@ -260,7 +275,7 @@ const ProposalsList = () => {
       await api.post('/api/v1/proposals', formData);
       setToast({ message: 'Proposal submitted! Status: Queued for AI evaluation', type: 'success' });
       setShowModal(false);
-      setFormData({ title: '', sector: '', technology_type: '', maturity_level: '', language: 'en', description: '' });
+      setFormData({ title: '', sector: '', technology_type: '', maturity_level: '', language: 'en', description: '', sourcing_case_id: '' });
       fetchProposals();
     } catch (err) {
       setToast({ message: getErrorMessage(err), type: 'error' });
@@ -916,6 +931,23 @@ const ProposalsList = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Sourcing Case */}
+              {sourcingCases.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Sourcing Case (optional)</label>
+                  <select
+                    value={formData.sourcing_case_id}
+                    onChange={(e) => setFormData({ ...formData, sourcing_case_id: e.target.value })}
+                    className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  >
+                    <option value="">None — standalone proposal</option>
+                    {sourcingCases.map((sc) => (
+                      <option key={sc.id} value={sc.id}>{sc.title}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Description */}
               <div>
