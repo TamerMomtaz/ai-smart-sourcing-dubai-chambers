@@ -9,6 +9,9 @@ const STATUS_COLORS = {
   approved: 'bg-emerald-600/20 text-emerald-300 border-emerald-600/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
   requires_review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  on_hold: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  revision_requested: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  conditional: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
 };
 
 const ScoreBar = ({ label, score, reasoning }) => {
@@ -448,6 +451,273 @@ const ComplianceAuditSection = ({ proposalId, userRole, onToast, initialAudit })
                 <p className="text-gray-400 text-xs mt-2">{audit.vendor_certification.finding}</p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Stage-Gate Decision Panel ──────────────────────────────────────────────
+const GATE_STAGES = [
+  { key: 'discovery',       label: 'Discovery',  icon: '\uD83D\uDD0D' },
+  { key: 'scoping',         label: 'Scoping',    icon: '\uD83D\uDCCB' },
+  { key: 'evaluation',      label: 'Evaluation', icon: '\u2696\uFE0F' },
+  { key: 'pilot_approval',  label: 'Pilot',      icon: '\uD83D\uDE80' },
+  { key: 'procurement',     label: 'Procurement', icon: '\uD83D\uDCE6' },
+];
+
+const DECISION_COLORS = {
+  go:             { bg: 'bg-emerald-600 hover:bg-emerald-700', label: 'GO' },
+  kill:           { bg: 'bg-red-600 hover:bg-red-700',         label: 'KILL' },
+  hold:           { bg: 'bg-amber-500 hover:bg-amber-600',     label: 'HOLD' },
+  recycle:        { bg: 'bg-blue-600 hover:bg-blue-700',       label: 'RECYCLE' },
+  conditional_go: { bg: 'bg-orange-500 hover:bg-orange-600',   label: 'CONDITIONAL GO' },
+};
+
+const DECISION_BADGE_STYLE = {
+  go:             'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+  kill:           'bg-red-500/20 text-red-400 border-red-500/40',
+  hold:           'bg-amber-500/20 text-amber-400 border-amber-500/40',
+  recycle:        'bg-blue-500/20 text-blue-400 border-blue-500/40',
+  conditional_go: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
+};
+
+const GateDecisionSection = ({ proposalId, userRole, evaluation, onToast, onRefresh }) => {
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [selectedDecision, setSelectedDecision] = useState('');
+  const [decisionReason, setDecisionReason] = useState('');
+  const [conditions, setConditions] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const canDecide = userRole === 'admin' || userRole === 'analyst';
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      setHistoryLoading(true);
+      const { data } = await api.get(`/api/v1/proposals/${proposalId}/gate-history`);
+      setHistory(data.gate_decisions || []);
+    } catch {
+      // non-critical
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [proposalId]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  // Derive current gate from history
+  const completedGates = {};
+  history.forEach((d) => { completedGates[d.gate_name] = d; });
+
+  let currentGateIdx = 0;
+  for (let i = 0; i < GATE_STAGES.length; i++) {
+    const gd = completedGates[GATE_STAGES[i].key];
+    if (gd && gd.decision === 'go') {
+      currentGateIdx = i + 1;
+    } else if (gd && gd.decision === 'conditional_go') {
+      currentGateIdx = i + 1;
+    } else if (gd) {
+      // kill/hold/recycle — stay at this gate
+      currentGateIdx = i;
+      break;
+    } else {
+      currentGateIdx = i;
+      break;
+    }
+  }
+  if (currentGateIdx >= GATE_STAGES.length) currentGateIdx = GATE_STAGES.length - 1;
+  const currentGate = GATE_STAGES[currentGateIdx].key;
+
+  const handleSubmit = async () => {
+    if (!selectedDecision || !decisionReason.trim()) return;
+    try {
+      setSubmitting(true);
+      await api.post(`/api/v1/proposals/${proposalId}/gate-decision`, {
+        gate_name: currentGate,
+        decision: selectedDecision,
+        decision_reason: decisionReason.trim(),
+        conditions: conditions.trim() || null,
+      });
+      onToast({ message: `Gate decision recorded: ${DECISION_COLORS[selectedDecision]?.label}`, type: 'success' });
+      setSelectedDecision('');
+      setDecisionReason('');
+      setConditions('');
+      await fetchHistory();
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      onToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-6">Stage-Gate Decision</h3>
+
+      {/* Pipeline Visual */}
+      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+        {GATE_STAGES.map((stage, idx) => {
+          const gd = completedGates[stage.key];
+          const isCurrent = idx === currentGateIdx && !(gd && (gd.decision === 'kill'));
+          const isCompleted = gd && (gd.decision === 'go' || gd.decision === 'conditional_go');
+          const isKilled = gd && gd.decision === 'kill';
+          const isHeld = gd && gd.decision === 'hold';
+          const isRecycled = gd && gd.decision === 'recycle';
+          const isFuture = idx > currentGateIdx;
+
+          let circleClass = 'border-2 border-gray-600 bg-transparent';
+          if (isCompleted) circleClass = 'border-2 border-emerald-400 bg-emerald-500/30';
+          if (isKilled) circleClass = 'border-2 border-red-400 bg-red-500/30';
+          if (isHeld) circleClass = 'border-2 border-amber-400 bg-amber-500/30';
+          if (isRecycled) circleClass = 'border-2 border-blue-400 bg-blue-500/30';
+          if (isCurrent && !gd) circleClass = 'border-2 border-teal-400 bg-teal-500/20 animate-pulse';
+
+          let badge = null;
+          if (gd) {
+            const bs = DECISION_BADGE_STYLE[gd.decision] || '';
+            badge = (
+              <span className={`absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded text-[10px] font-bold border whitespace-nowrap ${bs}`}>
+                {DECISION_COLORS[gd.decision]?.label || gd.decision}
+              </span>
+            );
+          }
+
+          return (
+            <div key={stage.key} className="flex items-center flex-1 min-w-0">
+              <div className="flex flex-col items-center relative min-w-[60px]">
+                {badge}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${circleClass}`}>
+                  {isCompleted ? '\u2713' : isKilled ? '\u2717' : isHeld ? '\u23F8' : isRecycled ? '\u21BA' : stage.icon}
+                </div>
+                <span className={`text-xs mt-1 font-medium ${isCurrent ? 'text-teal-400' : isFuture ? 'text-gray-600' : 'text-gray-400'}`}>
+                  {stage.label}
+                </span>
+              </div>
+              {idx < GATE_STAGES.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-1 ${isCompleted ? 'bg-emerald-500/50' : 'bg-gray-700'}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* AI Recommendation Summary */}
+      {evaluation && (evaluation.summary_en || evaluation.composite_score != null) && (
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 mb-6 border border-gray-700/50">
+          <h4 className="text-gray-400 text-sm font-semibold mb-2">AI Recommendation</h4>
+          {evaluation.composite_score != null && (
+            <p className="text-white text-sm mb-1">
+              Composite Score: <span className="font-bold" style={{
+                color: evaluation.composite_score > 70 ? '#10B981' : evaluation.composite_score >= 40 ? '#F59E0B' : '#EF4444'
+              }}>{typeof evaluation.composite_score === 'number' ? evaluation.composite_score.toFixed(1) : evaluation.composite_score}</span>
+            </p>
+          )}
+          {evaluation.summary_en && (
+            <p className="text-gray-300 text-sm leading-relaxed">{evaluation.summary_en}</p>
+          )}
+        </div>
+      )}
+
+      {/* Decision Form (admin/analyst only) */}
+      {canDecide && (
+        <div className="space-y-4">
+          <div>
+            <label className="text-gray-400 text-sm font-medium block mb-2">
+              Current Gate: <span className="text-teal-400 font-semibold">{GATE_STAGES[currentGateIdx]?.label}</span>
+            </label>
+
+            {/* Decision Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(DECISION_COLORS).map(([key, cfg]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedDecision(key)}
+                  className={`px-4 py-2 rounded-lg text-white text-sm font-bold transition-all ${cfg.bg} ${
+                    selectedDecision === key ? 'ring-2 ring-white ring-offset-2 ring-offset-[#1E293B]' : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  {cfg.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Decision Reason */}
+          <div>
+            <label className="text-gray-400 text-sm font-medium block mb-1">Decision Reason *</label>
+            <textarea
+              value={decisionReason}
+              onChange={(e) => setDecisionReason(e.target.value)}
+              placeholder="Provide rationale for this gate decision..."
+              rows={3}
+              className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none placeholder-gray-500"
+            />
+          </div>
+
+          {/* Conditions (conditional_go) */}
+          {selectedDecision === 'conditional_go' && (
+            <div>
+              <label className="text-gray-400 text-sm font-medium block mb-1">Conditions *</label>
+              <textarea
+                value={conditions}
+                onChange={(e) => setConditions(e.target.value)}
+                placeholder="Specify conditions that must be met..."
+                rows={2}
+                className="w-full bg-[var(--color-table-header-bg)] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none placeholder-gray-500"
+              />
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !selectedDecision || !decisionReason.trim() || (selectedDecision === 'conditional_go' && !conditions.trim())}
+            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg font-semibold disabled:opacity-50 transition-colors"
+          >
+            {submitting ? 'Recording...' : 'Record Decision'}
+          </button>
+        </div>
+      )}
+
+      {/* History Timeline */}
+      {historyLoading ? (
+        <p className="text-gray-400 text-sm mt-6">Loading gate history...</p>
+      ) : history.length > 0 && (
+        <div className="mt-8">
+          <h4 className="text-gray-400 text-sm font-semibold mb-4">Decision History</h4>
+          <div className="space-y-3 border-l-2 border-gray-700 pl-4 ml-2">
+            {history.map((d) => {
+              const bs = DECISION_BADGE_STYLE[d.decision] || '';
+              const stageLabel = GATE_STAGES.find(s => s.key === d.gate_name)?.label || d.gate_name;
+              return (
+                <div key={d.id} className="relative">
+                  <div className="absolute -left-[22px] top-1 w-3 h-3 rounded-full bg-gray-600 border-2 border-gray-800" />
+                  <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3 border border-gray-700/50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-white text-sm font-semibold">{stageLabel}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold border ${bs}`}>
+                        {DECISION_COLORS[d.decision]?.label || d.decision}
+                      </span>
+                      <span className="text-gray-500 text-xs ml-auto">
+                        {d.created_at ? new Date(d.created_at).toLocaleDateString() : ''}
+                      </span>
+                    </div>
+                    {d.decision_reason && (
+                      <p className="text-gray-300 text-sm">{d.decision_reason}</p>
+                    )}
+                    {d.conditions && (
+                      <p className="text-orange-400 text-xs mt-1">Conditions: {d.conditions}</p>
+                    )}
+                    {d.ai_score != null && (
+                      <p className="text-gray-500 text-xs mt-1">AI Score: {d.ai_score}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -985,6 +1255,17 @@ const ProposalDetail = () => {
               reasoning={evaluation?.compliance_reasoning}
             />
           </div>
+        )}
+
+        {/* Stage-Gate Decision (admin/analyst) */}
+        {(userRole === 'admin' || userRole === 'analyst') && (
+          <GateDecisionSection
+            proposalId={id}
+            userRole={userRole}
+            evaluation={{ composite_score: proposal.composite_score, summary_en: evaluation?.summary_en }}
+            onToast={setToast}
+            onRefresh={fetchProposal}
+          />
         )}
 
         {/* Executive Summary */}
