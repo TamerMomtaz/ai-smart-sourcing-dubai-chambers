@@ -163,7 +163,7 @@ const PLATFORM_CONTROLS = [
       { id: 5, title: 'Design Phase — Threat modeling, data boundaries', status: 'active', detail: 'Multi-model architecture prevents single-point AI failure. 3 providers (Claude, GPT-4o, Gemini)' },
       { id: 6, title: 'Develop Phase — Data poisoning prevention', status: 'active', detail: 'No model fine-tuning on user data. Evaluation prompts are system-controlled, not user-injectable' },
       { id: 7, title: 'Deploy Phase — Secure APIs, model protection', status: 'active', detail: 'API keys server-side only. Rate limiting ready. Auth on all endpoints' },
-      { id: 8, title: 'Monitor Phase — Hallucination detection, anomaly flagging', status: 'active', detail: 'Hallucination Shield with cross-model verification. σI tracks every AI interaction' },
+      { id: 8, title: 'Monitor Phase — Evidence validation, anomaly flagging', status: 'active', detail: 'Evidence Validation Layer with cross-model verification. σI tracks every AI interaction' },
       { id: 9, title: 'Dispose Phase — Crypto-erasure, data retention', status: 'planned', detail: 'Planned — Supabase supports data deletion. Formal disposal procedure in roadmap' },
     ],
   },

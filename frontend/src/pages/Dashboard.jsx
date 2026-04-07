@@ -121,7 +121,7 @@ const ImpactMeter = ({ impact, timeline }) => {
     evaluation: 'Evaluations',
     compliance_check: 'Compliance',
     trend_analysis: 'Trend Reports',
-    hallucination_check: 'Shield Checks',
+    hallucination_check: 'Evidence Checks',
   };
 
   return (

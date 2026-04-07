@@ -458,10 +458,10 @@ const ProposalCompare = () => {
         <div className="bg-[#1E293B] rounded-xl p-4 md:p-6 border border-gray-700/50 mb-6 overflow-x-auto">
           <div className="flex items-center gap-2 mb-4">
             <ShieldIcon size={18} color={TEAL} />
-            <h3 className="text-white font-semibold text-lg">Hallucination Shield</h3>
+            <h3 className="text-white font-semibold text-lg">Evidence Validation Layer</h3>
           </div>
           <div className="grid gap-4" style={{ gridTemplateColumns: `160px repeat(${colCount}, 1fr)` }}>
-            <div className="text-gray-400 text-sm font-medium">Grounding Score</div>
+            <div className="text-gray-400 text-sm font-medium">Evidence Grounding Score</div>
             {selected.map(({ proposal, shield }) => (
               <div key={proposal.id}>
                 {shield ? (

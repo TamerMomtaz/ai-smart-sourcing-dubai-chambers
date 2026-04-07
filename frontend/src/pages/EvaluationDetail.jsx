@@ -143,7 +143,7 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShieldIcon size={20} />
-            <span className="text-gray-300 font-medium">Hallucination Shield</span>
+            <span className="text-gray-300 font-medium">Evidence Validation Layer</span>
             <span className="text-gray-500 text-sm">Not yet verified</span>
           </div>
           <button
@@ -195,7 +195,8 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
       <div className="px-6 py-4 border-b border-gray-700/50 flex items-center justify-between" style={{ borderTop: `3px solid ${TEAL}` }}>
         <div className="flex items-center gap-3">
           <ShieldIcon size={22} color={TEAL} />
-          <span className="text-white font-semibold text-lg">Hallucination Shield</span>
+          <span className="text-white font-semibold text-lg">Evidence Validation Layer</span>
+          <p className="text-gray-400 text-sm mt-1">Every AI conclusion is verified against source evidence. Claims without supporting documentation are flagged for human review.</p>
         </div>
         <div className="flex items-center gap-3">
           <span
@@ -214,7 +215,7 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
         <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-2xl font-bold" style={{ color: TEAL, fontFamily: '"JetBrains Mono", monospace' }}>{gs}%</p>
-          <p className="text-gray-500 text-xs mt-1">Grounding Score</p>
+          <p className="text-gray-500 text-xs mt-1">Evidence Grounding Score</p>
         </div>
         <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-white" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
@@ -520,7 +521,7 @@ const EvaluationDetail = () => {
           <ScoreBar label="Compliance" score={evaluation.compliance_score} reasoning={evaluation.compliance_reasoning} />
         </div>
 
-        {/* σI Hallucination Shield */}
+        {/* σI Evidence Validation Layer */}
         <HallucinationShieldPanel evaluationId={id} />
 
         {/* Executive Summary */}
