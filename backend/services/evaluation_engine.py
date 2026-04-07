@@ -31,14 +31,23 @@ SYSTEM_PROMPT = (
     "Score each dimension 0-100. Be rigorous but fair. "
     "Consider Dubai's D33 Economic Agenda alignment, UAE regulatory requirements, "
     "and Dubai Chambers' mandate to source innovative technology solutions.\n\n"
+    "For each dimension, provide:\n"
+    "1. The score (0-100)\n"
+    "2. A 2-3 sentence reasoning summary\n"
+    "3. Key evidence points from the proposal that support this score\n"
+    "4. Risk factors that lowered the score\n"
+    "5. Confidence level (high/medium/low)\n\n"
     "Respond ONLY in valid JSON with this exact structure:\n"
     "{\n"
-    '  "relevance": {"score": 0-100, "reasoning": "2-3 sentences"},\n'
-    '  "feasibility": {"score": 0-100, "reasoning": "2-3 sentences"},\n'
-    '  "sector_alignment": {"score": 0-100, "reasoning": "2-3 sentences"},\n'
-    '  "compliance": {"score": 0-100, "reasoning": "2-3 sentences"},\n'
+    '  "relevance": {"score": 0-100, "reasoning": "2-3 sentences", '
+    '"evidence": ["specific evidence point 1", "specific evidence point 2"], '
+    '"risks": ["risk factor 1"], "confidence": "high|medium|low"},\n'
+    '  "feasibility": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
+    '  "sector_alignment": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
+    '  "compliance": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
     '  "summary_en": "3-4 sentence executive summary in English",\n'
     '  "summary_ar": "3-4 sentence executive summary in Arabic",\n'
+    '  "overall_reasoning": "2-3 sentences on how the composite score was derived",\n'
     '  "requires_manual_review": true/false,\n'
     '  "review_reason": "why manual review is needed (or null)"\n'
     "}"
@@ -161,7 +170,22 @@ class EvaluationEngine:
         else:
             new_status = "evaluated"
 
-        # 5. Save to chamber_evaluations
+        # 5. Build ai_attribution JSONB from structured response
+        ai_attribution = {
+            "dimensions": {},
+            "composite_score": composite_score,
+            "overall_reasoning": parsed.get("overall_reasoning", ""),
+        }
+        for dim_key in ["relevance", "feasibility", "sector_alignment", "compliance"]:
+            dim_data = parsed[dim_key]
+            ai_attribution["dimensions"][dim_key] = {
+                "score": dim_data["score"],
+                "evidence": dim_data.get("evidence", []),
+                "risks": dim_data.get("risks", []),
+                "confidence": dim_data.get("confidence", "medium"),
+            }
+
+        # Save to chamber_evaluations
         evaluation = create_evaluation(
             user_id=user_id,
             proposal_id=proposal_id,
@@ -179,6 +203,7 @@ class EvaluationEngine:
             hallucination_check_passed=True,
             prompt_injection_detected=False,
             evaluator_agent_versions={"model": ai_result["model_name"], "version": "1.0"},
+            ai_attribution=ai_attribution,
         )
 
         # 6. Update chamber_proposals
@@ -241,6 +266,7 @@ class EvaluationEngine:
             "feasibility": parsed["feasibility"],
             "sector_alignment": parsed["sector_alignment"],
             "compliance": parsed["compliance"],
+            "ai_attribution": ai_attribution,
             "summary_en": parsed.get("summary_en", ""),
             "summary_ar": parsed.get("summary_ar", ""),
             "requires_manual_review": requires_review,
