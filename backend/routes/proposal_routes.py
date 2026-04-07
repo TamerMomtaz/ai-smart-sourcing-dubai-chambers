@@ -74,6 +74,7 @@ async def create_proposal(
             language=payload.language,
             business_group_id=payload.business_group_id,
             description=payload.description.strip() if payload.description else None,
+            sourcing_case_id=payload.sourcing_case_id,
         )
 
         if not result:

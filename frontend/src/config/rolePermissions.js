@@ -1,16 +1,16 @@
 export const ROLE_SIDEBAR_ITEMS = {
   admin: [
-    'how-it-works', 'dashboard', 'proposals', 'vendors',
+    'how-it-works', 'dashboard', 'sourcing-cases', 'proposals', 'vendors',
     'vendor-intelligence', 'evaluations', 'compare',
     'compliance-audits', 'documents', 'business-groups',
     'trend-analyses', 'ai-interactions', 'api-docs', 'users'
   ],
   analyst: [
-    'how-it-works', 'dashboard', 'proposals', 'evaluations',
+    'how-it-works', 'dashboard', 'sourcing-cases', 'proposals', 'evaluations',
     'vendor-intelligence', 'trend-analyses', 'ai-interactions', 'documents', 'api-docs'
   ],
   compliance_officer: [
-    'how-it-works', 'dashboard', 'compliance-audits', 'evaluations',
+    'how-it-works', 'dashboard', 'sourcing-cases', 'compliance-audits', 'evaluations',
     'vendors', 'vendor-intelligence', 'ai-interactions', 'documents'
   ],
   vendor: [
@@ -18,7 +18,7 @@ export const ROLE_SIDEBAR_ITEMS = {
     'business-groups', 'vendor-intelligence'
   ],
   executive: [
-    'how-it-works', 'dashboard', 'board-brief', 'trend-analyses',
+    'how-it-works', 'dashboard', 'sourcing-cases', 'board-brief', 'trend-analyses',
     'evaluations', 'vendor-intelligence', 'ai-interactions', 'proposals'
   ]
 };
@@ -40,6 +40,7 @@ export const ROLE_BADGES = {
 export const ROUTE_TO_KEY = {
   '/guide': 'how-it-works',
   '/dashboard': 'dashboard',
+  '/sourcing-cases': 'sourcing-cases',
   '/proposals': 'proposals',
   '/vendors': 'vendors',
   '/vendor-intelligence': 'vendor-intelligence',

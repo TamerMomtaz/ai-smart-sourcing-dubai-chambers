@@ -35,6 +35,7 @@ import AuditReport from './pages/AuditReport';
 import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
 import ApiDocs from './pages/ApiDocs';
+import SourcingCases from './pages/SourcingCases';
 import VendorOnboard from './pages/VendorOnboard';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -102,6 +103,7 @@ function App() {
             <Route path="guide" element={<HowItWorks />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
+            <Route path="sourcing-cases" element={<SourcingCases />} />
             <Route path="proposals" element={<ProposalsList />} />
             <Route path="proposals/new" element={<ProposalForm />} />
             <Route path="proposals/:id" element={<ProposalDetail />} />

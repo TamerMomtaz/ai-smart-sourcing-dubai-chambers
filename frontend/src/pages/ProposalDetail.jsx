@@ -624,6 +624,7 @@ const ProposalDetail = () => {
   const [userRole, setUserRole] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
   const [vendorReputation, setVendorReputation] = useState(null);
+  const [sourcingCase, setSourcingCase] = useState(null);
 
   useEffect(() => { fetchProposal(); }, [id]);
 
@@ -639,6 +640,15 @@ const ProposalDetail = () => {
       setLoading(true);
       const { data } = await api.get(`/api/v1/proposals/${id}`);
       setProposal(data);
+      // Fetch sourcing case info if linked
+      if (data.sourcing_case_id) {
+        try {
+          const { data: sc } = await api.get(`/api/v1/sourcing-cases/${data.sourcing_case_id}`);
+          setSourcingCase(sc);
+        } catch {
+          // Non-critical
+        }
+      }
       // Fetch vendor reputation if submitter_id exists
       if (data.submitter_id) {
         try {
@@ -720,6 +730,24 @@ const ProposalDetail = () => {
             ← Back to Proposals
           </button>
         </div>
+
+        {/* Sourcing Case Banner */}
+        {proposal.sourcing_case_id && sourcingCase && (
+          <div className="mb-6 p-4 bg-teal/10 border border-teal/30 rounded-lg flex items-center gap-3">
+            <span className="text-2xl">🎯</span>
+            <div className="flex-1">
+              <p className="text-teal font-semibold text-sm">
+                This proposal responds to:{' '}
+                <button
+                  onClick={() => navigate('/sourcing-cases')}
+                  className="underline hover:text-teal/80 transition-colors"
+                >
+                  {sourcingCase.title}
+                </button>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Manual Review Banner */}
         {proposal.requires_manual_review && (

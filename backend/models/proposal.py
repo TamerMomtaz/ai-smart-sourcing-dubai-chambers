@@ -36,6 +36,7 @@ class ProposalCreate(BaseModel):
     language: Literal["en", "ar"] = Field(..., description="Proposal language")
     business_group_id: Optional[UUID] = Field(None, description="Target business group ID")
     description: Optional[str] = Field(None, description="Proposal description")
+    sourcing_case_id: Optional[UUID] = Field(None, description="Linked sourcing case ID")
 
 
 class DocumentUploadInfo(BaseModel):
