@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
+import { useUserRole } from '../lib/userRole';
 
 const TEAL = 'var(--color-accent)';
 
@@ -10,15 +11,56 @@ const ShieldIcon = ({ size = 20, color = TEAL }) => (
   </svg>
 );
 
-const ScoreBar = ({ label, score, reasoning }) => {
+const PencilIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+);
+
+const OverrideBadge = ({ aiScore, humanScore, reason }) => (
+  <span className="inline-flex items-center gap-1.5 text-xs ml-2">
+    <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">
+      manually adjusted
+    </span>
+    <span className="text-gray-500">
+      AI: {parseFloat(aiScore).toFixed(1)} → Analyst: {parseFloat(humanScore).toFixed(1)}
+    </span>
+  </span>
+);
+
+const ScoreBar = ({ label, score, reasoning, dimensionKey, overrides, canOverride, onRequestOverride }) => {
   const [expanded, setExpanded] = useState(false);
   if (score == null) return null;
   const color = score > 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444';
+
+  // Find the most recent override for this dimension
+  const latestOverride = overrides && overrides.find(o => o.dimension === dimensionKey);
+
   return (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-gray-300 font-medium">{label}</span>
-        <span className="font-bold" style={{ color }}>{score}/100</span>
+        <div className="flex items-center gap-1">
+          <span className="text-gray-300 font-medium">{label}</span>
+          {latestOverride && (
+            <OverrideBadge
+              aiScore={latestOverride.ai_original_score}
+              humanScore={latestOverride.human_adjusted_score}
+              reason={latestOverride.override_reason}
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-bold" style={{ color }}>{score}/100</span>
+          {canOverride && (
+            <button
+              onClick={() => onRequestOverride(dimensionKey, label, score)}
+              className="text-gray-500 hover:text-amber-400 transition-colors p-1 rounded hover:bg-gray-700/50"
+              title="Adjust score"
+            >
+              <PencilIcon />
+            </button>
+          )}
+        </div>
       </div>
       <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: `linear-gradient(90deg, ${color}88, ${color})` }} />
@@ -415,15 +457,115 @@ const VendorContextBanner = ({ evaluation }) => {
   );
 };
 
+const OverrideModal = ({ dimension, dimensionLabel, currentScore, onClose, onSubmit, submitting }) => {
+  const [adjustedScore, setAdjustedScore] = useState(currentScore);
+  const [reason, setReason] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!reason.trim()) return;
+    onSubmit({ dimension, human_adjusted_score: adjustedScore, override_reason: reason.trim() });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#1E293B] rounded-xl border border-gray-700/50 w-full max-w-md">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-white mb-1">Adjust {dimensionLabel} Score</h3>
+          <p className="text-gray-500 text-sm mb-4">Current AI score: <span className="text-white font-bold">{parseFloat(currentScore).toFixed(1)}</span></p>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm block mb-2">Adjusted Score: <span className="text-white font-bold">{adjustedScore}</span></label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="0.5"
+                value={adjustedScore}
+                onChange={(e) => setAdjustedScore(parseFloat(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+              />
+              <div className="flex justify-between text-xs text-gray-600 mt-1">
+                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm block mb-2">Reason for adjustment <span className="text-red-400">*</span></label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Explain why this score needs adjustment..."
+                className="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white text-sm resize-none focus:border-amber-500 focus:outline-none"
+                rows={3}
+                required
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white text-sm">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!reason.trim() || submitting}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {submitting ? 'Applying...' : 'Apply Override'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OverrideHistory = ({ overrides }) => {
+  if (!overrides || overrides.length === 0) return null;
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        Override History
+        <span className="text-xs bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
+          {overrides.length} adjustment{overrides.length !== 1 ? 's' : ''}
+        </span>
+      </h3>
+      <div className="space-y-3">
+        {overrides.map((o) => (
+          <div key={o.id} className="bg-[var(--color-table-header-bg)] rounded-lg p-4 border-l-2 border-amber-500/50">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-300 text-sm font-medium capitalize">{o.dimension.replace('_', ' ')}</span>
+              <span className="text-gray-500 text-xs">{new Date(o.created_at).toLocaleString()}</span>
+            </div>
+            <div className="text-sm mb-1">
+              <span className="text-gray-500">AI: </span>
+              <span className="text-red-400 line-through">{parseFloat(o.ai_original_score).toFixed(1)}</span>
+              <span className="text-gray-500"> → Analyst: </span>
+              <span className="text-emerald-400 font-bold">{parseFloat(o.human_adjusted_score).toFixed(1)}</span>
+            </div>
+            <p className="text-gray-400 text-xs italic">"{o.override_reason}"</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const EvaluationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useUserRole();
   const [evaluation, setEvaluation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showArabic, setShowArabic] = useState(false);
+  const [overrides, setOverrides] = useState([]);
+  const [overrideModal, setOverrideModal] = useState(null);
+  const [overrideSubmitting, setOverrideSubmitting] = useState(false);
 
-  useEffect(() => { fetchEvaluation(); }, [id]);
+  const canOverride = role === 'admin' || role === 'analyst';
+
+  useEffect(() => { fetchEvaluation(); fetchOverrides(); }, [id]);
 
   const fetchEvaluation = async () => {
     try {
@@ -434,6 +576,33 @@ const EvaluationDetail = () => {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOverrides = async () => {
+    try {
+      const { data } = await api.get(`/api/v1/evaluations/${id}/overrides`);
+      setOverrides(data.overrides || []);
+    } catch {
+      // Not critical
+    }
+  };
+
+  const handleRequestOverride = (dimensionKey, dimensionLabel, currentScore) => {
+    setOverrideModal({ dimension: dimensionKey, label: dimensionLabel, score: currentScore });
+  };
+
+  const handleSubmitOverride = async (payload) => {
+    try {
+      setOverrideSubmitting(true);
+      const { data } = await api.post(`/api/v1/evaluations/${id}/override`, payload);
+      setEvaluation(data);
+      setOverrideModal(null);
+      await fetchOverrides();
+    } catch (err) {
+      alert(getErrorMessage(err));
+    } finally {
+      setOverrideSubmitting(false);
     }
   };
 
@@ -506,7 +675,15 @@ const EvaluationDetail = () => {
           >
             {evaluation.composite_score?.toFixed(1) || '—'}
           </div>
-          <p className="text-gray-400 mt-2">Composite Score</p>
+          <p className="text-gray-400 mt-2">
+            Composite Score
+            {overrides.some(o => o.dimension === 'composite') && (
+              <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-medium">manually adjusted</span>
+            )}
+            {overrides.some(o => o.dimension !== 'composite') && !overrides.some(o => o.dimension === 'composite') && (
+              <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-medium">recalculated from overrides</span>
+            )}
+          </p>
           <p className="text-gray-600 text-xs mt-1">
             Evaluated {evaluation.evaluated_at ? new Date(evaluation.evaluated_at).toLocaleString() : '—'}
           </p>
@@ -515,10 +692,10 @@ const EvaluationDetail = () => {
         {/* Score Breakdown */}
         <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
           <h3 className="text-xl font-bold text-white mb-6">Score Breakdown</h3>
-          <ScoreBar label="Relevance" score={evaluation.relevance_score} reasoning={evaluation.relevance_reasoning} />
-          <ScoreBar label="Feasibility" score={evaluation.feasibility_score} reasoning={evaluation.feasibility_reasoning} />
-          <ScoreBar label="Sector Alignment" score={evaluation.sector_alignment_score} reasoning={evaluation.sector_reasoning} />
-          <ScoreBar label="Compliance" score={evaluation.compliance_score} reasoning={evaluation.compliance_reasoning} />
+          <ScoreBar label="Relevance" score={evaluation.relevance_score} reasoning={evaluation.relevance_reasoning} dimensionKey="relevance" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
+          <ScoreBar label="Feasibility" score={evaluation.feasibility_score} reasoning={evaluation.feasibility_reasoning} dimensionKey="feasibility" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
+          <ScoreBar label="Sector Alignment" score={evaluation.sector_alignment_score} reasoning={evaluation.sector_reasoning} dimensionKey="sector_alignment" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
+          <ScoreBar label="Compliance" score={evaluation.compliance_score} reasoning={evaluation.compliance_reasoning} dimensionKey="compliance" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
         </div>
 
         {/* σI Evidence Validation Layer */}
@@ -564,6 +741,21 @@ const EvaluationDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Override History */}
+        <OverrideHistory overrides={overrides} />
+
+        {/* Override Modal */}
+        {overrideModal && (
+          <OverrideModal
+            dimension={overrideModal.dimension}
+            dimensionLabel={overrideModal.label}
+            currentScore={overrideModal.score}
+            onClose={() => setOverrideModal(null)}
+            onSubmit={handleSubmitOverride}
+            submitting={overrideSubmitting}
+          />
+        )}
 
         {/* AI Cost */}
         {aiCost && (
