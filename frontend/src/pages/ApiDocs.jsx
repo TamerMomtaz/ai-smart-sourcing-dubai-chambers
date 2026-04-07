@@ -47,7 +47,7 @@ const ENDPOINTS = [
     endpoints: [
       { method: 'GET', path: '/api/v1/evaluations', description: 'List all evaluations' },
       { method: 'GET', path: '/api/v1/evaluations/{id}', description: 'Get evaluation with scores' },
-      { method: 'POST', path: '/api/v1/evaluations/{id}/verify', description: 'Run Hallucination Shield' },
+      { method: 'POST', path: '/api/v1/evaluations/{id}/verify', description: 'Run Evidence Validation' },
     ],
   },
   {

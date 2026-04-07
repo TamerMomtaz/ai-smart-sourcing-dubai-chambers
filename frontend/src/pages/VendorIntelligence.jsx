@@ -345,7 +345,7 @@ const MyVScoreView = () => {
                     { label: 'Performance History', weight: 30, desc: 'Past engagement outcomes', color: '#3B82F6' },
                     { label: 'Proposal Quality', weight: 25, desc: 'AI evaluation scores and consistency', color: '#10B981' },
                     { label: 'Compliance & Governance', weight: 20, desc: 'DESC, ISO, data residency', color: '#F59E0B' },
-                    { label: 'Claim Integrity', weight: 15, desc: 'Hallucination Shield grounding scores', color: '#8B5CF6' },
+                    { label: 'Claim Integrity', weight: 15, desc: 'Evidence Validation grounding scores', color: '#8B5CF6' },
                     { label: 'Entity Intelligence', weight: 10, desc: 'Related company risks and tenure', color: '#EC4899' },
                   ].map((item) => (
                     <div key={item.label} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
@@ -656,7 +656,7 @@ const VendorIntelligence = () => {
                 { label: 'Performance History', weight: 30, desc: 'Past engagement outcomes', color: '#3B82F6' },
                 { label: 'Proposal Quality', weight: 25, desc: 'AI evaluation scores and consistency', color: '#10B981' },
                 { label: 'Compliance & Governance', weight: 20, desc: 'DESC, ISO, data residency', color: '#F59E0B' },
-                { label: 'Claim Integrity', weight: 15, desc: 'Hallucination Shield grounding scores', color: '#8B5CF6' },
+                { label: 'Claim Integrity', weight: 15, desc: 'Evidence Validation grounding scores', color: '#8B5CF6' },
                 { label: 'Entity Intelligence', weight: 10, desc: 'Related company risks and tenure', color: '#EC4899' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-3">

@@ -279,9 +279,9 @@ export default function BoardBrief() {
             </div>
           </div>
 
-          <h3>Hallucination Shield Status</h3>
+          <h3>Evidence Validation Status</h3>
           <div style={{ display: 'flex', gap: 24, margin: '8px 0', fontSize: 13 }}>
-            <div>Avg Grounding Score: <strong style={{ color: '#0D9488' }}>{formatScore(shield.avg_grounding)}%</strong></div>
+            <div>Avg Evidence Grounding Score: <strong style={{ color: '#0D9488' }}>{formatScore(shield.avg_grounding)}%</strong></div>
             <div>Total Checks: <strong>{shield.total_checks}</strong></div>
           </div>
           {shield.total_checks > 0 && (

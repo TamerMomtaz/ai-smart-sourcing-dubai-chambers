@@ -8,7 +8,7 @@ const STAGES = [
   { id: 0, name: 'Welcome', sidebar: null },
   { id: 1, name: 'Submit a Proposal', sidebar: 'Proposals' },
   { id: 2, name: 'AI Evaluation', sidebar: 'Evaluations' },
-  { id: 3, name: 'Hallucination Shield', sidebar: 'Evaluations' },
+  { id: 3, name: 'Evidence Validation Layer', sidebar: 'Evaluations' },
   { id: 4, name: 'DESC Compliance', sidebar: 'Compliance Audits' },
   { id: 5, name: 'Market Intelligence', sidebar: 'Trend Analyses' },
   { id: 6, name: 'Compare Proposals', sidebar: 'Compare' },
@@ -253,7 +253,7 @@ const STAGE_CONTENT = {
   },
 
   3: {
-    title: "Hallucination Shield — can you trust the AI?",
+    title: "Evidence Validation Layer — can you trust the AI?",
     render: () => (
       <div>
         <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
@@ -442,7 +442,7 @@ const STAGE_CONTENT = {
         </p>
         <p style={{ color: '#475569', lineHeight: 1.7 }}>
           <strong style={{color:'#0F172A'}}>Why this matters:</strong> the AI reads
-          these documents during evaluation and the Hallucination Shield verifies
+          these documents during evaluation and the Evidence Validation Layer verifies
           claims against them. The richer the document, the more accurate the AI
           assessment. Documents are the source of truth.
         </p>

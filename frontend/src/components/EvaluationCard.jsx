@@ -40,7 +40,7 @@ const EvaluationCard = ({ evaluation, proposalTitle }) => {
           <span>Evaluated: {formatDate(evaluation.evaluated_at)}</span>
           {evaluation.hallucination_check_passed === false && (
             <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-burgundy/10 text-burgundy">
-              ⚠️ Hallucination Detected
+              ⚠️ Evidence Validation Failed
             </span>
           )}
           {evaluation.prompt_injection_detected && (

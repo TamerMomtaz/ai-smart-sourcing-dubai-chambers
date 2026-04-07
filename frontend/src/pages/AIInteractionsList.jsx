@@ -69,7 +69,7 @@ const ShieldStatsSection = ({ stats }) => {
     <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: DARK_SURFACE, borderTop: `3px solid ${TEAL}` }}>
       <div className="flex items-center gap-3 mb-6">
         <ShieldIcon size={24} color={TEAL} />
-        <h3 className="text-white text-xl font-bold">Hallucination Shield — Aggregate Integrity</h3>
+        <h3 className="text-white text-xl font-bold">Evidence Validation Layer — Aggregate Integrity</h3>
         {stats.all_verified && (
           <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
             All evaluations verified
@@ -81,7 +81,7 @@ const ShieldStatsSection = ({ stats }) => {
           <p className="text-3xl font-bold" style={{ color: scoreColor, fontFamily: '"JetBrains Mono", monospace' }}>
             {avgScore}%
           </p>
-          <p className="text-slate-400 text-xs mt-1">Avg Grounding Score</p>
+          <p className="text-slate-400 text-xs mt-1">Avg Evidence Grounding Score</p>
         </div>
         <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
           <p className="text-3xl font-bold text-white" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
@@ -277,7 +277,7 @@ const AIInteractionsList = () => {
           </div>
         )}
 
-        {/* Hallucination Shield Stats */}
+        {/* Evidence Validation Stats */}
         {shieldStats && <ShieldStatsSection stats={shieldStats} />}
 
         {/* Interactions Table */}
