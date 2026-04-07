@@ -625,6 +625,7 @@ const ProposalDetail = () => {
   const [currentUserId, setCurrentUserId] = useState('');
   const [vendorReputation, setVendorReputation] = useState(null);
   const [sourcingCase, setSourcingCase] = useState(null);
+  const [gateLoading, setGateLoading] = useState(false);
 
   useEffect(() => { fetchProposal(); }, [id]);
 
@@ -676,6 +677,19 @@ const ProposalDetail = () => {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleRunGate = async () => {
+    try {
+      setGateLoading(true);
+      await api.post(`/api/v1/proposals/${id}/compliance-gate`);
+      setToast({ message: 'Compliance gate checks completed!', type: 'success' });
+      await fetchProposal();
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setGateLoading(false);
     }
   };
 
@@ -846,6 +860,89 @@ const ProposalDetail = () => {
         {/* Documents */}
         <DocumentsSection proposalId={id} userRole={userRole} onToast={setToast} />
 
+        {/* Compliance Gate */}
+        {(() => {
+          const gateStatus = proposal.compliance_gate_status || 'pending';
+          const gateResult = proposal.compliance_gate_result;
+          const canRunGate = userRole === 'admin' || userRole === 'analyst';
+          return (
+            <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white">Compliance Gate</h3>
+                {canRunGate && (
+                  <button
+                    onClick={handleRunGate}
+                    disabled={gateLoading}
+                    className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50 transition-colors"
+                  >
+                    {gateLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                        Running checks...
+                      </span>
+                    ) : gateResult ? 'Re-run Gate Check' : 'Run Gate Check'}
+                  </button>
+                )}
+              </div>
+
+              {gateStatus === 'pending' && !gateResult && (
+                <p className="text-gray-500 text-sm">Compliance gate not yet run. Run gate checks before AI evaluation.</p>
+              )}
+
+              {gateStatus === 'pass' && (
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-emerald-400 font-semibold flex items-center gap-2">
+                    <span className="text-lg">&#10003;</span> All compliance checks passed
+                  </p>
+                </div>
+              )}
+
+              {gateStatus === 'flagged' && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-amber-400 font-semibold flex items-center gap-2">
+                    <span className="text-lg">&#9888;</span> {gateResult?.checks?.filter(c => c.result === 'flag').length || 0} flag(s) require review
+                  </p>
+                </div>
+              )}
+
+              {gateStatus === 'fail' && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-red-400 font-semibold flex items-center gap-2">
+                    <span className="text-lg">&#10007;</span> Submission incomplete — cannot proceed to evaluation
+                  </p>
+                </div>
+              )}
+
+              {gateResult && gateResult.checks && (
+                <div className="space-y-2 mt-4">
+                  {gateResult.checks.map((check, idx) => {
+                    const icon = check.result === 'pass' ? '\u2713' : check.result === 'flag' ? '\u26A0' : '\u2717';
+                    const colorClass = check.result === 'pass'
+                      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+                      : check.result === 'flag'
+                      ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+                      : 'text-red-400 bg-red-500/10 border-red-500/30';
+                    return (
+                      <div key={idx} className={`rounded-lg p-3 border ${colorClass}`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold">{icon}</span>
+                          <span className="font-medium text-sm">{check.rule}</span>
+                          <span className="ml-auto text-xs font-bold uppercase">{check.result}</span>
+                        </div>
+                        <p className="text-xs mt-1 opacity-80">{check.detail}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {gateResult && gateResult.recommendation && (
+                <p className="text-gray-400 text-sm mt-4 italic">{gateResult.recommendation}</p>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Evaluation Scores */}
         {(proposal.composite_score != null || evaluation) && (
           <div className="bg-[#1E293B] rounded-xl p-6 mb-6 border border-gray-700/50">
@@ -946,19 +1043,28 @@ const ProposalDetail = () => {
         {/* Action Buttons */}
         <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700/50">
           <div className="flex gap-3 flex-wrap">
-            {(proposal.status === 'queued' || proposal.status === 'requires_review') && (
-              <button
-                onClick={handleEvaluate}
-                disabled={actionLoading}
-                className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold disabled:opacity-50 transition-colors"
-              >
-                {actionLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-pulse">🧠</span> AI is evaluating... ~15s
-                  </span>
-                ) : proposal.status === 'requires_review' ? 'Re-evaluate' : 'Run AI Evaluation'}
-              </button>
-            )}
+            {(proposal.status === 'queued' || proposal.status === 'requires_review') && (() => {
+              const gateBlocked = !proposal.compliance_gate_status || proposal.compliance_gate_status === 'pending' || proposal.compliance_gate_status === 'fail';
+              return (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleEvaluate}
+                    disabled={actionLoading || gateBlocked}
+                    title={gateBlocked ? 'Run compliance gate first' : ''}
+                    className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold disabled:opacity-50 transition-colors"
+                  >
+                    {actionLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="animate-pulse">🧠</span> AI is evaluating... ~15s
+                      </span>
+                    ) : proposal.status === 'requires_review' ? 'Re-evaluate' : 'Run AI Evaluation'}
+                  </button>
+                  {gateBlocked && (
+                    <span className="text-amber-400 text-xs">Gate check required</span>
+                  )}
+                </div>
+              );
+            })()}
             <button
               onClick={() => handleStatusChange('approved')}
               disabled={actionLoading}
