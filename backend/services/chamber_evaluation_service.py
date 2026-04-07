@@ -21,6 +21,7 @@ def create_evaluation(
     prompt_injection_detected: bool = False,
     summary_en: Optional[str] = None,
     summary_ar: Optional[str] = None,
+    ai_attribution: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Create a new chamber evaluation."""
     payload = {
@@ -40,6 +41,7 @@ def create_evaluation(
         "prompt_injection_detected": prompt_injection_detected,
         "summary_en": summary_en,
         "summary_ar": summary_ar,
+        "ai_attribution": ai_attribution,
     }
 
     result = (
@@ -135,6 +137,7 @@ def update_evaluation(
     prompt_injection_detected: Optional[bool] = None,
     summary_en: Optional[str] = None,
     summary_ar: Optional[str] = None,
+    ai_attribution: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Update an existing chamber evaluation."""
     evaluation = get_evaluation_by_id(user_id, evaluation_id)
@@ -171,6 +174,8 @@ def update_evaluation(
         payload["summary_en"] = summary_en
     if summary_ar is not None:
         payload["summary_ar"] = summary_ar
+    if ai_attribution is not None:
+        payload["ai_attribution"] = ai_attribution
 
     if not payload:
         return evaluation

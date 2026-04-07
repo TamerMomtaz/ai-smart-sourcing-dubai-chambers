@@ -371,6 +371,140 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
   );
 };
 
+const ConfidenceBadge = ({ level }) => {
+  const config = {
+    high: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+    medium: { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
+    low: { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
+  };
+  const style = config[level] || config.medium;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} border ${style.border}`}>
+      {(level || 'medium').charAt(0).toUpperCase() + (level || 'medium').slice(1)} confidence
+    </span>
+  );
+};
+
+const DimensionAttribution = ({ dimensionKey, label, data }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!data) return null;
+
+  const score = data.score || 0;
+  const color = score > 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444';
+  const evidence = Array.isArray(data.evidence) ? data.evidence : [];
+  const risks = Array.isArray(data.risks) ? data.risks : [];
+
+  return (
+    <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 mb-3">
+      <div
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-gray-600 text-xs">{expanded ? '▾' : '▸'}</span>
+          <span className="text-gray-300 font-medium">{label}</span>
+          <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: color }} />
+          </div>
+          <span className="text-sm font-bold" style={{ color }}>{score}/100</span>
+        </div>
+        <ConfidenceBadge level={data.confidence} />
+      </div>
+      {expanded && (
+        <div className="mt-3 pl-6 space-y-3">
+          {evidence.length > 0 && (
+            <div>
+              <h5 className="text-xs font-semibold text-emerald-400 uppercase tracking-wide mb-1.5">Supporting Evidence</h5>
+              <ul className="space-y-1">
+                {evidence.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
+                    <span className="text-emerald-500 mt-0.5 flex-shrink-0">+</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {risks.length > 0 && (
+            <div>
+              <h5 className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-1.5">Risk Factors</h5>
+              <ul className="space-y-1">
+                {risks.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
+                    <span className="text-red-400 mt-0.5 flex-shrink-0">!</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {evidence.length === 0 && risks.length === 0 && (
+            <p className="text-gray-500 text-sm italic">No detailed attribution available for this dimension.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const EvidenceAttributionPanel = ({ aiAttribution }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!aiAttribution || !aiAttribution.dimensions) return null;
+
+  const dims = aiAttribution.dimensions;
+  const dimensionLabels = {
+    relevance: 'Relevance',
+    feasibility: 'Feasibility',
+    sector_alignment: 'Sector Alignment',
+    compliance: 'Compliance',
+  };
+
+  return (
+    <div className="bg-[#1E293B] rounded-xl mb-6 border border-gray-700/50 overflow-hidden">
+      <div
+        className="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#1E293B]/80 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-lg">🔍</span>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Why did the AI score this way?</h3>
+            <p className="text-gray-500 text-xs mt-0.5">Evidence-based attribution for each scoring dimension</p>
+          </div>
+        </div>
+        <span className="text-gray-500 text-sm">{expanded ? '▾ Collapse' : '▸ Expand'}</span>
+      </div>
+
+      {expanded && (
+        <div className="px-6 pb-6">
+          {Object.entries(dimensionLabels).map(([key, label]) => (
+            <DimensionAttribution
+              key={key}
+              dimensionKey={key}
+              label={label}
+              data={dims[key]}
+            />
+          ))}
+
+          {aiAttribution.overall_reasoning && (
+            <div className="mt-4 p-4 bg-[var(--color-table-header-bg)] rounded-lg border-l-2 border-blue-500/50">
+              <h5 className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1.5">Overall Reasoning</h5>
+              <p className="text-gray-300 text-sm">{aiAttribution.overall_reasoning}</p>
+            </div>
+          )}
+
+          <div className="mt-4 pt-3 border-t border-gray-700/30 text-center">
+            <span className="text-gray-500 text-xs">
+              Every score is traceable. σI — Added Intelligence
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const VSCORE_TIER_COLORS = {
   platinum: '#0D9488', gold: '#B8904A', silver: '#3B82F6', bronze: '#F59E0B', under_review: '#EF4444',
 };
@@ -697,6 +831,9 @@ const EvaluationDetail = () => {
           <ScoreBar label="Sector Alignment" score={evaluation.sector_alignment_score} reasoning={evaluation.sector_reasoning} dimensionKey="sector_alignment" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
           <ScoreBar label="Compliance" score={evaluation.compliance_score} reasoning={evaluation.compliance_reasoning} dimensionKey="compliance" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
         </div>
+
+        {/* Evidence Attribution Panel */}
+        <EvidenceAttributionPanel aiAttribution={evaluation.ai_attribution} />
 
         {/* σI Evidence Validation Layer */}
         <HallucinationShieldPanel evaluationId={id} />

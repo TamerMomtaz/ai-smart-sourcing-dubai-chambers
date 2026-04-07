@@ -44,4 +44,5 @@ class EvaluationDetail(BaseModel):
     prompt_injection_detected: bool = Field(..., description="Prompt injection detection")
     summary_en: str = Field(..., description="English summary")
     summary_ar: str = Field(..., description="Arabic summary")
+    ai_attribution: Optional[Dict[str, Any]] = Field(None, description="Dimension-level evidence attribution with evidence points, risks, and confidence")
     ai_interactions: List[AIInteractionInfo] = Field(default_factory=list, description="AI interactions")
