@@ -131,6 +131,11 @@ const SourcingCases = () => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  /* ── Discovered vendors ── */
+  const [discoveredVendors, setDiscoveredVendors] = useState([]);
+  const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [matchFilter, setMatchFilter] = useState('all');
+
   /* ── Create modal ── */
   const [showCreate, setShowCreate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -298,6 +303,7 @@ const SourcingCases = () => {
       setDetailLoading(true);
       const res = await api.get(`/api/v1/sourcing-cases/${caseId}`);
       setSelectedCase(res.data);
+      fetchMatchedVendors(caseId);
     } catch (err) {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
@@ -320,6 +326,43 @@ const SourcingCases = () => {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  /* ── Fetch cached matched vendors ── */
+  const fetchMatchedVendors = useCallback(async (caseId) => {
+    try {
+      const res = await api.get(`/api/v1/sourcing-cases/${caseId}/matched-vendors`);
+      setDiscoveredVendors(res.data.matched_vendors || []);
+    } catch {
+      // not critical — may not have matches yet
+      setDiscoveredVendors([]);
+    }
+  }, []);
+
+  /* ── Discover vendors (AI matching) ── */
+  const handleDiscoverVendors = async () => {
+    if (!selectedCase) return;
+    try {
+      setDiscoverLoading(true);
+      const res = await api.post(`/api/v1/sourcing-cases/${selectedCase.id}/discover-vendors`);
+      setDiscoveredVendors(res.data.matched_vendors || []);
+      setToast({ message: `Discovered ${res.data.count || 0} matching vendors`, type: 'success' });
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setDiscoverLoading(false);
+    }
+  };
+
+  /* ── Invite vendor (update match status) ── */
+  const handleInviteVendor = async (matchId) => {
+    try {
+      await api.put(`/api/v1/sourcing-cases/vendor-matches/${matchId}/status`, { status: 'invited' });
+      setDiscoveredVendors(prev => prev.map(m => m.id === matchId ? { ...m, status: 'invited' } : m));
+      setToast({ message: 'Vendor invited to submit', type: 'success' });
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
     }
   };
 
@@ -455,21 +498,149 @@ const SourcingCases = () => {
           )}
         </div>
 
-        {/* Matching Vendors */}
+        {/* AI-Discovered Matches */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="font-heading text-xl text-ink mb-4">Matching Vendors ({selectedCase.matching_vendors?.length || 0})</h2>
-          {(selectedCase.matching_vendors?.length || 0) === 0 ? (
-            <p className="text-ink/50 font-body text-sm">No matching vendors found.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {selectedCase.matching_vendors.map(v => (
-                <div
-                  key={v.id}
-                  onClick={() => navigate(`/vendors/${v.id}`)}
-                  className="p-3 rounded-lg border border-ink/10 hover:border-teal/30 hover:bg-teal/5 cursor-pointer transition-colors"
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
+            <h2 className="font-heading text-xl text-ink">AI-Discovered Matches</h2>
+            {canCreate && (
+              <button
+                onClick={handleDiscoverVendors}
+                disabled={discoverLoading}
+                className="px-4 py-2 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {discoverLoading ? (
+                  <>
+                    <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                    Discovering...
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    Discover Matching Vendors
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-ink/40 font-body mb-4">
+            AI-Discovered Matches — σI identifies vendors whose capabilities align with this sourcing need
+          </p>
+
+          {/* Filter tabs */}
+          {discoveredVendors.length > 0 && (
+            <div className="flex gap-2 mb-4">
+              {['all', 'suggested', 'invited', 'submitted'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setMatchFilter(f)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    matchFilter === f
+                      ? 'bg-teal text-white border-teal'
+                      : 'bg-white text-ink/60 border-ink/15 hover:border-teal/30'
+                  }`}
                 >
-                  <p className="font-body text-sm font-medium text-ink">{v.company_name || v.email}</p>
-                  {v.country && <p className="text-xs text-ink/50 mt-0.5">{v.country}</p>}
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f !== 'all' && (
+                    <span className="ml-1 opacity-70">
+                      ({discoveredVendors.filter(m => m.status === f).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {discoveredVendors.length === 0 ? (
+            <p className="text-ink/50 font-body text-sm">
+              No discovered vendors yet. Click "Discover Matching Vendors" to run AI matching.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {discoveredVendors
+                .filter(m => matchFilter === 'all' || m.status === matchFilter)
+                .map((m, idx) => (
+                <div
+                  key={m.id}
+                  className="p-4 rounded-lg border border-ink/10 hover:border-teal/20 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-ink/40 font-body font-bold">#{idx + 1}</span>
+                        <span
+                          onClick={() => navigate(`/vendors/${m.vendor_id}`)}
+                          className="font-body text-sm font-semibold text-ink hover:text-teal cursor-pointer"
+                        >
+                          {m.vendor_name || 'Unknown Vendor'}
+                        </span>
+                        {/* vScore badge */}
+                        {m.vendor_vscore != null && (
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            m.vendor_vscore >= 800 ? 'bg-emerald-100 text-emerald-700' :
+                            m.vendor_vscore >= 600 ? 'bg-amber-100 text-amber-700' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            vScore: {m.vendor_vscore}
+                          </span>
+                        )}
+                        {/* DESC badge */}
+                        {m.vendor_desc_certified && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                            DESC
+                          </span>
+                        )}
+                        {/* Status badge */}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                          m.status === 'invited' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                          m.status === 'submitted' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                          m.status === 'declined' ? 'bg-red-50 text-red-600 border-red-200' :
+                          'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}>
+                          {m.status}
+                        </span>
+                      </div>
+                      {/* Match score bar */}
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden max-w-[180px]">
+                          <div
+                            className={`h-full rounded-full ${
+                              m.match_score >= 80 ? 'bg-emerald-500' :
+                              m.match_score >= 60 ? 'bg-amber-500' :
+                              'bg-red-400'
+                            }`}
+                            style={{ width: `${Math.min(m.match_score || 0, 100)}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-bold ${
+                          m.match_score >= 80 ? 'text-emerald-600' :
+                          m.match_score >= 60 ? 'text-amber-600' :
+                          'text-red-500'
+                        }`}>
+                          {m.match_score}/100
+                        </span>
+                        {m.avg_evaluation_score != null && (
+                          <span className="text-xs text-ink/40 ml-2">
+                            Avg eval: {m.avg_evaluation_score}
+                          </span>
+                        )}
+                      </div>
+                      {/* Reasoning */}
+                      {m.match_reasoning && (
+                        <p className="text-xs text-ink/60 font-body">{m.match_reasoning}</p>
+                      )}
+                    </div>
+                    {/* Invite button */}
+                    {canCreate && m.status === 'suggested' && (
+                      <button
+                        onClick={() => handleInviteVendor(m.id)}
+                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap"
+                      >
+                        Invite to Submit
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
