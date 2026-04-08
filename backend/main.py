@@ -81,7 +81,8 @@ from routes import (
     uaepass_routes,
     alerts_routes,
     model_inventory_routes,
-    sector_assignment_routes
+    sector_assignment_routes,
+    vendor_matching_routes
 )
 
 # Configure logging
@@ -299,6 +300,7 @@ app.include_router(uaepass_routes.router, prefix="/api/v1", tags=["UAE PASS SSO"
 app.include_router(alerts_routes.router, prefix="/api/v1", tags=["Alerts"])
 app.include_router(model_inventory_routes.router, prefix="/api/v1", tags=["AI Model Inventory"])
 app.include_router(sector_assignment_routes.router, prefix="/api/v1", tags=["Sector Assignments"])
+app.include_router(vendor_matching_routes.router, prefix="/api/v1", tags=["Vendor Matching"])
 
 if __name__ == "__main__":
     import uvicorn
