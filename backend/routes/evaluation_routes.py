@@ -101,6 +101,7 @@ async def get_evaluation_by_proposal(
                 }
                 for ai in evaluation.get("ai_interactions", [])
             ],
+            sourcing_case_context=evaluation.get("sourcing_case_context"),
         )
         
         logger.info(

@@ -46,3 +46,4 @@ class EvaluationDetail(BaseModel):
     summary_ar: str = Field(..., description="Arabic summary")
     ai_attribution: Optional[Dict[str, Any]] = Field(None, description="Dimension-level evidence attribution with evidence points, risks, and confidence")
     ai_interactions: List[AIInteractionInfo] = Field(default_factory=list, description="AI interactions")
+    sourcing_case_context: Optional[Dict[str, Any]] = Field(None, description="Sourcing case context if proposal is linked to a case")

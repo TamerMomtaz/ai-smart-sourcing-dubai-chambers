@@ -116,10 +116,18 @@ class EvaluationEngine:
         # 2b. Fetch uploaded document texts for this proposal
         document_texts = self._fetch_document_texts(proposal_id=proposal_id)
 
+        # 2c. Fetch sourcing case context if proposal is linked to one
+        sourcing_case = None
+        if proposal.get("sourcing_case_id"):
+            sourcing_case = self._fetch_sourcing_case(
+                case_id=proposal["sourcing_case_id"]
+            )
+
         # 3. Build user prompt and call Claude
         user_prompt = self._build_user_prompt(
             proposal=proposal, business_group=business_group,
             document_texts=document_texts,
+            sourcing_case=sourcing_case,
         )
 
         start_time = time.time()
@@ -301,6 +309,21 @@ class EvaluationEngine:
         )
         return result.data
 
+    def _fetch_sourcing_case(self, case_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch sourcing case details for contextual evaluation."""
+        try:
+            result = (
+                supabase.table("chamber_sourcing_cases")
+                .select("id, title, problem_statement, sector, technology_domain, compliance_requirements")
+                .eq("id", str(case_id))
+                .maybe_single()
+                .execute()
+            )
+            return result.data
+        except Exception as e:
+            logger.warning(f"[EVAL] Failed to fetch sourcing case {case_id}: {e}")
+            return None
+
     def _fetch_document_texts(self, proposal_id: str) -> list:
         """Fetch extracted_text from all documents linked to this proposal."""
         try:
@@ -322,6 +345,7 @@ class EvaluationEngine:
     def _build_user_prompt(
         self, proposal: Dict[str, Any], business_group: Optional[Dict[str, Any]],
         document_texts: Optional[list] = None,
+        sourcing_case: Optional[Dict[str, Any]] = None,
     ) -> str:
         parts = [
             f"Proposal Title: {proposal.get('title', 'N/A')}",
@@ -355,6 +379,24 @@ class EvaluationEngine:
                 if isinstance(kpis, str):
                     kpis = json.loads(kpis)
                 parts.append(f"Sector KPIs: {json.dumps(kpis, indent=2)}")
+
+        # Include sourcing case context for targeted evaluation
+        if sourcing_case:
+            parts.append("\n--- Sourcing Case Context ---")
+            parts.append(
+                "This proposal is responding to the following sourcing case. "
+                "Evaluate the proposal's relevance, feasibility, compliance, and sector alignment "
+                "specifically in the context of this sourcing need."
+            )
+            parts.append(f"Sourcing Case Title: {sourcing_case.get('title', 'N/A')}")
+            if sourcing_case.get("problem_statement"):
+                parts.append(f"Problem Statement: {sourcing_case['problem_statement']}")
+            if sourcing_case.get("sector"):
+                parts.append(f"Required Sector: {sourcing_case['sector']}")
+            if sourcing_case.get("technology_domain"):
+                parts.append(f"Required Technology Domain: {sourcing_case['technology_domain']}")
+            if sourcing_case.get("compliance_requirements"):
+                parts.append(f"Compliance Requirements: {sourcing_case['compliance_requirements']}")
 
         parts.append(
             "\nEvaluate this proposal across the 4 dimensions and provide your assessment in the required JSON format."
