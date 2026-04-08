@@ -24,8 +24,20 @@ const VendorCard = ({ vendor }) => {
       <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition cursor-pointer border border-transparent hover:border-teal">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-xl font-heading font-bold text-ink mb-2">
+            <h3 className="text-xl font-heading font-bold text-ink mb-2 flex items-center gap-2">
               {vendor.name}
+              {vendor.trade_license_status === 'verified' && (
+                <span title="Trade License Verified" className="text-emerald-500 text-base">&#10003;</span>
+              )}
+              {vendor.trade_license_status === 'pending' && (
+                <span title="License Verification Pending" className="text-amber-500 text-base">&#9203;</span>
+              )}
+              {(!vendor.trade_license_status || vendor.trade_license_status === 'unverified') && (
+                <span title="License Unverified" className="text-gray-400 text-base">&#9675;</span>
+              )}
+              {(vendor.trade_license_status === 'expired' || vendor.trade_license_status === 'invalid') && (
+                <span title={`Trade License ${vendor.trade_license_status === 'expired' ? 'Expired' : 'Invalid'}`} className="text-red-500 text-base">&#10007;</span>
+              )}
             </h3>
             {(vendor.desc_certified || vendor.is_desc_approved) && (
               <div className="group relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 text-xs font-body font-semibold mb-2">

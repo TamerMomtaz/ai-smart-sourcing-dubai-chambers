@@ -383,7 +383,21 @@ const VendorsList = () => {
                 <div key={v.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition relative">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="font-heading text-xl text-teal">{v.name}</h3>
+                      <h3 className="font-heading text-xl text-teal flex items-center gap-2">
+                        {v.name}
+                        {v.trade_license_status === 'verified' && (
+                          <span title="Trade License Verified" className="text-emerald-500 text-base">&#10003;</span>
+                        )}
+                        {v.trade_license_status === 'pending' && (
+                          <span title="License Verification Pending" className="text-amber-500 text-base">&#9203;</span>
+                        )}
+                        {(!v.trade_license_status || v.trade_license_status === 'unverified') && (
+                          <span title="License Unverified" className="text-gray-400 text-base">&#9675;</span>
+                        )}
+                        {(v.trade_license_status === 'expired' || v.trade_license_status === 'invalid') && (
+                          <span title={`Trade License ${v.trade_license_status === 'expired' ? 'Expired' : 'Invalid'}`} className="text-red-500 text-base">&#10007;</span>
+                        )}
+                      </h3>
                       {v.desc_certified && (
                         <div className="mt-1">
                           <DESCCertifiedBadge providerName={v.desc_provider_name} />

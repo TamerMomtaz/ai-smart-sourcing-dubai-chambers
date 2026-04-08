@@ -76,7 +76,8 @@ from routes import (
     audit_pack_routes,
     pipeline_kpi_routes,
     compliance_knowledge_routes,
-    sourcing_intake_routes
+    sourcing_intake_routes,
+    trade_license_routes
 )
 
 # Configure logging
@@ -289,6 +290,7 @@ app.include_router(audit_pack_routes.router, prefix="/api/v1", tags=["Audit Evid
 app.include_router(pipeline_kpi_routes.router, prefix="/api/v1", tags=["Dashboard Pipeline KPIs"])
 app.include_router(compliance_knowledge_routes.router, prefix="/api/v1", tags=["Compliance Knowledge Base"])
 app.include_router(sourcing_intake_routes.router, prefix="/api/v1", tags=["Sourcing Intake (Public)"])
+app.include_router(trade_license_routes.router, prefix="/api/v1", tags=["Trade License Verification"])
 
 if __name__ == "__main__":
     import uvicorn
