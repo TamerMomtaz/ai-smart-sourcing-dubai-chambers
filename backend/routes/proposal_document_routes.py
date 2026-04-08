@@ -6,6 +6,11 @@ import logging
 
 from auth import get_current_user
 from database import supabase
+from services.document_sanitization_service import (
+    extract_text_from_pdf,
+    extract_text_from_docx,
+    sanitize_proposal_content,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -131,20 +136,45 @@ async def upload_proposal_document(
         if not result.data:
             raise Exception("Insert returned no data")
         doc = result.data[0]
+
+        # Run document sanitization (non-blocking — errors logged, not raised)
+        sanitization_result = None
+        try:
+            extracted_text = ""
+            if ext == "pdf":
+                extracted_text = extract_text_from_pdf(file_bytes=file_bytes)
+            elif ext == "docx":
+                extracted_text = extract_text_from_docx(file_bytes=file_bytes)
+
+            if extracted_text.strip():
+                sanitization_result = sanitize_proposal_content(
+                    proposal_id=str(proposal_id),
+                    raw_text=extracted_text,
+                    user_id=str(current_user["id"]),
+                    source="document_upload",
+                )
+        except Exception as san_err:
+            logger.warning(f"Document sanitization failed (non-blocking): {san_err}")
+
+        response_content = {
+            "document": {
+                "id": str(doc.get("id", "")),
+                "file_name": doc.get("file_name", ""),
+                "file_type": doc.get("file_type", ""),
+                "file_size": doc.get("file_size", 0),
+                "storage_path": doc.get("storage_path", ""),
+                "proposal_id": str(doc.get("proposal_id", "")),
+                "uploaded_at": str(doc.get("uploaded_at", "")),
+            },
+            "message": "Document uploaded successfully",
+        }
+        if sanitization_result and sanitization_result.get("flagged"):
+            response_content["security_flags_detected"] = True
+            response_content["flag_count"] = len(sanitization_result.get("flags", []))
+
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content={
-                "document": {
-                    "id": str(doc.get("id", "")),
-                    "file_name": doc.get("file_name", ""),
-                    "file_type": doc.get("file_type", ""),
-                    "file_size": doc.get("file_size", 0),
-                    "storage_path": doc.get("storage_path", ""),
-                    "proposal_id": str(doc.get("proposal_id", "")),
-                    "uploaded_at": str(doc.get("uploaded_at", "")),
-                },
-                "message": "Document uploaded successfully",
-            },
+            content=response_content,
         )
     except Exception as e:
         import traceback as tb

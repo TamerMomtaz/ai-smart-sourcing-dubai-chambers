@@ -1044,6 +1044,58 @@ const ProposalDetail = () => {
           </div>
         )}
 
+        {/* Security Scan Results */}
+        {proposal.content_flags && (() => {
+          const flags = typeof proposal.content_flags === 'string'
+            ? JSON.parse(proposal.content_flags)
+            : proposal.content_flags;
+          const flagList = flags?.flags || [];
+          return (
+            <div className="mb-6">
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#F59E0B" fillOpacity="0.15" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 9v4M12 17h.01" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p className="text-amber-400 font-semibold">Content Security Flags Detected &mdash; Review Recommended</p>
+                </div>
+                <details className="group">
+                  <summary className="text-sm text-amber-300 cursor-pointer hover:text-amber-200 select-none">
+                    Security Scan Results ({flagList.length} flag{flagList.length !== 1 ? 's' : ''})
+                  </summary>
+                  <div className="mt-3 space-y-2">
+                    {flagList.map((flag, idx) => (
+                      <div key={idx} className="bg-[#1E293B] rounded-lg p-3 border border-gray-700/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
+                            flag.pattern_type === 'prompt_injection'
+                              ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                              : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                          }`}>
+                            {flag.pattern_type === 'prompt_injection' ? 'INJECTION' : 'SCORE MANIPULATION'}
+                          </span>
+                          <span className="text-gray-400 text-sm">{flag.description}</span>
+                        </div>
+                        {flag.context && (
+                          <p className="text-gray-500 text-xs mt-1 font-mono bg-gray-800/50 p-2 rounded">
+                            ...{flag.context}...
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                    {flags.scan_timestamp && (
+                      <p className="text-gray-600 text-xs mt-2">
+                        Scanned: {new Date(flags.scan_timestamp).toLocaleString()} &middot; Source: {flags.source || 'unknown'}
+                      </p>
+                    )}
+                  </div>
+                </details>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Vendor Reputation / Previously Applied Indicator */}
         {vendorReputation && vendorReputation.submission_history && vendorReputation.submission_history.length > 1 && (
           <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">

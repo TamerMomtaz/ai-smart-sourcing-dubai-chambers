@@ -399,8 +399,10 @@ class EvaluationEngine:
             f"Maturity Level: {proposal.get('maturity_level', 'N/A')}",
             f"Language: {proposal.get('language', 'en')}",
         ]
-        if proposal.get("description"):
-            parts.append(f"Description: {proposal['description']}")
+        # Prefer sanitized_text over raw description for AI evaluation
+        description_text = proposal.get("sanitized_text") or proposal.get("description")
+        if description_text:
+            parts.append(f"Description: {description_text}")
 
         # Append uploaded document texts (truncated to keep within token limits)
         if document_texts:
