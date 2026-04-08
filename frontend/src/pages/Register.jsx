@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from '../lib/language';
 import { getErrorMessage } from '../lib/api';
 
 function Register() {
@@ -12,6 +13,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp, user } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -26,12 +28,12 @@ function Register() {
 
     // Validation
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError(t('auth.password_length_error'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.password_mismatch'));
       return;
     }
 
@@ -55,12 +57,12 @@ function Register() {
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="font-heading text-4xl text-teal mb-2">AI Smart Sourcing</h1>
-          <p className="font-body text-ink/70">Dubai Chambers</p>
+          <h1 className="font-heading text-4xl text-teal mb-2">{t('app.title')}</h1>
+          <p className="font-body text-ink/70">{t('app.subtitle')}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="font-heading text-2xl text-ink mb-6">Register</h2>
+          <h2 className="font-heading text-2xl text-ink mb-6">{t('auth.register')}</h2>
 
           {error && (
             <div className="mb-4 p-3 bg-burgundy/10 border border-burgundy/20 rounded-lg">
@@ -71,7 +73,7 @@ function Register() {
           {success && (
             <div className="mb-4 p-3 bg-teal/10 border border-teal/20 rounded-lg">
               <p className="text-sm text-teal font-body">
-                Registration successful! Please check your email to confirm your account.
+                {t('auth.register_success')}
               </p>
             </div>
           )}
@@ -79,7 +81,7 @@ function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-body text-ink mb-1">
-                Email Address
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -94,7 +96,7 @@ function Register() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-body text-ink mb-1">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -105,12 +107,12 @@ function Register() {
                 className="w-full px-4 py-2 border border-ink/20 rounded-lg font-body text-ink focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent"
                 placeholder="••••••••"
               />
-              <p className="text-xs text-ink/60 mt-1 font-body">Minimum 8 characters</p>
+              <p className="text-xs text-ink/60 mt-1 font-body">{t('auth.min_password')}</p>
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-body text-ink mb-1">
-                Confirm Password
+                {t('auth.confirm_password')}
               </label>
               <input
                 id="confirmPassword"
@@ -128,15 +130,15 @@ function Register() {
               disabled={loading || success}
               className="w-full bg-teal text-white font-body py-2 px-4 rounded-lg hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? t('auth.registering') : t('auth.register')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm font-body text-ink/70">
-              Already have an account?{' '}
+              {t('auth.has_account')}{' '}
               <Link to="/login" className="text-teal hover:underline">
-                Sign in here
+                {t('auth.sign_in_here')}
               </Link>
             </p>
           </div>

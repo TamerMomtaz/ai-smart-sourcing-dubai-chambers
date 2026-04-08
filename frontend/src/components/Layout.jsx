@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useUserRole } from '../lib/userRole';
+import { useTranslation } from '../lib/language';
 import { getErrorMessage } from '../lib/api';
 import { ROLE_SIDEBAR_ITEMS, DEFAULT_ITEMS, ROUTE_TO_KEY } from '../config/rolePermissions';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -16,6 +17,7 @@ function Layout() {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { role, roleLoading } = useUserRole();
+  const { t, language, toggleLanguage } = useTranslation();
 
   // Listen for sidebar highlight events from the HowItWorks experience
   useEffect(() => {
@@ -37,23 +39,23 @@ function Layout() {
   };
 
   const allNavigation = [
-    { name: 'How It Works', href: '/guide', icon: '💡', key: 'how-it-works' },
-    { name: 'Dashboard', href: '/dashboard', icon: '📊', key: 'dashboard' },
-    { name: 'Sourcing Cases', href: '/sourcing-cases', icon: '🎯', key: 'sourcing-cases' },
-    { name: 'Pilot Tracker', href: '/pilot-tracker', icon: '🧪', key: 'pilot-tracker' },
-    { name: 'Proposals', href: '/proposals', icon: '📝', key: 'proposals' },
-    { name: 'Vendors', href: '/vendors', icon: '🏢', key: 'vendors' },
-    { name: 'Vendor Intelligence', href: '/vendor-intelligence', icon: '🛡️', key: 'vendor-intelligence' },
-    { name: 'Evaluations', href: '/evaluations', icon: '⭐', key: 'evaluations' },
-    { name: 'Compare', href: '/compare', icon: '⚖️', key: 'compare' },
-    { name: 'Compliance Audits', href: '/compliance-audits', icon: '🔒', key: 'compliance-audits' },
-    { name: 'Documents', href: '/documents', icon: '📄', key: 'documents' },
-    { name: 'Business Groups', href: '/business-groups', icon: '🏛️', key: 'business-groups' },
-    { name: 'Trend Analyses', href: '/trend-analyses', icon: '📈', key: 'trend-analyses' },
-    { name: 'ΣI Transparency', href: '/ai-interactions', icon: '🔬', key: 'ai-interactions' },
-    { name: 'Users', href: '/users', icon: '👥', key: 'users' },
-    { name: 'Executive Board Brief', href: '/board-brief', icon: '📄', key: 'board-brief' },
-    { name: 'API Docs', href: '/api-reference', icon: '🔗', key: 'api-docs' },
+    { name: t('nav.how_it_works'), href: '/guide', icon: '💡', key: 'how-it-works' },
+    { name: t('nav.dashboard'), href: '/dashboard', icon: '📊', key: 'dashboard' },
+    { name: t('nav.sourcing_cases'), href: '/sourcing-cases', icon: '🎯', key: 'sourcing-cases' },
+    { name: t('nav.pilot_tracker'), href: '/pilot-tracker', icon: '🧪', key: 'pilot-tracker' },
+    { name: t('nav.proposals'), href: '/proposals', icon: '📝', key: 'proposals' },
+    { name: t('nav.vendors'), href: '/vendors', icon: '🏢', key: 'vendors' },
+    { name: t('nav.vendor_intelligence'), href: '/vendor-intelligence', icon: '🛡️', key: 'vendor-intelligence' },
+    { name: t('nav.evaluations'), href: '/evaluations', icon: '⭐', key: 'evaluations' },
+    { name: t('nav.compare'), href: '/compare', icon: '⚖️', key: 'compare' },
+    { name: t('nav.compliance_audits'), href: '/compliance-audits', icon: '🔒', key: 'compliance-audits' },
+    { name: t('nav.documents'), href: '/documents', icon: '📄', key: 'documents' },
+    { name: t('nav.business_groups'), href: '/business-groups', icon: '🏛️', key: 'business-groups' },
+    { name: t('nav.trend_analyses'), href: '/trend-analyses', icon: '📈', key: 'trend-analyses' },
+    { name: t('nav.ai_transparency'), href: '/ai-interactions', icon: '🔬', key: 'ai-interactions' },
+    { name: t('nav.users'), href: '/users', icon: '👥', key: 'users' },
+    { name: t('nav.board_brief'), href: '/board-brief', icon: '📄', key: 'board-brief' },
+    { name: t('nav.api_docs'), href: '/api-reference', icon: '🔗', key: 'api-docs' },
   ];
 
   const allowedKeys = ROLE_SIDEBAR_ITEMS[role] || DEFAULT_ITEMS;
@@ -65,12 +67,12 @@ function Layout() {
         .map(item => {
           // Vendor role sees "My vScore" instead of "Vendor Intelligence"
           if (role === 'vendor' && item.key === 'vendor-intelligence') {
-            return { ...item, name: 'My vScore' };
+            return { ...item, name: t('nav.my_vscore') };
           }
           return item;
         });
     },
-    [role, roleLoading]
+    [role, roleLoading, language]
   );
 
   const isActive = (path) => location.pathname === path || (path !== '/' && path !== '/dashboard' && location.pathname.startsWith(path));
@@ -108,8 +110,8 @@ function Layout() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-ink/10">
-            <h1 className="font-heading text-2xl text-teal">AI Smart Sourcing</h1>
-            <p className="font-body text-xs text-ink/60 mt-1">Dubai Chambers | by Tamer Momtaz</p>
+            <h1 className="font-heading text-2xl text-teal">{t('app.title')}</h1>
+            <p className="font-body text-xs text-ink/60 mt-1">{t('app.subtitle_short')}</p>
           </div>
 
           {/* Navigation */}
@@ -143,12 +145,21 @@ function Layout() {
             </ul>
           </nav>
 
-          {/* Theme switcher and sign out */}
+          {/* Theme switcher, language toggle, and sign out */}
           <div className="p-4 border-t border-ink/10">
-            <ThemeSwitcher />
-            <div className="mb-3 mt-2">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <ThemeSwitcher />
+              <button
+                onClick={toggleLanguage}
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-semibold border border-ink/20 text-ink hover:bg-teal/10 hover:text-teal hover:border-teal/30 transition-colors min-h-[32px]"
+                title={language === 'en' ? 'التبديل إلى العربية' : 'Switch to English'}
+              >
+                {language === 'en' ? 'عربي' : 'EN'}
+              </button>
+            </div>
+            <div className="mb-3">
               <p className="font-body text-sm text-ink font-medium truncate">
-                {user?.email || 'User'}
+                {user?.email || t('common.user')}
               </p>
             </div>
             <button
@@ -156,7 +167,7 @@ function Layout() {
               disabled={loggingOut}
               className="w-full px-4 py-2 min-h-[44px] bg-burgundy text-white rounded-lg font-body text-sm hover:bg-burgundy/90 transition-colors disabled:opacity-50"
             >
-              {loggingOut ? 'Signing out...' : 'Sign Out'}
+              {loggingOut ? t('auth.signing_out') : t('auth.sign_out')}
             </button>
           </div>
         </div>
@@ -170,7 +181,7 @@ function Layout() {
             <button
               onClick={() => setSidebarOpen(true)}
               className="md:hidden text-ink hover:text-teal transition-colors p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Open menu"
+              aria-label={t('layout.open_menu')}
             >
               <svg
                 className="w-6 h-6"
@@ -186,7 +197,7 @@ function Layout() {
                 />
               </svg>
             </button>
-            <h1 className="md:hidden font-heading text-lg text-teal flex-1 text-center">AI Smart Sourcing</h1>
+            <h1 className="md:hidden font-heading text-lg text-teal flex-1 text-center">{t('app.title')}</h1>
             <div className="md:hidden w-9 h-9 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
               {(user?.email || 'U').charAt(0).toUpperCase()}
             </div>
@@ -202,13 +213,13 @@ function Layout() {
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="bg-white rounded-xl shadow-md p-8 max-w-md text-center">
                 <div className="text-5xl mb-4">🔒</div>
-                <h2 className="font-heading text-2xl text-ink mb-2">Access Restricted</h2>
-                <p className="text-ink/60 mb-6">You don't have permission to view this page.</p>
+                <h2 className="font-heading text-2xl text-ink mb-2">{t('layout.access_restricted')}</h2>
+                <p className="text-ink/60 mb-6">{t('layout.no_permission')}</p>
                 <Link
                   to="/dashboard"
                   className="inline-block px-6 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors"
                 >
-                  Back to Dashboard
+                  {t('layout.back_to_dashboard')}
                 </Link>
               </div>
             </div>
@@ -217,7 +228,7 @@ function Layout() {
 
         {/* Footer */}
         <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
-          Created by Tamer Momtaz | Powered by σI (Added Intelligence)
+          {t('app.footer')}
         </footer>
       </div>
     </div>

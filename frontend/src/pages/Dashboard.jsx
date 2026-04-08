@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from '../lib/language';
 import { ROLE_BADGES } from '../config/rolePermissions';
 import { useUserRole } from '../lib/userRole';
 import DemoBanner from '../components/DemoBanner';
@@ -81,6 +82,7 @@ const Sparkline = ({ data, width = 400, height = 48 }) => {
 // --- Impact Meter Section ---
 const ImpactMeter = ({ impact, timeline }) => {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation();
 
   const hoursAnim = useCountUp(impact?.time_saved?.total_hours);
   const daysAnim = useCountUp(impact?.time_saved?.working_days);
@@ -99,29 +101,29 @@ const ImpactMeter = ({ impact, timeline }) => {
   const metrics = [
     {
       value: formatNum(hoursAnim),
-      label: 'analyst-hours saved',
+      label: t('dashboard.hours_saved'),
       hero: true,
     },
     {
       value: formatNum(daysAnim),
-      label: 'working days saved',
+      label: t('dashboard.days_saved'),
     },
     {
       value: formatNum(analystsAnim),
-      label: 'full-time analysts replaced',
+      label: t('dashboard.analysts_replaced'),
     },
     {
       value: formatNum(aiMinAnim),
-      label: 'AI minutes (actual)',
+      label: t('dashboard.ai_minutes'),
     },
   ];
 
   const opLabels = {
-    proposal_evaluation: 'Evaluations',
-    evaluation: 'Evaluations',
-    compliance_check: 'Compliance',
-    trend_analysis: 'Trend Reports',
-    hallucination_check: 'Evidence Checks',
+    proposal_evaluation: t('dashboard.evaluations'),
+    evaluation: t('dashboard.evaluations'),
+    compliance_check: t('dashboard.compliance'),
+    trend_analysis: t('dashboard.trend_reports'),
+    hallucination_check: t('dashboard.evidence_checks'),
   };
 
   return (
@@ -135,7 +137,7 @@ const ImpactMeter = ({ impact, timeline }) => {
       <div className="mb-5">
         <h2 className="font-heading text-xl text-[var(--color-accent)] flex items-center gap-2">
           <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-accent-10 text-sm font-bold text-[var(--color-accent)]">&sigma;</span>
-          Impact Meter &mdash; Return on Time
+          {t('dashboard.impact_meter')}
         </h2>
       </div>
 
@@ -164,16 +166,16 @@ const ImpactMeter = ({ impact, timeline }) => {
       {/* Performance bar */}
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600 mb-4">
         <span>
-          Speed: <strong className="text-[var(--color-accent)]">{ai_performance.speed_multiplier}x</strong> faster than manual
+          {t('dashboard.speed')} <strong className="text-[var(--color-accent)]">{ai_performance.speed_multiplier}x</strong> {t('dashboard.faster_than_manual')}
         </span>
         <span>
-          Cost: <strong className="text-[var(--color-accent)]">${ai_performance.total_cost_usd}</strong> total
+          {t('dashboard.cost')} <strong className="text-[var(--color-accent)]">${ai_performance.total_cost_usd}</strong> {t('dashboard.total')}
         </span>
         <span>
-          Cost per operation: <strong className="text-[var(--color-accent)]">${ai_performance.cost_per_operation}</strong>
+          {t('dashboard.cost_per_op')} <strong className="text-[var(--color-accent)]">${ai_performance.cost_per_operation}</strong>
         </span>
         <span>
-          Period: <strong className="text-[var(--color-accent)]">{time_saved.period_days}</strong> days
+          {t('dashboard.period')} <strong className="text-[var(--color-accent)]">{time_saved.period_days}</strong> {t('dashboard.days')}
         </span>
       </div>
 
@@ -192,7 +194,7 @@ const ImpactMeter = ({ impact, timeline }) => {
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
-          How we calculated this
+          {t('dashboard.how_calculated')}
         </button>
 
         {expanded && (
@@ -208,7 +210,7 @@ const ImpactMeter = ({ impact, timeline }) => {
                     <span className="text-gray-500">
                       {b.count} &times; {b.manual_hours_each} hrs
                       <span className="mx-2">=</span>
-                      <span className="text-[var(--color-accent)] font-semibold">{b.total_hours_saved} hrs saved</span>
+                      <span className="text-[var(--color-accent)] font-semibold">{b.total_hours_saved} {t('dashboard.hrs_saved')}</span>
                     </span>
                   </div>
                 ))}
@@ -226,14 +228,14 @@ const ImpactMeter = ({ impact, timeline }) => {
       {/* ROW 3: Sparkline */}
       {timeline && timeline.length > 1 && (
         <div className="border-t border-gray-100 mt-3 pt-3">
-          <div className="text-xs text-gray-400 mb-1">Cumulative hours saved over time</div>
+          <div className="text-xs text-gray-400 mb-1">{t('dashboard.cumulative_hours')}</div>
           <Sparkline data={timeline} />
         </div>
       )}
 
       {/* Footer */}
       <div className="mt-3 text-[10px] text-gray-300 text-right">
-        All metrics calculated from live platform data in real-time
+        {t('dashboard.metrics_note')}
       </div>
     </div>
   );
@@ -266,6 +268,7 @@ const TYPE_BADGE = {
 };
 
 const EngagementOutcomes = ({ data }) => {
+  const { t } = useTranslation();
   if (!data) return null;
 
   const { metrics, distribution, recent_engagements } = data;
@@ -273,27 +276,27 @@ const EngagementOutcomes = ({ data }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-      <h2 className="font-heading text-xl text-teal mb-5">Pilot & Engagement Outcomes</h2>
+      <h2 className="font-heading text-xl text-teal mb-5">{t('dashboard.pilot_outcomes')}</h2>
 
       {/* ROW 1 — Metric cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-4 text-center">
           <div className="text-blue-600 font-mono text-3xl font-bold">{metrics.active_pilots}</div>
-          <div className="text-xs text-gray-500 mt-1">Active Pilots</div>
+          <div className="text-xs text-gray-500 mt-1">{t('dashboard.active_pilots')}</div>
         </div>
         <div className="bg-emerald-50 rounded-lg p-4 text-center">
           <div className="text-emerald-600 font-mono text-3xl font-bold">{metrics.completed_engagements}</div>
-          <div className="text-xs text-gray-500 mt-1">Completed Engagements</div>
+          <div className="text-xs text-gray-500 mt-1">{t('dashboard.completed_engagements')}</div>
         </div>
         <div className="bg-amber-50 rounded-lg p-4 text-center">
           <div className="text-amber-600 font-mono text-3xl font-bold">
             {metrics.avg_delivery_rating != null ? `★ ${metrics.avg_delivery_rating}/5` : '—'}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Avg Delivery Rating</div>
+          <div className="text-xs text-gray-500 mt-1">{t('dashboard.avg_rating')}</div>
         </div>
         <div className="bg-teal-50 rounded-lg p-4 text-center">
           <div className="text-teal font-mono text-3xl font-bold">{metrics.success_rate}%</div>
-          <div className="text-xs text-gray-500 mt-1">Success Rate</div>
+          <div className="text-xs text-gray-500 mt-1">{t('dashboard.success_rate')}</div>
         </div>
       </div>
 
@@ -301,7 +304,7 @@ const EngagementOutcomes = ({ data }) => {
       {total > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
-            <span>Outcome Distribution</span>
+            <span>{t('dashboard.outcome_distribution')}</span>
             <span className="ml-auto">{total} total</span>
           </div>
           <div className="flex h-6 rounded-full overflow-hidden">
@@ -337,16 +340,16 @@ const EngagementOutcomes = ({ data }) => {
       {/* ROW 3 — Recent engagements list */}
       {recent_engagements && recent_engagements.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-600 mb-3">Recent Engagements</h3>
+          <h3 className="text-sm font-semibold text-gray-600 mb-3">{t('dashboard.recent_engagements')}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 text-left text-xs text-gray-400">
-                  <th className="pb-2 font-medium">Vendor</th>
-                  <th className="pb-2 font-medium">Engagement</th>
-                  <th className="pb-2 font-medium">Type</th>
-                  <th className="pb-2 font-medium">Outcome</th>
-                  <th className="pb-2 font-medium text-right">Date</th>
+                  <th className="pb-2 font-medium">{t('dashboard.vendor')}</th>
+                  <th className="pb-2 font-medium">{t('dashboard.engagement')}</th>
+                  <th className="pb-2 font-medium">{t('dashboard.type')}</th>
+                  <th className="pb-2 font-medium">{t('dashboard.outcome')}</th>
+                  <th className="pb-2 font-medium text-right">{t('dashboard.date')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -380,7 +383,7 @@ const EngagementOutcomes = ({ data }) => {
       )}
 
       {total === 0 && (
-        <p className="text-ink/50 text-sm">No engagement data available yet.</p>
+        <p className="text-ink/50 text-sm">{t('dashboard.no_engagement_data')}</p>
       )}
     </div>
   );
@@ -663,6 +666,7 @@ const PipelineKPIs = ({ kpis }) => {
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
   const { role: userRole } = useUserRole();
+  const { t } = useTranslation();
   const isVendor = userRole === 'vendor';
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -784,9 +788,9 @@ const Dashboard = () => {
         <DemoBanner />
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl md:text-4xl text-teal mb-2">Dashboard</h1>
+            <h1 className="font-heading text-3xl md:text-4xl text-teal mb-2">{t('nav.dashboard')}</h1>
             <p className="text-ink/70 flex items-center gap-2">
-              Welcome back, {user?.full_name || 'User'}
+              {t('dashboard.title')}, {user?.full_name || t('common.user')}
               {user?.role && ROLE_BADGES[user.role] && (
                 <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${ROLE_BADGES[user.role].color}`}>
                   {ROLE_BADGES[user.role].label}
