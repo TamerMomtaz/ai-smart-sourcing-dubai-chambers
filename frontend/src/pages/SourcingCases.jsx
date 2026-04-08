@@ -740,15 +740,26 @@ const SourcingCases = () => {
                         </div>
                       )}
                     </div>
-                    {/* Invite button */}
-                    {canCreate && m.status === 'suggested' && (
-                      <button
-                        onClick={() => handleInviteVendor(m.id)}
-                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap"
-                      >
-                        Invite to Submit
-                      </button>
-                    )}
+                    <div className="flex flex-col gap-2">
+                      {/* Factsheet button */}
+                      {canCreate && m.vendor_id && (
+                        <button
+                          onClick={() => navigate(`/vendors/${m.vendor_id}/factsheet?sourcing_case_id=${selectedCase.id}`)}
+                          className="px-3 py-1.5 bg-teal text-white rounded-lg text-xs font-semibold hover:bg-teal/90 transition-colors whitespace-nowrap"
+                        >
+                          Factsheet
+                        </button>
+                      )}
+                      {/* Invite button */}
+                      {canCreate && m.status === 'suggested' && (
+                        <button
+                          onClick={() => handleInviteVendor(m.id)}
+                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap"
+                        >
+                          Invite to Submit
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
