@@ -88,6 +88,8 @@ SMTP_USE_TLS = _get_env("SMTP_USE_TLS", required=False, default="true").lower() 
 
 WEBHOOK_SECRET = _get_env("WEBHOOK_SECRET", required=False, default=None)
 
+INTAKE_API_KEY = _get_env("INTAKE_API_KEY", required=False, default=None)
+
 REDIS_URL = _get_env("REDIS_URL", required=False, default=None)
 
 APP_VERSION = _get_env("APP_VERSION", required=False, default="1.0.0")
