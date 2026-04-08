@@ -95,6 +95,7 @@ async def create_vendor(
             reputation_tier=result.get("reputation_tier"),
             vscore=result.get("vscore"),
             vscore_tier=result.get("vscore_tier"),
+            trade_license_status=result.get("trade_license_status"),
         )
 
     except HTTPException:
@@ -187,6 +188,7 @@ async def list_vendors(
                 reputation_tier=v.get("reputation_tier"),
                 vscore=v.get("vscore"),
                 vscore_tier=v.get("vscore_tier"),
+                trade_license_status=v.get("trade_license_status"),
             )
             for v in vendor_data
         ]
@@ -275,6 +277,7 @@ async def get_vendor(
             reputation_tier=result.get("reputation_tier"),
             vscore=result.get("vscore"),
             vscore_tier=result.get("vscore_tier"),
+            trade_license_status=result.get("trade_license_status"),
         )
 
     except HTTPException:

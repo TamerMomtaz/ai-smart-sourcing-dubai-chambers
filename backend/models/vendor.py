@@ -47,6 +47,20 @@ class VendorResponse(BaseModel):
     reputation_tier: Optional[str] = Field(None, description="Reputation tier: trusted, established, emerging, new, flagged")
     vscore: Optional[int] = Field(None, description="vScore 300-900")
     vscore_tier: Optional[str] = Field(None, description="vScore tier: platinum, gold, silver, bronze, under_review")
+    trade_license_status: Optional[str] = Field(None, description="Trade license verification status")
+
+
+class TradeLicenseVerifyRequest(BaseModel):
+    trade_license_number: str = Field(..., description="Dubai trade license number to verify")
+
+
+class TradeLicenseStatusResponse(BaseModel):
+    vendor_id: UUID = Field(..., description="Vendor UUID")
+    trade_license_number: Optional[str] = Field(None, description="Trade license number")
+    trade_license_status: str = Field(..., description="Verification status")
+    trade_license_verified_at: Optional[datetime] = Field(None, description="When license was verified")
+    trade_license_details: Optional[dict] = Field(None, description="Additional license details")
+    message: Optional[str] = Field(None, description="Status message")
 
 
 class VendorProfileUpdate(BaseModel):

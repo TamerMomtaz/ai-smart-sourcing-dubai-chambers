@@ -101,6 +101,10 @@ const VendorDetail = () => {
   const [formulaOpen, setFormulaOpen] = useState(false);
   const [vscoreFormulaOpen, setVscoreFormulaOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dossier');
+  const [licenseStatus, setLicenseStatus] = useState(null);
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [licenseSubmitting, setLicenseSubmitting] = useState(false);
+  const [licenseMessage, setLicenseMessage] = useState('');
 
   useEffect(() => {
     api.get('/api/v1/users/me').then(res => setCurrentUser(res.data)).catch(() => {});
@@ -110,6 +114,7 @@ const VendorDetail = () => {
     fetchVendor();
     fetchReputation();
     fetchVscore();
+    fetchLicenseStatus();
   }, [id]);
 
   const fetchVendor = async () => {
@@ -139,6 +144,32 @@ const VendorDetail = () => {
       setVscore(data);
     } catch {
       // Non-critical — vScore data may not exist
+    }
+  };
+
+  const fetchLicenseStatus = async () => {
+    try {
+      const { data } = await api.get(`/api/v1/vendors/${id}/license-status`);
+      setLicenseStatus(data);
+    } catch {
+      // Non-critical
+    }
+  };
+
+  const handleVerifyLicense = async () => {
+    if (!licenseNumber.trim()) return;
+    setLicenseSubmitting(true);
+    setLicenseMessage('');
+    try {
+      const { data } = await api.post(`/api/v1/vendors/${id}/verify-license`, {
+        trade_license_number: licenseNumber.trim(),
+      });
+      setLicenseMessage(data.message || 'Verification request submitted.');
+      setLicenseStatus(data);
+    } catch (err) {
+      setLicenseMessage(getErrorMessage(err));
+    } finally {
+      setLicenseSubmitting(false);
     }
   };
 
@@ -518,22 +549,100 @@ const VendorDetail = () => {
               <p className="text-ink font-semibold mt-1">{new Date(vendor.updated_at).toLocaleString()}</p>
             </div>
           )}
+        </div>
 
-          {currentUser?.role === 'admin' && (
-            <div className="border-t pt-6 flex gap-4">
-              <button
-                onClick={() => {
-                  if (window.confirm('Changes to vendor data will be logged to the audit trail. Proceed?')) {
-                    navigate(`/vendors/${id}/edit`);
-                  }
-                }}
-                className="bg-teal text-white py-2 px-6 rounded-lg font-semibold hover:bg-teal/90 transition-colors"
-              >
-                Admin Edit
-              </button>
+        {/* Trade License Verification Card */}
+        <div className="bg-white rounded-xl shadow-sm p-5 md:p-8 mt-6">
+          <h3 className="font-heading text-xl text-ink mb-4">Trade License Verification</h3>
+
+          {(!licenseStatus || licenseStatus.trade_license_status === 'unverified') && (
+            <div>
+              <p className="text-gray-500 text-sm mb-4">
+                Connects to Dubai GRP for corporate registry verification
+              </p>
+              {(currentUser?.role === 'admin' || currentUser?.role === 'analyst') ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={licenseNumber}
+                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    placeholder="Enter trade license number"
+                    className="flex-1 border border-cream rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                  />
+                  <button
+                    onClick={handleVerifyLicense}
+                    disabled={licenseSubmitting || !licenseNumber.trim()}
+                    className="bg-teal text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal/90 transition disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {licenseSubmitting ? 'Submitting...' : 'Verify License'}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm italic">No trade license on file. Admin or analyst can submit for verification.</p>
+              )}
+              {licenseMessage && (
+                <p className="text-sm text-teal mt-3">{licenseMessage}</p>
+              )}
+            </div>
+          )}
+
+          {licenseStatus?.trade_license_status === 'pending' && (
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold">
+                &#9203; Verification Pending
+              </span>
+              {licenseStatus.trade_license_number && (
+                <p className="text-ink text-sm mt-3">License #: <span className="font-semibold">{licenseStatus.trade_license_number}</span></p>
+              )}
+              <p className="text-gray-500 text-sm mt-2 italic">
+                In production: real-time verification via developer.dubai.gov.ae
+              </p>
+            </div>
+          )}
+
+          {licenseStatus?.trade_license_status === 'verified' && (
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                &#10003; Trade License Verified
+              </span>
+              <div className="mt-3 space-y-1 text-sm">
+                <p className="text-ink">License #: <span className="font-semibold">{licenseStatus.trade_license_number}</span></p>
+                {licenseStatus.trade_license_verified_at && (
+                  <p className="text-gray-500">Verified: {new Date(licenseStatus.trade_license_verified_at).toLocaleDateString()}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(licenseStatus?.trade_license_status === 'expired' || licenseStatus?.trade_license_status === 'invalid') && (
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">
+                {licenseStatus.trade_license_status === 'expired' ? 'Trade License Expired' : 'Trade License Invalid'}
+              </span>
+              {licenseStatus.trade_license_number && (
+                <p className="text-ink text-sm mt-3">License #: <span className="font-semibold">{licenseStatus.trade_license_number}</span></p>
+              )}
+              {licenseStatus.trade_license_details?.reason && (
+                <p className="text-red-600 text-sm mt-2">{licenseStatus.trade_license_details.reason}</p>
+              )}
             </div>
           )}
         </div>
+
+        {currentUser?.role === 'admin' && (
+          <div className="mt-6 flex gap-4">
+            <button
+              onClick={() => {
+                if (window.confirm('Changes to vendor data will be logged to the audit trail. Proceed?')) {
+                  navigate(`/vendors/${id}/edit`);
+                }
+              }}
+              className="bg-teal text-white py-2 px-6 rounded-lg font-semibold hover:bg-teal/90 transition-colors"
+            >
+              Admin Edit
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
