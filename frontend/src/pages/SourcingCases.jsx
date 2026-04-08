@@ -105,6 +105,13 @@ const SourcingCases = () => {
   const [submitting, setSubmitting] = useState(false);
   const [analysts, setAnalysts] = useState([]);
   const [businessGroups, setBusinessGroups] = useState([]);
+
+  /* ── AI Assist ── */
+  const [rawText, setRawText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiReasoning, setAiReasoning] = useState('');
+  const [showReasoning, setShowReasoning] = useState(false);
+  const [aiApplied, setAiApplied] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     problem_statement: '',
@@ -209,11 +216,45 @@ const SourcingCases = () => {
         technology_domain: '', urgency: 'medium', compliance_requirements: '',
         assigned_analyst_id: '', business_group_id: '',
       });
+      setRawText('');
+      setAiReasoning('');
+      setAiApplied(false);
+      setShowReasoning(false);
       fetchCases();
     } catch (err) {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  /* ── AI Assist handler ── */
+  const handleAiAssist = async () => {
+    if (!rawText.trim() || rawText.trim().length < 10) {
+      setToast({ message: 'Please enter at least 10 characters of text to analyze', type: 'error' });
+      return;
+    }
+    try {
+      setAiLoading(true);
+      const res = await api.post('/api/v1/sourcing-cases/ai-structure', { raw_text: rawText });
+      const data = res.data;
+      setFormData(f => ({
+        ...f,
+        title: data.suggested_title || f.title,
+        problem_statement: data.problem_statement || f.problem_statement,
+        sector: data.sector || f.sector,
+        technology_domain: data.technology_domain || f.technology_domain,
+        urgency: data.urgency || f.urgency,
+        compliance_requirements: (data.compliance_flags || []).join(', ') || f.compliance_requirements,
+      }));
+      setAiReasoning(data.reasoning || '');
+      setAiApplied(true);
+      setShowReasoning(true);
+      setToast({ message: 'AI analysis complete — fields auto-filled', type: 'success' });
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -589,6 +630,69 @@ const SourcingCases = () => {
         <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowCreate(false)}>
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-2xl my-8" onClick={e => e.stopPropagation()}>
             <h2 className="font-heading text-2xl text-ink mb-6">Create Sourcing Case</h2>
+
+            {/* ── AI Assist Section ── */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-teal/5 to-teal/10 border border-teal/20 rounded-xl">
+              <label className="block text-ink font-body font-semibold mb-1 text-sm">
+                Paste raw request (email, referral, brief description)
+              </label>
+              <textarea
+                value={rawText}
+                onChange={e => setRawText(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-2.5 border border-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal text-sm bg-white"
+                placeholder="Paste an email, referral note, or brief description here and let AI extract the structured fields..."
+              />
+              <button
+                type="button"
+                onClick={handleAiAssist}
+                disabled={aiLoading || !rawText.trim()}
+                className="mt-2 px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {aiLoading ? (
+                  <>
+                    <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22"/>
+                      <path d="M12 2a4 4 0 0 0-4 4c0 1.95 1.4 3.58 3.25 3.93"/>
+                      <path d="M8.56 13.68C5.49 15.19 3.2 18.05 3.2 21.6"/>
+                      <path d="M15.44 13.68c3.07 1.51 5.36 4.37 5.36 7.92"/>
+                    </svg>
+                    AI Assist — Structure This Request
+                  </>
+                )}
+              </button>
+
+              {/* AI Reasoning collapsible */}
+              {aiReasoning && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReasoning(r => !r)}
+                    className="text-teal text-xs font-body font-medium hover:underline flex items-center gap-1"
+                  >
+                    <span className={`inline-block transition-transform ${showReasoning ? 'rotate-90' : ''}`}>▶</span>
+                    AI Reasoning
+                  </button>
+                  {showReasoning && (
+                    <div className="mt-2 p-3 bg-white/80 rounded-lg border border-teal/10 text-xs text-ink/70 font-body">
+                      {aiReasoning}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {aiApplied && (
+                <p className="mt-2 text-xs text-ink/50 font-body">
+                  AI-suggested. Review before saving.
+                </p>
+              )}
+            </div>
+
             <form onSubmit={handleCreate} className="space-y-4">
               {/* Title */}
               <div>
