@@ -12,6 +12,37 @@ const URGENCY_STYLES = {
   critical: 'bg-red-500/15 text-red-400 border-red-500/30',
 };
 
+/* ── Source channel labels & styles ── */
+const SOURCE_LABELS = {
+  manual: 'Manual',
+  business_in_dubai: 'Business in Dubai',
+  expand_north_star: 'Expand North Star',
+  ignyte: 'Ignyte',
+  partner_referral: 'Partner Referral',
+  email: 'Email',
+  api: 'API',
+};
+
+const SOURCE_STYLES = {
+  manual: 'bg-gray-100 text-gray-600 border-gray-200',
+  business_in_dubai: 'bg-blue-100 text-blue-700 border-blue-200',
+  expand_north_star: 'bg-purple-100 text-purple-700 border-purple-200',
+  ignyte: 'bg-orange-100 text-orange-700 border-orange-200',
+  partner_referral: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  email: 'bg-sky-100 text-sky-700 border-sky-200',
+  api: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+};
+
+const SourceBadge = ({ source }) => {
+  const label = SOURCE_LABELS[source] || source || 'Manual';
+  const cls = SOURCE_STYLES[source] || SOURCE_STYLES.manual;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${cls}`}>
+      {label}
+    </span>
+  );
+};
+
 const UrgencyBadge = ({ urgency }) => {
   const cls = URGENCY_STYLES[urgency] || URGENCY_STYLES.medium;
   return (
@@ -22,7 +53,7 @@ const UrgencyBadge = ({ urgency }) => {
 };
 
 /* ── Status timeline ── */
-const LIFECYCLE = ['open', 'matching', 'evaluating', 'shortlisted', 'pilot', 'completed', 'closed'];
+const LIFECYCLE = ['intake', 'open', 'matching', 'evaluating', 'shortlisted', 'pilot', 'completed', 'closed'];
 
 const StatusTimeline = ({ current }) => {
   const idx = LIFECYCLE.indexOf(current);
@@ -134,6 +165,7 @@ const SourcingCases = () => {
     status: searchParams.get('status') || '',
     sector: searchParams.get('sector') || '',
     urgency: searchParams.get('urgency') || '',
+    source_channel: searchParams.get('source_channel') || '',
   });
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'created_at');
 
@@ -146,6 +178,7 @@ const SourcingCases = () => {
       if (filters.status) params.append('status', filters.status);
       if (filters.sector) params.append('sector', filters.sector);
       if (filters.urgency) params.append('urgency', filters.urgency);
+      if (filters.source_channel) params.append('source_channel', filters.source_channel);
       params.append('sort_by', sortBy);
       const res = await api.get(`/api/v1/sourcing-cases?${params.toString()}`);
       let list = res.data.sourcing_cases || [];
@@ -187,6 +220,7 @@ const SourcingCases = () => {
     if (f.status) p.set('status', f.status);
     if (f.sector) p.set('sector', f.sector);
     if (f.urgency) p.set('urgency', f.urgency);
+    if (f.source_channel) p.set('source_channel', f.source_channel);
     if (sortBy !== 'created_at') p.set('sort', sortBy);
     setSearchParams(p);
   };
@@ -316,6 +350,9 @@ const SourcingCases = () => {
               <div className="flex flex-wrap gap-2 mt-2">
                 <StatusBadge status={selectedCase.status} />
                 <UrgencyBadge urgency={selectedCase.urgency} />
+                {selectedCase.source_channel && (
+                  <SourceBadge source={selectedCase.source_channel} />
+                )}
                 {selectedCase.sector && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal/10 text-teal border border-teal/20">
                     {selectedCase.sector}
@@ -536,6 +573,16 @@ const SourcingCases = () => {
           <option value="high">High</option>
           <option value="critical">Critical</option>
         </select>
+        <select
+          value={filters.source_channel}
+          onChange={e => handleFilter('source_channel', e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+        >
+          <option value="">All Sources</option>
+          {Object.entries(SOURCE_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs text-ink/50 font-body">Sort:</span>
           <select
@@ -596,6 +643,9 @@ const SourcingCases = () => {
 
                 {/* Badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
+                  {c.source_channel && c.source_channel !== 'manual' && (
+                    <SourceBadge source={c.source_channel} />
+                  )}
                   {c.sector && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-teal/10 text-teal">
                       {c.sector}

@@ -19,14 +19,17 @@ def create_sourcing_case(
     compliance_requirements: str = None,
     assigned_analyst_id: str = None,
     created_by: str,
+    status: str = "open",
+    source_channel: str = "manual",
 ):
     """Create a new sourcing case."""
     data = {
         "title": title,
         "problem_statement": problem_statement,
         "urgency": urgency,
-        "status": "open",
+        "status": status,
         "created_by": created_by,
+        "source_channel": source_channel,
     }
     if requesting_entity:
         data["requesting_entity"] = requesting_entity
@@ -50,6 +53,7 @@ def list_sourcing_cases(
     status_filter: str = None,
     sector_filter: str = None,
     urgency_filter: str = None,
+    source_channel_filter: str = None,
     sort_by: str = "created_at",
 ):
     """List sourcing cases with optional filters."""
@@ -61,6 +65,8 @@ def list_sourcing_cases(
         query = query.eq("sector", sector_filter)
     if urgency_filter:
         query = query.eq("urgency", urgency_filter)
+    if source_channel_filter:
+        query = query.eq("source_channel", source_channel_filter)
 
     if sort_by == "urgency":
         query = query.order("urgency", desc=False).order("created_at", desc=True)

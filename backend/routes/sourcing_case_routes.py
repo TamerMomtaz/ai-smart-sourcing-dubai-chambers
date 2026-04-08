@@ -30,7 +30,7 @@ class SourcingCaseCreate(BaseModel):
 
 
 class SourcingCaseStatusUpdate(BaseModel):
-    status: str = Field(..., pattern="^(open|matching|evaluating|shortlisted|pilot|completed|closed)$")
+    status: str = Field(..., pattern="^(intake|open|matching|evaluating|shortlisted|pilot|completed|closed)$")
 
 
 class AIStructureRequest(BaseModel):
@@ -219,6 +219,7 @@ async def list_sourcing_cases(
     status_filter: Optional[str] = Query(None, alias="status"),
     sector: Optional[str] = Query(None),
     urgency: Optional[str] = Query(None),
+    source_channel: Optional[str] = Query(None),
     sort_by: Optional[str] = Query("created_at"),
     current_user: dict = Depends(get_current_user),
 ):
@@ -227,6 +228,7 @@ async def list_sourcing_cases(
         status_filter=status_filter,
         sector_filter=sector,
         urgency_filter=urgency,
+        source_channel_filter=source_channel,
         sort_by=sort_by or "created_at",
     )
     return {"sourcing_cases": cases}

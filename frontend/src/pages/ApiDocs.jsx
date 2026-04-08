@@ -92,6 +92,31 @@ const ENDPOINTS = [
     ],
   },
   {
+    category: 'Sourcing Intake (Public)',
+    endpoints: [
+      {
+        method: 'POST', path: '/api/v1/public/sourcing-intake',
+        description: 'Submit a sourcing opportunity from an external system (API-key authenticated via X-Intake-Key header)',
+        example: {
+          request: `// Header: X-Intake-Key: <your-api-key>
+{
+  "source": "partner_referral",
+  "raw_text": "We need an AI-based fraud detection platform for our trade finance operations...",
+  "contact_name": "Ahmed Al Maktoum",
+  "contact_email": "ahmed@example.ae",
+  "organization": "Dubai Trade Corp",
+  "sector_hint": "FinTech"
+}`,
+          response: `{
+  "case_id": "a1b2c3d4-...",
+  "status": "received",
+  "ai_structured": true
+}`,
+        },
+      },
+    ],
+  },
+  {
     category: 'Authentication',
     endpoints: [
       { method: 'POST', path: '/auth/v1/token?grant_type=password', description: 'Login (via Supabase)' },
@@ -231,6 +256,10 @@ export default function ApiDocs() {
             <p className="font-body text-sm text-ink/60">
               Bearer token via Supabase Auth. Include header:{' '}
               <code className="bg-ink/5 px-1.5 py-0.5 rounded text-xs font-mono">Authorization: Bearer &lt;token&gt;</code>
+            </p>
+            <p className="font-body text-sm text-ink/60 mt-1">
+              Public intake endpoint uses API key:{' '}
+              <code className="bg-ink/5 px-1.5 py-0.5 rounded text-xs font-mono">X-Intake-Key: &lt;api-key&gt;</code>
             </p>
           </div>
         </div>
