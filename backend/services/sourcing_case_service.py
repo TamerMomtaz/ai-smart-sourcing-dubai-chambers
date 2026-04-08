@@ -1,6 +1,7 @@
 """Service layer for Sourcing Case operations."""
 import logging
 from datetime import datetime, timezone
+from typing import Optional, Dict, Any
 
 from database import supabase
 
@@ -183,3 +184,91 @@ def update_sourcing_case_status(*, case_id: str, new_status: str):
         .execute()
     )
     return result.data[0] if result.data else None
+
+
+def merge_sourcing_cases(*, source_id: str, target_id: str, merged_by: str) -> Optional[Dict[str, Any]]:
+    """
+    Merge source sourcing case into target.
+    - Moves all linked proposals from source to target
+    - Moves all vendor matches from source to target
+    - Sets source status to 'closed' with merge note
+    """
+    # Verify both cases exist
+    source = (
+        supabase.table("chamber_sourcing_cases")
+        .select("id, title, status")
+        .eq("id", source_id)
+        .maybe_single()
+        .execute()
+    )
+    if not source.data:
+        return None
+
+    target = (
+        supabase.table("chamber_sourcing_cases")
+        .select("id, title, status")
+        .eq("id", target_id)
+        .maybe_single()
+        .execute()
+    )
+    if not target.data:
+        return None
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Move linked proposals from source to target
+    proposals_moved = 0
+    try:
+        proposals_result = (
+            supabase.table("chamber_proposals")
+            .select("id")
+            .eq("sourcing_case_id", source_id)
+            .execute()
+        )
+        if proposals_result.data:
+            proposals_moved = len(proposals_result.data)
+            supabase.table("chamber_proposals").update(
+                {"sourcing_case_id": target_id, "updated_at": now}
+            ).eq("sourcing_case_id", source_id).execute()
+    except Exception as e:
+        logger.warning(f"Failed to move proposals during merge: {e}")
+
+    # Move vendor matches from source to target
+    vendor_matches_moved = 0
+    try:
+        matches_result = (
+            supabase.table("chamber_vendor_matches")
+            .select("id")
+            .eq("sourcing_case_id", source_id)
+            .execute()
+        )
+        if matches_result.data:
+            vendor_matches_moved = len(matches_result.data)
+            supabase.table("chamber_vendor_matches").update(
+                {"sourcing_case_id": target_id}
+            ).eq("sourcing_case_id", source_id).execute()
+    except Exception as e:
+        logger.warning(f"Failed to move vendor matches during merge: {e}")
+
+    # Close source case with merge note
+    merge_note = f"Merged into {target_id}"
+    supabase.table("chamber_sourcing_cases").update({
+        "status": "closed",
+        "compliance_requirements": (
+            (source.data.get("compliance_requirements") or "") +
+            f"\n[MERGED] {merge_note}"
+        ).strip(),
+        "updated_at": now,
+        "closed_at": now,
+    }).eq("id", source_id).execute()
+
+    return {
+        "source_case_id": source_id,
+        "target_case_id": target_id,
+        "source_title": source.data.get("title", ""),
+        "target_title": target.data.get("title", ""),
+        "proposals_moved": proposals_moved,
+        "vendor_matches_moved": vendor_matches_moved,
+        "merged_by": merged_by,
+        "merged_at": now,
+    }

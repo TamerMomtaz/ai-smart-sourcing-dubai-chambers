@@ -165,6 +165,17 @@ const SourcingCases = () => {
   const [newStatus, setNewStatus] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
+  /* ── Duplicate check ── */
+  const [dupCheckLoading, setDupCheckLoading] = useState(false);
+  const [dupResults, setDupResults] = useState(null);
+  const [showDupModal, setShowDupModal] = useState(false);
+  const [merging, setMerging] = useState(false);
+
+  /* ── Scan duplicates (admin) ── */
+  const [scanLoading, setScanLoading] = useState(false);
+  const [scanResults, setScanResults] = useState(null);
+  const [showScanModal, setShowScanModal] = useState(false);
+
   /* ── Filters ── */
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
@@ -238,18 +249,47 @@ const SourcingCases = () => {
     setSearchParams(p);
   };
 
-  /* ── Create ── */
+  /* ── Create (with duplicate check) ── */
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.problem_statement.trim()) return;
+
+    // Step 1: Check for duplicates before creating
+    try {
+      setDupCheckLoading(true);
+      const checkRes = await api.post('/api/v1/sourcing-cases/check-duplicate', {
+        title: formData.title.trim(),
+        problem_statement: formData.problem_statement.trim(),
+        sector: formData.sector || undefined,
+        technology_domain: formData.technology_domain || undefined,
+      });
+      const dupData = checkRes.data;
+      if (dupData.duplicates_found && dupData.matches && dupData.matches.length > 0) {
+        setDupResults(dupData);
+        setShowDupModal(true);
+        setDupCheckLoading(false);
+        return; // Wait for user decision
+      }
+    } catch {
+      // If duplicate check fails, proceed with creation anyway
+    } finally {
+      setDupCheckLoading(false);
+    }
+
+    // No duplicates found — proceed with creation
+    await doCreateCase();
+  };
+
+  const doCreateCase = async () => {
     try {
       setSubmitting(true);
       const body = { ...formData };
-      // Remove empty optional fields
       Object.keys(body).forEach(k => { if (!body[k]) delete body[k]; });
       await api.post('/api/v1/sourcing-cases', body);
       setToast({ message: 'Sourcing case created successfully', type: 'success' });
       setShowCreate(false);
+      setShowDupModal(false);
+      setDupResults(null);
       setFormData({
         title: '', problem_statement: '', requesting_entity: '', sector: '',
         technology_domain: '', urgency: 'medium', compliance_requirements: '',
@@ -264,6 +304,46 @@ const SourcingCases = () => {
       setToast({ message: getErrorMessage(err), type: 'error' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  /* ── Merge with existing case ── */
+  const handleMergeWithExisting = async (targetCaseId) => {
+    // "Merge" here means: don't create the new case, just navigate to the existing one
+    setShowDupModal(false);
+    setShowCreate(false);
+    setDupResults(null);
+    setToast({ message: 'Navigated to existing case instead of creating duplicate', type: 'success' });
+    openDetail(targetCaseId);
+  };
+
+  /* ── Merge two existing cases (from scan results) ── */
+  const handleMergeCases = async (sourceId, targetId) => {
+    try {
+      setMerging(true);
+      await api.post(`/api/v1/sourcing-cases/${sourceId}/merge/${targetId}`);
+      setToast({ message: 'Cases merged successfully', type: 'success' });
+      setShowScanModal(false);
+      setScanResults(null);
+      fetchCases();
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  /* ── Scan all open cases for duplicates (admin) ── */
+  const handleScanDuplicates = async () => {
+    try {
+      setScanLoading(true);
+      const res = await api.post('/api/v1/sourcing-cases/scan-duplicates');
+      setScanResults(res.data);
+      setShowScanModal(true);
+    } catch (err) {
+      setToast({ message: getErrorMessage(err), type: 'error' });
+    } finally {
+      setScanLoading(false);
     }
   };
 
@@ -694,14 +774,38 @@ const SourcingCases = () => {
           <span className="text-teal"><BullseyeIcon size={28} /></span>
           <h1 className="font-heading text-3xl md:text-4xl text-ink">Sourcing Cases</h1>
         </div>
-        {canCreate && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors flex items-center gap-2"
-          >
-            <span className="text-lg leading-none">+</span> Create New Case
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {userRole === 'admin' && (
+            <button
+              onClick={handleScanDuplicates}
+              disabled={scanLoading}
+              className="px-4 py-2.5 bg-amber-500 text-white rounded-lg font-body text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {scanLoading ? (
+                <>
+                  <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/>
+                    <rect x="8" y="2" width="14" height="14" rx="2"/>
+                  </svg>
+                  Check Duplicates
+                </>
+              )}
+            </button>
+          )}
+          {canCreate && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-5 py-2.5 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors flex items-center gap-2"
+            >
+              <span className="text-lg leading-none">+</span> Create New Case
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter bar */}
@@ -1032,10 +1136,10 @@ const SourcingCases = () => {
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || dupCheckLoading}
                   className="flex-1 bg-teal text-white py-2.5 rounded-lg font-semibold hover:bg-teal/90 disabled:opacity-50 transition-colors"
                 >
-                  {submitting ? 'Creating...' : 'Create Case'}
+                  {dupCheckLoading ? 'Checking for duplicates...' : submitting ? 'Creating...' : 'Create Case'}
                 </button>
                 <button
                   type="button"
@@ -1046,6 +1150,157 @@ const SourcingCases = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Duplicate Check Modal ── */}
+      {showDupModal && dupResults && (
+        <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => { setShowDupModal(false); setDupResults(null); }}>
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-xl my-8" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-amber-500 text-2xl">&#9888;</span>
+              <h2 className="font-heading text-xl text-ink">Similar Case Detected</h2>
+            </div>
+            <p className="text-sm text-ink/60 font-body mb-4">
+              We found {dupResults.matches.length} existing case{dupResults.matches.length !== 1 ? 's' : ''} that may overlap with your new case.
+              {dupResults.recommendation === 'merge' && ' We recommend merging with the existing case.'}
+              {dupResults.recommendation === 'review' && ' Please review before proceeding.'}
+            </p>
+
+            <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
+              {dupResults.matches.map(m => (
+                <div key={m.case_id} className="p-4 rounded-lg border border-ink/10 bg-gray-50">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-sm font-semibold text-ink">{m.title}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        <StatusBadge status={m.status} />
+                        {m.sector && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-teal/10 text-teal">
+                            {m.sector}
+                          </span>
+                        )}
+                        {m.source_channel && (
+                          <SourceBadge source={m.source_channel} />
+                        )}
+                      </div>
+                      <p className="text-xs text-ink/50 font-body mt-2">{m.reasoning}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                        m.similarity_score >= 85 ? 'bg-red-100 text-red-700' :
+                        m.similarity_score >= 60 ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {m.similarity_score}% match
+                      </span>
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => handleMergeWithExisting(m.case_id)}
+                          className="mt-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap"
+                        >
+                          View Existing
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDupModal(false); setDupResults(null); doCreateCase(); }}
+                disabled={submitting}
+                className="flex-1 bg-teal text-white py-2.5 rounded-lg font-semibold hover:bg-teal/90 disabled:opacity-50 transition-colors text-sm"
+              >
+                {submitting ? 'Creating...' : 'Create Anyway'}
+              </button>
+              <button
+                onClick={() => { setShowDupModal(false); setDupResults(null); }}
+                className="flex-1 bg-gray-200 text-ink py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Scan Duplicates Results Modal ── */}
+      {showScanModal && scanResults && (
+        <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => { setShowScanModal(false); setScanResults(null); }}>
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-2xl my-8" onClick={e => e.stopPropagation()}>
+            <h2 className="font-heading text-xl text-ink mb-2">Duplicate Scan Results</h2>
+            <p className="text-sm text-ink/50 font-body mb-4">
+              Scanned {scanResults.total_cases_scanned} open cases. Found {scanResults.groups?.length || 0} potential duplicate group{(scanResults.groups?.length || 0) !== 1 ? 's' : ''}.
+            </p>
+
+            {(!scanResults.groups || scanResults.groups.length === 0) ? (
+              <div className="text-center py-8">
+                <span className="text-4xl">&#10003;</span>
+                <p className="text-ink/60 font-body mt-2">No duplicate cases detected.</p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {scanResults.groups.map((group, gi) => (
+                  <div key={gi} className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                        group.similarity_score >= 85 ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {group.similarity_score}% similar
+                      </span>
+                    </div>
+                    <div className="space-y-2 mb-3">
+                      {group.cases.map(c => (
+                        <div key={c.case_id} className="flex items-center justify-between p-2 bg-white rounded-lg border border-ink/5">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-body text-sm font-medium text-ink truncate">{c.title}</p>
+                            <div className="flex gap-1.5 mt-1">
+                              <StatusBadge status={c.status} />
+                              {c.sector && (
+                                <span className="text-[10px] text-ink/50">{c.sector}</span>
+                              )}
+                              {c.source_channel && (
+                                <SourceBadge source={c.source_channel} />
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => { setShowScanModal(false); setScanResults(null); openDetail(c.case_id); }}
+                            className="ml-2 text-teal text-xs hover:underline font-body whitespace-nowrap"
+                          >
+                            View
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-ink/50 font-body mb-3">{group.reasoning}</p>
+                    {group.cases.length === 2 && (
+                      <button
+                        onClick={() => handleMergeCases(group.cases[1].case_id, group.cases[0].case_id)}
+                        disabled={merging}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      >
+                        {merging ? 'Merging...' : `Merge into "${group.cases[0].title.substring(0, 40)}..."`}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 pt-4 border-t border-ink/10">
+              <button
+                onClick={() => { setShowScanModal(false); setScanResults(null); }}
+                className="w-full bg-gray-200 text-ink py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
