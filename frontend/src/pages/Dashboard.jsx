@@ -584,6 +584,82 @@ const SectorIntelligence = ({ sectors }) => {
   );
 };
 
+// --- Pipeline KPI Card ---
+const KPICard = ({ name, value, display, benchmark, unit }) => {
+  const numericValue = value != null ? Number(value) : 0;
+  const animated = useCountUp(numericValue);
+
+  const formatValue = () => {
+    if (value == null) return '—';
+    if (unit === 'usd') return `$${animated.toFixed(2)}`;
+    if (unit === 'hours') {
+      return numericValue >= 48
+        ? `${(animated / 24).toFixed(1)}d`
+        : `${animated.toFixed(1)}h`;
+    }
+    if (unit === 'percent') return `${animated.toFixed(1)}%`;
+    if (unit === 'proposals_per_day') return animated.toFixed(1);
+    return animated.toFixed(1);
+  };
+
+  const getTrend = () => {
+    if (value == null) return { icon: '→', color: 'text-gray-400' };
+    if (unit === 'hours') {
+      if (numericValue <= 24) return { icon: '↑', color: 'text-emerald-500' };
+      if (numericValue <= 48) return { icon: '→', color: 'text-amber-500' };
+      return { icon: '↓', color: 'text-red-500' };
+    }
+    if (unit === 'usd') {
+      if (numericValue <= 1) return { icon: '↑', color: 'text-emerald-500' };
+      if (numericValue <= 5) return { icon: '→', color: 'text-amber-500' };
+      return { icon: '↓', color: 'text-red-500' };
+    }
+    if (unit === 'percent') {
+      if (numericValue >= 80) return { icon: '↑', color: 'text-emerald-500' };
+      if (numericValue >= 50) return { icon: '→', color: 'text-amber-500' };
+      return { icon: '↓', color: 'text-red-500' };
+    }
+    if (numericValue >= 3) return { icon: '↑', color: 'text-emerald-500' };
+    if (numericValue >= 1) return { icon: '→', color: 'text-amber-500' };
+    return { icon: '↓', color: 'text-red-500' };
+  };
+
+  const trend = getTrend();
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+      <div className="text-xs text-ink/50 font-body mb-2 leading-tight">{name}</div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-mono font-bold text-teal">{formatValue()}</span>
+        <span className={`text-lg font-bold ${trend.color}`}>{trend.icon}</span>
+      </div>
+      {display && value != null && (
+        <div className="text-[11px] text-ink/60 mt-1 truncate" title={display}>{display}</div>
+      )}
+      <div className="text-[11px] text-ink/40 mt-1.5">{benchmark}</div>
+    </div>
+  );
+};
+
+// --- Pipeline Performance Section ---
+const PipelineKPIs = ({ kpis }) => {
+  if (!kpis || kpis.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <div className="mb-4">
+        <h2 className="font-heading text-2xl text-teal">Pipeline Performance</h2>
+        <p className="text-ink/50 text-sm mt-1">Operational KPIs for the innovation sourcing workflow</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <KPICard key={kpi.id} {...kpi} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
   const { role: userRole } = useUserRole();
@@ -598,6 +674,7 @@ const Dashboard = () => {
   const [vendorSummary, setVendorSummary] = useState(null);
   const [engagements, setEngagements] = useState(null);
   const [sectors, setSectors] = useState(null);
+  const [pipelineKpis, setPipelineKpis] = useState(null);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -636,6 +713,16 @@ const Dashboard = () => {
           setSectors(sectorsRes.data);
         } catch {
           // Non-critical
+        }
+
+        // Fetch pipeline KPIs (admin/analyst/executive only)
+        if (userRes.data?.role !== 'vendor') {
+          try {
+            const kpiRes = await api.get('/api/v1/dashboard/pipeline-kpis');
+            setPipelineKpis(kpiRes.data?.kpis || null);
+          } catch {
+            // Non-critical
+          }
         }
 
         // Fetch vendor-specific summary if vendor role
@@ -860,6 +947,9 @@ const Dashboard = () => {
             color="gold"
           />
         </div>
+
+        {/* Pipeline Performance KPIs */}
+        {!isVendor && <PipelineKPIs kpis={pipelineKpis} />}
 
         {/* Pilot & Engagement Outcomes */}
         <EngagementOutcomes data={engagements} />
