@@ -71,7 +71,8 @@ from routes import (
     compliance_gate_routes,
     gate_decision_routes,
     evaluation_override_routes,
-    pilot_routes
+    pilot_routes,
+    transparency_routes
 )
 
 # Configure logging
@@ -279,6 +280,7 @@ app.include_router(compliance_gate_routes.router, prefix="/api/v1", tags=["Compl
 app.include_router(gate_decision_routes.router, prefix="/api/v1", tags=["Gate Decisions"])
 app.include_router(evaluation_override_routes.router, prefix="/api/v1", tags=["Evaluation Overrides"])
 app.include_router(pilot_routes.router, prefix="/api/v1", tags=["Pilots"])
+app.include_router(transparency_routes.router, prefix="/api/v1", tags=["Transparency"])
 
 if __name__ == "__main__":
     import uvicorn

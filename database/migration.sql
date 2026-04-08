@@ -527,3 +527,8 @@ CREATE TRIGGER set_updated_at_chamber_comments
     BEFORE UPDATE ON chamber_comments
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Add hash chain columns for tamper-evident audit logging
+ALTER TABLE chamber_ai_interactions
+  ADD COLUMN IF NOT EXISTS integrity_hash TEXT,
+  ADD COLUMN IF NOT EXISTS previous_hash TEXT;

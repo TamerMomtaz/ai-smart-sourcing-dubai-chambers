@@ -1,7 +1,39 @@
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime, timezone
+import hashlib
+import logging
 from database import supabase
+
+logger = logging.getLogger(__name__)
+
+
+def _compute_integrity_hash(
+    previous_hash: str,
+    model_name: str,
+    operation_type: str,
+    total_tokens: int,
+    cost_usd: float,
+    timestamp: str,
+) -> str:
+    """Compute SHA-256 hash for the audit chain."""
+    content = f"{previous_hash}|{model_name}|{operation_type}|{total_tokens}|{cost_usd}|{timestamp}"
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def _get_latest_hash() -> Optional[str]:
+    """Get the integrity_hash of the most recent hashed record."""
+    response = (
+        supabase.table("chamber_ai_interactions")
+        .select("integrity_hash")
+        .not_.is_("integrity_hash", "null")
+        .order("timestamp", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if response.data and len(response.data) > 0:
+        return response.data[0].get("integrity_hash")
+    return None
 
 
 def create(
@@ -19,8 +51,22 @@ def create(
     evaluation_id: Optional[UUID] = None,
 ) -> Optional[Dict[str, Any]]:
     """
-    Create a new AI interaction log entry.
+    Create a new AI interaction log entry with hash chain integrity.
     """
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    # Build hash chain
+    prev_hash = _get_latest_hash() or "GENESIS"
+    total_tokens = prompt_tokens + completion_tokens
+    integrity_hash = _compute_integrity_hash(
+        previous_hash=prev_hash,
+        model_name=model_name,
+        operation_type=operation_type,
+        total_tokens=total_tokens,
+        cost_usd=cost_usd,
+        timestamp=timestamp,
+    )
+
     payload = {
         "session_id": str(session_id),
         "user_id": str(user_id),
@@ -33,7 +79,9 @@ def create(
         "carbon_gco2": carbon_gco2,
         "intelligence_units": intelligence_units,
         "operation_type": operation_type,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": timestamp,
+        "integrity_hash": integrity_hash,
+        "previous_hash": prev_hash,
     }
     if evaluation_id:
         payload["evaluation_id"] = str(evaluation_id)
@@ -224,3 +272,53 @@ def delete(user_id: UUID, interaction_id: UUID) -> bool:
         .execute()
     )
     return bool(response.data)
+
+
+def verify_integrity() -> Dict[str, Any]:
+    """
+    Walk the hash chain from newest to oldest and verify integrity.
+    Records without integrity_hash (pre-existing) are skipped.
+    """
+    response = (
+        supabase.table("chamber_ai_interactions")
+        .select("id, model_name, operation_type, prompt_tokens, completion_tokens, cost_usd, timestamp, integrity_hash, previous_hash")
+        .not_.is_("integrity_hash", "null")
+        .order("timestamp", desc=False)
+        .execute()
+    )
+    records = response.data if response.data else []
+    total_records = len(records)
+
+    if total_records == 0:
+        return {
+            "total_records": 0,
+            "chain_valid": True,
+            "first_broken_at": None,
+            "verification_timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+    first_broken_at = None
+
+    for i, record in enumerate(records):
+        expected_prev = records[i - 1]["integrity_hash"] if i > 0 else "GENESIS"
+        total_tokens = (record.get("prompt_tokens") or 0) + (record.get("completion_tokens") or 0)
+
+        expected_hash = _compute_integrity_hash(
+            previous_hash=expected_prev,
+            model_name=record["model_name"],
+            operation_type=record["operation_type"],
+            total_tokens=total_tokens,
+            cost_usd=record["cost_usd"],
+            timestamp=record["timestamp"],
+        )
+
+        if record["integrity_hash"] != expected_hash or record["previous_hash"] != expected_prev:
+            first_broken_at = str(record["id"])
+            break
+
+    return {
+        "total_records": total_records,
+        "chain_valid": first_broken_at is None,
+        "first_broken_at": first_broken_at,
+        "verification_timestamp": datetime.now(timezone.utc).isoformat(),
+    }
