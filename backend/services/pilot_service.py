@@ -96,14 +96,14 @@ def list_pilots(
     if vendor_ids:
         vendors_result = (
             supabase.table("chamber_vendors")
-            .select("id, company_name, name, country")
+            .select("id, name, country")
             .in_("id", vendor_ids)
             .execute()
         )
         vendor_map = {v["id"]: v for v in (vendors_result.data or [])}
         for pilot in pilots:
             vendor = vendor_map.get(pilot.get("vendor_id"), {})
-            pilot["vendor_name"] = vendor.get("company_name") or vendor.get("name", "")
+            pilot["vendor_name"] = vendor.get("name", "")
             pilot["vendor_country"] = vendor.get("country", "")
 
     return pilots
@@ -140,7 +140,7 @@ def get_pilot(*, pilot_id: str):
     if pilot.get("vendor_id"):
         vendor_result = (
             supabase.table("chamber_vendors")
-            .select("id, company_name, name, country, contact_email")
+            .select("id, name, country, contact_email")
             .eq("id", pilot["vendor_id"])
             .maybe_single()
             .execute()
