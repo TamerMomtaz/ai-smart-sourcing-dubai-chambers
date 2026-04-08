@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import { useTranslation } from '../lib/language';
+
+const SECTORS = [
+  'FinTech', 'Healthcare', 'Logistics', 'Energy', 'Education',
+  'Government', 'Tourism', 'Cybersecurity', 'AI/ML', 'Smart City',
+  'Real Estate', 'Retail', 'Manufacturing', 'Agriculture', 'Media',
+];
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -21,6 +27,12 @@ const Settings = () => {
     full_name: '',
     preferred_language: 'en'
   });
+
+  /* ── Sector Assignments (admin only) ── */
+  const [sectorAssignments, setSectorAssignments] = useState([]);
+  const [analysts, setAnalysts] = useState([]);
+  const [sectorLoading, setSectorLoading] = useState(false);
+  const [sectorSaving, setSectorSaving] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -43,6 +55,56 @@ const Settings = () => {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  /* ── Sector assignment helpers ── */
+  const fetchSectorAssignments = useCallback(async () => {
+    setSectorLoading(true);
+    try {
+      const [asnRes, analystRes] = await Promise.all([
+        api.get('/api/v1/sector-assignments'),
+        api.get('/api/v1/users?role=analyst'),
+      ]);
+      setSectorAssignments(asnRes.data.sector_assignments || []);
+      setAnalysts(analystRes.data.users || analystRes.data || []);
+    } catch {
+      // non-critical — admin section simply won't populate
+    } finally {
+      setSectorLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchSectorAssignments();
+    }
+  }, [user, fetchSectorAssignments]);
+
+  const handleSectorAssign = async (sector, assignedUserId) => {
+    setSectorSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      if (!assignedUserId) {
+        // Remove assignment — find existing and delete
+        const existing = sectorAssignments.find(a => a.sector === sector);
+        if (existing) {
+          await api.delete(`/api/v1/sector-assignments/${existing.id}`);
+        }
+      } else {
+        await api.put('/api/v1/sector-assignments', {
+          sector,
+          assigned_user_id: assignedUserId,
+        });
+      }
+      setSuccess('Sector assignment updated');
+      setTimeout(() => setSuccess(null), 3000);
+      await fetchSectorAssignments();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSectorSaving(false);
     }
   };
 
@@ -249,6 +311,45 @@ const Settings = () => {
             </div>
           </form>
         </div>
+
+        {/* Sector Assignments (admin only) */}
+        {user?.role === 'admin' && (
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 className="text-2xl font-heading font-bold text-ink mb-2">Sector Assignments</h2>
+            <p className="text-ink/60 font-body text-sm mb-4">
+              Assign analysts to sectors. New sourcing cases will be auto-assigned to the mapped analyst.
+            </p>
+            {sectorLoading ? (
+              <div className="flex justify-center py-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {SECTORS.map(sector => {
+                  const current = sectorAssignments.find(a => a.sector === sector);
+                  return (
+                    <div key={sector} className="flex items-center gap-4">
+                      <span className="w-40 font-body text-ink text-sm font-medium">{sector}</span>
+                      <select
+                        value={current?.assigned_user_id || ''}
+                        onChange={e => handleSectorAssign(sector, e.target.value)}
+                        disabled={sectorSaving}
+                        className="flex-1 px-4 py-2 border border-ink/20 rounded-lg font-body text-ink text-sm focus:outline-none focus:ring-2 focus:ring-teal disabled:opacity-50"
+                      >
+                        <option value="">Unassigned</option>
+                        {analysts.map(a => (
+                          <option key={a.id} value={a.id}>
+                            {a.full_name || a.email}{a.full_name ? ` (${a.email})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Security Section */}
         <div className="bg-white rounded-xl shadow-sm p-6">
