@@ -40,6 +40,7 @@ function Layout() {
     { name: 'How It Works', href: '/guide', icon: '💡', key: 'how-it-works' },
     { name: 'Dashboard', href: '/dashboard', icon: '📊', key: 'dashboard' },
     { name: 'Sourcing Cases', href: '/sourcing-cases', icon: '🎯', key: 'sourcing-cases' },
+    { name: 'Pilot Tracker', href: '/pilot-tracker', icon: '🧪', key: 'pilot-tracker' },
     { name: 'Proposals', href: '/proposals', icon: '📝', key: 'proposals' },
     { name: 'Vendors', href: '/vendors', icon: '🏢', key: 'vendors' },
     { name: 'Vendor Intelligence', href: '/vendor-intelligence', icon: '🛡️', key: 'vendor-intelligence' },
