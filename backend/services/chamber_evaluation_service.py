@@ -15,6 +15,8 @@ def create_evaluation(
     sector_reasoning: Optional[str] = None,
     compliance_score: Optional[float] = None,
     compliance_reasoning: Optional[str] = None,
+    novelty_score: Optional[float] = None,
+    novelty_reasoning: Optional[str] = None,
     composite_score: Optional[float] = None,
     evaluator_agent_versions: Optional[Dict[str, Any]] = None,
     hallucination_check_passed: bool = True,
@@ -34,6 +36,8 @@ def create_evaluation(
         "sector_reasoning": sector_reasoning,
         "compliance_score": compliance_score,
         "compliance_reasoning": compliance_reasoning,
+        "novelty_score": novelty_score,
+        "novelty_reasoning": novelty_reasoning,
         "composite_score": composite_score,
         "evaluated_at": datetime.now(timezone.utc).isoformat(),
         "evaluator_agent_versions": evaluator_agent_versions,
@@ -131,6 +135,8 @@ def update_evaluation(
     sector_reasoning: Optional[str] = None,
     compliance_score: Optional[float] = None,
     compliance_reasoning: Optional[str] = None,
+    novelty_score: Optional[float] = None,
+    novelty_reasoning: Optional[str] = None,
     composite_score: Optional[float] = None,
     evaluator_agent_versions: Optional[Dict[str, Any]] = None,
     hallucination_check_passed: Optional[bool] = None,
@@ -162,6 +168,10 @@ def update_evaluation(
         payload["compliance_score"] = compliance_score
     if compliance_reasoning is not None:
         payload["compliance_reasoning"] = compliance_reasoning
+    if novelty_score is not None:
+        payload["novelty_score"] = novelty_score
+    if novelty_reasoning is not None:
+        payload["novelty_reasoning"] = novelty_reasoning
     if composite_score is not None:
         payload["composite_score"] = composite_score
     if evaluator_agent_versions is not None:

@@ -799,6 +799,12 @@ const Dashboard = () => {
                     <span className="text-ink/50">Compliance</span>
                     <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.compliance_score?.toFixed(1) || '—'}</span>
                   </div>
+                  {vendorSummary.latest_evaluation.novelty_score != null && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-ink/50">Innovation Novelty</span>
+                      <span className="font-medium text-ink/70">{vendorSummary.latest_evaluation.novelty_score?.toFixed(1) || '—'}</span>
+                    </div>
+                  )}
                   {vendorSummary.latest_evaluation.proposal_id && (
                     <Link
                       to={`/proposals/${vendorSummary.latest_evaluation.proposal_id}`}

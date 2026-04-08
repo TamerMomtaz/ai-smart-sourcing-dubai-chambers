@@ -1254,6 +1254,13 @@ const ProposalDetail = () => {
               score={evaluation?.compliance_score ?? proposal.compliance_score}
               reasoning={evaluation?.compliance_reasoning}
             />
+            {(evaluation?.novelty_score ?? proposal.novelty_score) != null && (
+              <ScoreBar
+                label="Innovation Novelty"
+                score={evaluation?.novelty_score ?? proposal.novelty_score}
+                reasoning={evaluation?.novelty_reasoning}
+              />
+            )}
           </div>
         )}
 

@@ -83,6 +83,7 @@ async def update_evaluation_config(
             + weights.feasibility_weight
             + weights.sector_alignment_weight
             + weights.compliance_weight
+            + weights.novelty_weight
         )
         
         if abs(total_weight - 1.0) > 0.001:
@@ -140,6 +141,7 @@ async def update_evaluation_config(
             "feasibility_weight": weights.feasibility_weight,
             "sector_alignment_weight": weights.sector_alignment_weight,
             "compliance_weight": weights.compliance_weight,
+            "novelty_weight": weights.novelty_weight,
         }
 
         # Update business group evaluation_weight_config

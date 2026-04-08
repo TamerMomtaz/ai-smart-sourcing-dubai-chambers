@@ -160,6 +160,7 @@ const EvaluationsList = () => {
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Feasibility</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Sector</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Compliance</th>
+                  <th className="text-left p-4 text-gray-400 font-medium text-sm">Novelty</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Status</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Shield</th>
                   <th className="text-left p-4 text-gray-400 font-medium text-sm">Evaluated</th>
@@ -169,7 +170,7 @@ const EvaluationsList = () => {
               <tbody>
                 {sortedEvaluations.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="text-center p-12 text-gray-500">No evaluations found</td>
+                    <td colSpan={11} className="text-center p-12 text-gray-500">No evaluations found</td>
                   </tr>
                 ) : (
                   sortedEvaluations.map((ev) => (
@@ -184,6 +185,7 @@ const EvaluationsList = () => {
                       <td className="p-4"><ScoreBadge score={ev.feasibility_score} /></td>
                       <td className="p-4"><ScoreBadge score={ev.sector_alignment_score} /></td>
                       <td className="p-4"><ScoreBadge score={ev.compliance_score} /></td>
+                      <td className="p-4"><ScoreBadge score={ev.novelty_score} /></td>
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[ev.proposal_status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
                           {ev.proposal_status?.replace(/_/g, ' ') || '—'}

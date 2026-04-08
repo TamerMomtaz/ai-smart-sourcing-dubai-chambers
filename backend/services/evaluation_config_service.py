@@ -53,7 +53,8 @@ def update_evaluation_config(
         evaluation_weight_config.get("relevance_weight", 0) +
         evaluation_weight_config.get("feasibility_weight", 0) +
         evaluation_weight_config.get("sector_alignment_weight", 0) +
-        evaluation_weight_config.get("compliance_weight", 0)
+        evaluation_weight_config.get("compliance_weight", 0) +
+        evaluation_weight_config.get("novelty_weight", 0)
     )
     
     if abs(weights_sum - 1.0) > 0.0001:
