@@ -280,3 +280,90 @@
 @media print {
   .mobile-header { display: none !important; }
 }
+
+/* ─── RTL (Arabic) support ─── */
+[dir="rtl"] {
+  font-family: 'Segoe UI', 'Arabic UI Display', 'Geeza Pro', Tahoma, var(--font-body);
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  font-family: 'Segoe UI', 'Arabic UI Display', 'Geeza Pro', Tahoma, var(--font-heading);
+}
+
+/* Sidebar: flip to right side */
+[dir="rtl"] aside {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] aside.-translate-x-full {
+  transform: translateX(100%);
+}
+
+[dir="rtl"] aside.translate-x-0 {
+  transform: translateX(0);
+}
+
+@media (min-width: 768px) {
+  [dir="rtl"] aside {
+    transform: translateX(0);
+  }
+}
+
+/* Main content offset flips */
+[dir="rtl"] .md\:pl-64 {
+  padding-left: 0;
+}
+
+@media (min-width: 768px) {
+  [dir="rtl"] .md\:pl-64 {
+    padding-left: 0;
+    padding-right: 16rem;
+  }
+}
+
+/* Flip icon spacing in nav items */
+[dir="rtl"] .mr-3 {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
+/* Flip margin on checkbox labels */
+[dir="rtl"] .ml-3 {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+/* Sidebar highlight border flips */
+[dir="rtl"] .sidebar-highlight {
+  border-left: none !important;
+  border-right: 3px solid var(--color-accent) !important;
+}
+
+/* Sidebar highlight tooltip flips */
+[dir="rtl"] .sidebar-highlight-tooltip {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+/* Text alignment for RTL */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Flip negative margin on mobile menu button */
+[dir="rtl"] .-ml-2 {
+  margin-left: 0;
+  margin-right: -0.5rem;
+}

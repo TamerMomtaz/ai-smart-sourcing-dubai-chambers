@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
+import { LanguageProvider } from './lib/language';
 import { UserRoleProvider } from './lib/userRole';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -88,6 +89,7 @@ const ApiDocsStandalone = () => {
 
 function App() {
   return (
+    <LanguageProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -140,6 +142,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </LanguageProvider>
   );
 }
 
