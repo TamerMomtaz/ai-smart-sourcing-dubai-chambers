@@ -74,7 +74,8 @@ from routes import (
     pilot_routes,
     transparency_routes,
     audit_pack_routes,
-    pipeline_kpi_routes
+    pipeline_kpi_routes,
+    compliance_knowledge_routes
 )
 
 # Configure logging
@@ -285,6 +286,7 @@ app.include_router(pilot_routes.router, prefix="/api/v1", tags=["Pilots"])
 app.include_router(transparency_routes.router, prefix="/api/v1", tags=["Transparency"])
 app.include_router(audit_pack_routes.router, prefix="/api/v1", tags=["Audit Evidence Pack"])
 app.include_router(pipeline_kpi_routes.router, prefix="/api/v1", tags=["Dashboard Pipeline KPIs"])
+app.include_router(compliance_knowledge_routes.router, prefix="/api/v1", tags=["Compliance Knowledge Base"])
 
 if __name__ == "__main__":
     import uvicorn
