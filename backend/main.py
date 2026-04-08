@@ -83,7 +83,8 @@ from routes import (
     model_inventory_routes,
     sector_assignment_routes,
     vendor_matching_routes,
-    case_deduplication_routes
+    case_deduplication_routes,
+    factsheet_routes
 )
 
 # Configure logging
@@ -246,6 +247,7 @@ app.include_router(chamber_proposal_routes.router, prefix="/api/v1", tags=["Cham
 app.include_router(chamber_trend_analyses_routes.router, prefix="/api/v1", tags=["Chamber Trend Analyses"])
 app.include_router(chamber_users_routes.router, prefix="/api/v1", tags=["Chamber Users"])
 app.include_router(chamber_vendor_profiles_routes.router, prefix="/api/v1", tags=["Chamber Vendor Profiles"])
+app.include_router(factsheet_routes.router, prefix="/api/v1", tags=["Vendor Factsheets"])  # /vendors/{id}/factsheet BEFORE /{vendor_id} catch-all
 app.include_router(vendor_intelligence_routes.router, prefix="/api/v1", tags=["Vendor Intelligence"])  # /vendors/intelligence BEFORE /{vendor_id} catch-all
 app.include_router(chamber_vendors_routes.router, prefix="/api/v1", tags=["Chamber Vendors"])
 app.include_router(comment_routes.router, prefix="/api/v1", tags=["Comments"])

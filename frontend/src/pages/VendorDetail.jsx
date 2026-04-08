@@ -227,12 +227,22 @@ const VendorDetail = () => {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h1 className="font-heading text-3xl md:text-4xl text-ink">{vendor.name}</h1>
-          <button
-            onClick={() => navigate('/vendors')}
-            className="text-teal hover:underline font-body"
-          >
-            ← Back to Vendors
-          </button>
+          <div className="flex items-center gap-3">
+            {(currentUser?.role === 'admin' || currentUser?.role === 'analyst') && (
+              <button
+                onClick={() => navigate(`/vendors/${id}/factsheet`)}
+                className="px-4 py-2 bg-teal text-white rounded-lg font-body text-sm font-semibold hover:bg-teal/90 transition-colors"
+              >
+                Generate Factsheet
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/vendors')}
+              className="text-teal hover:underline font-body"
+            >
+              ← Back to Vendors
+            </button>
+          </div>
         </div>
 
         {/* vScore Dossier Section */}
