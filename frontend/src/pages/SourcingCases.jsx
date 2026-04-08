@@ -12,6 +12,24 @@ const URGENCY_STYLES = {
   critical: 'bg-red-500/15 text-red-400 border-red-500/30',
 };
 
+/* ── Compliance tier config ── */
+const COMPLIANCE_TIERS = {
+  open: { label: 'Open', desc: 'Any vendor eligible, no compliance requirements', color: 'bg-gray-500/15 text-gray-500 border-gray-500/30' },
+  standard: { label: 'Standard', desc: 'DESC certification preferred', color: 'bg-blue-500/15 text-blue-500 border-blue-500/30' },
+  government: { label: 'Government', desc: 'DESC certification required', color: 'bg-amber-500/15 text-amber-500 border-amber-500/30' },
+  critical: { label: 'Critical', desc: 'DESC + ISO 27001 + UAE residency required', color: 'bg-red-500/15 text-red-500 border-red-500/30' },
+};
+
+const ComplianceTierBadge = ({ tier, size = 'sm' }) => {
+  const cfg = COMPLIANCE_TIERS[tier] || COMPLIANCE_TIERS.standard;
+  const sizeClasses = size === 'xs' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs';
+  return (
+    <span className={`inline-flex items-center ${sizeClasses} rounded-full font-medium border ${cfg.color}`}>
+      {cfg.label}
+    </span>
+  );
+};
+
 /* ── Source channel labels & styles ── */
 const SOURCE_LABELS = {
   manual: 'Manual',
@@ -135,6 +153,7 @@ const SourcingCases = () => {
   const [discoveredVendors, setDiscoveredVendors] = useState([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
   const [matchFilter, setMatchFilter] = useState('all');
+  const [matchComplianceTier, setMatchComplianceTier] = useState('standard');
 
   /* ── Create modal ── */
   const [showCreate, setShowCreate] = useState(false);
@@ -155,6 +174,7 @@ const SourcingCases = () => {
     sector: '',
     technology_domain: '',
     urgency: 'medium',
+    compliance_tier: 'standard',
     compliance_requirements: '',
     assigned_analyst_id: '',
     business_group_id: '',
@@ -292,8 +312,8 @@ const SourcingCases = () => {
       setDupResults(null);
       setFormData({
         title: '', problem_statement: '', requesting_entity: '', sector: '',
-        technology_domain: '', urgency: 'medium', compliance_requirements: '',
-        assigned_analyst_id: '', business_group_id: '',
+        technology_domain: '', urgency: 'medium', compliance_tier: 'standard',
+        compliance_requirements: '', assigned_analyst_id: '', business_group_id: '',
       });
       setRawText('');
       setAiReasoning('');
@@ -414,6 +434,7 @@ const SourcingCases = () => {
     try {
       const res = await api.get(`/api/v1/sourcing-cases/${caseId}/matched-vendors`);
       setDiscoveredVendors(res.data.matched_vendors || []);
+      setMatchComplianceTier(res.data.compliance_tier || 'standard');
     } catch {
       // not critical — may not have matches yet
       setDiscoveredVendors([]);
@@ -427,6 +448,7 @@ const SourcingCases = () => {
       setDiscoverLoading(true);
       const res = await api.post(`/api/v1/sourcing-cases/${selectedCase.id}/discover-vendors`);
       setDiscoveredVendors(res.data.matched_vendors || []);
+      if (res.data.compliance_tier) setMatchComplianceTier(res.data.compliance_tier);
       setToast({ message: `Discovered ${res.data.count || 0} matching vendors`, type: 'success' });
     } catch (err) {
       setToast({ message: getErrorMessage(err), type: 'error' });
@@ -473,6 +495,7 @@ const SourcingCases = () => {
               <div className="flex flex-wrap gap-2 mt-2">
                 <StatusBadge status={selectedCase.status} />
                 <UrgencyBadge urgency={selectedCase.urgency} />
+                <ComplianceTierBadge tier={selectedCase.compliance_tier || 'standard'} />
                 {selectedCase.source_channel && (
                   <SourceBadge source={selectedCase.source_channel} />
                 )}
@@ -710,6 +733,12 @@ const SourcingCases = () => {
                       {m.match_reasoning && (
                         <p className="text-xs text-ink/60 font-body">{m.match_reasoning}</p>
                       )}
+                      {/* Tier compliance warning */}
+                      {(matchComplianceTier === 'government' || matchComplianceTier === 'critical') && m.meets_tier === false && (
+                        <div className="mt-1.5 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-1.5">
+                          <span className="text-red-600 text-xs font-semibold">&#9888; Does not meet compliance tier requirements</span>
+                        </div>
+                      )}
                     </div>
                     {/* Invite button */}
                     {canCreate && m.status === 'suggested' && (
@@ -927,6 +956,7 @@ const SourcingCases = () => {
                     </span>
                   )}
                   <UrgencyBadge urgency={c.urgency} />
+                  <ComplianceTierBadge tier={c.compliance_tier || 'standard'} size="xs" />
                   <StatusBadge status={c.status} />
                 </div>
 
@@ -1103,6 +1133,26 @@ const SourcingCases = () => {
                     <option value="critical">Critical</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Compliance Tier */}
+              <div>
+                <label className="block text-ink font-body font-semibold mb-1 text-sm">Compliance Tier</label>
+                <select
+                  value={formData.compliance_tier}
+                  onChange={e => setFormData(f => ({ ...f, compliance_tier: e.target.value }))}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal text-sm"
+                >
+                  {Object.entries(COMPLIANCE_TIERS).map(([key, cfg]) => (
+                    <option key={key} value={key}>{cfg.label} — {cfg.desc}</option>
+                  ))}
+                </select>
+                {formData.compliance_tier && (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <ComplianceTierBadge tier={formData.compliance_tier} />
+                    <span className="text-xs text-ink/50 font-body">{COMPLIANCE_TIERS[formData.compliance_tier]?.desc}</span>
+                  </div>
+                )}
               </div>
 
               {/* Compliance */}

@@ -75,7 +75,12 @@ async def get_matched_vendors(
             },
         )
 
-    return {"matched_vendors": result, "count": len(result)}
+    matches = result["matches"]
+    return {
+        "matched_vendors": matches,
+        "count": len(matches),
+        "compliance_tier": result.get("compliance_tier", "standard"),
+    }
 
 
 class MatchStatusUpdate(BaseModel):

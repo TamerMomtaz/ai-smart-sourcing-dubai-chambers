@@ -54,14 +54,26 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
         return None  # signals 404
 
     case = case_result.data
+    compliance_tier = case.get("compliance_tier", "standard")
 
     # 2. Query candidate vendors
     vendor_query = supabase.table("chamber_vendors").select(
-        "id, company_name, country, email, sector, vscore, desc_certified"
+        "id, company_name, country, email, sector, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency"
     )
 
     # Apply vScore threshold
     vendor_query = vendor_query.gte("vscore", 500)
+
+    # Apply tier-based compliance filters
+    if compliance_tier == "government":
+        # ONLY DESC-certified vendors
+        vendor_query = vendor_query.eq("is_desc_approved", True)
+    elif compliance_tier == "critical":
+        # DESC-certified + ISO 27001 + UAE data residency
+        vendor_query = vendor_query.eq("is_desc_approved", True)
+        vendor_query = vendor_query.eq("iso_27001_certified", True)
+        vendor_query = vendor_query.eq("uae_data_residency", True)
+    # 'open' and 'standard' have no hard filters at the query level
 
     # Limit to a reasonable candidate pool
     vendor_query = vendor_query.order("vscore", desc=True).limit(50)
@@ -106,9 +118,21 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
             "sector": v.get("sector"),
             "vscore": v.get("vscore"),
             "desc_certified": v.get("desc_certified", False),
+            "is_desc_approved": v.get("is_desc_approved", False),
+            "iso_27001_certified": v.get("iso_27001_certified", False),
+            "uae_data_residency": v.get("uae_data_residency", False),
             "past_proposals": proposal_descriptions or "No prior proposals",
             "avg_evaluation_score": avg_score,
         })
+
+    # For 'standard' tier, prefer DESC-certified vendors (soft preference via AI prompt)
+    tier_instruction = ""
+    if compliance_tier == "standard":
+        tier_instruction = "Compliance tier is 'standard': prefer DESC-certified vendors but allow non-certified ones with lower scores."
+    elif compliance_tier == "government":
+        tier_instruction = "Compliance tier is 'government': only DESC-certified vendors are eligible. Reject any non-certified vendor."
+    elif compliance_tier == "critical":
+        tier_instruction = "Compliance tier is 'critical': only vendors with DESC certification, ISO 27001, AND UAE data residency are eligible."
 
     # 4. Call AI to rank
     user_prompt = json.dumps({
@@ -118,6 +142,8 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
             "sector": case.get("sector"),
             "technology_domain": case.get("technology_domain"),
             "compliance_requirements": case.get("compliance_requirements"),
+            "compliance_tier": compliance_tier,
+            "tier_instruction": tier_instruction,
         },
         "candidate_vendors": vendor_summaries,
     }, indent=2)
@@ -219,18 +245,20 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
     return stored_matches
 
 
-def get_matched_vendors(*, case_id: str) -> Optional[List[Dict[str, Any]]]:
+def get_matched_vendors(*, case_id: str) -> Optional[Dict[str, Any]]:
     """Return cached vendor matches for a sourcing case, enriched with vendor info."""
-    # Verify case exists
+    # Verify case exists and get compliance_tier
     case_check = (
         supabase.table("chamber_sourcing_cases")
-        .select("id")
+        .select("id, compliance_tier")
         .eq("id", case_id)
         .maybe_single()
         .execute()
     )
     if not case_check.data:
         return None  # signals 404
+
+    compliance_tier = case_check.data.get("compliance_tier", "standard")
 
     matches_result = (
         supabase.table("chamber_vendor_matches")
@@ -248,7 +276,7 @@ def get_matched_vendors(*, case_id: str) -> Optional[List[Dict[str, Any]]]:
     vendor_ids = list({m["vendor_id"] for m in matches})
     vendors_result = (
         supabase.table("chamber_vendors")
-        .select("id, company_name, country, email, vscore, desc_certified")
+        .select("id, company_name, country, email, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency")
         .in_("id", vendor_ids)
         .execute()
     )
@@ -276,10 +304,33 @@ def get_matched_vendors(*, case_id: str) -> Optional[List[Dict[str, Any]]]:
         match["vendor_country"] = vendor.get("country")
         match["vendor_vscore"] = vendor.get("vscore")
         match["vendor_desc_certified"] = vendor.get("desc_certified", False)
+        match["vendor_is_desc_approved"] = vendor.get("is_desc_approved", False)
+        match["vendor_iso_27001_certified"] = vendor.get("iso_27001_certified", False)
+        match["vendor_uae_data_residency"] = vendor.get("uae_data_residency", False)
         vscores = scores_by_vendor.get(match.get("vendor_id"), [])
         match["avg_evaluation_score"] = round(sum(vscores) / len(vscores), 1) if vscores else None
 
-    return matches
+        # Compute whether vendor meets the compliance tier requirements
+        match["meets_tier"] = _vendor_meets_tier(vendor=vendor, tier=compliance_tier)
+
+    return {"matches": matches, "compliance_tier": compliance_tier}
+
+
+def _vendor_meets_tier(*, vendor: Dict[str, Any], tier: str) -> bool:
+    """Check if a vendor meets the compliance tier requirements."""
+    if tier == "open":
+        return True
+    if tier == "standard":
+        return True  # all vendors allowed, DESC just preferred
+    if tier == "government":
+        return bool(vendor.get("is_desc_approved"))
+    if tier == "critical":
+        return (
+            bool(vendor.get("is_desc_approved"))
+            and bool(vendor.get("iso_27001_certified"))
+            and bool(vendor.get("uae_data_residency"))
+        )
+    return True
 
 
 def update_match_status(*, match_id: str, new_status: str) -> Optional[Dict[str, Any]]:
