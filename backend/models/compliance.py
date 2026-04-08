@@ -65,3 +65,20 @@ class CertifiedProviderVerifyResponse(BaseModel):
     vendor_id: UUID = Field(..., description="Vendor UUID")
     is_certified: bool = Field(..., description="Certification status")
     certification_details: Optional[CertificationDetails] = Field(None, description="Certification details")
+
+
+class ClaimVerifyRequest(BaseModel):
+    claim: str = Field(..., description="The compliance claim to verify against the knowledge base")
+
+
+class ClaimVerifyResponse(BaseModel):
+    claim: str = Field(..., description="The original claim")
+    status: Literal["verified", "unverified", "partial"] = Field(..., description="Verification status")
+    confidence: float = Field(..., description="Confidence score 0-1")
+    reasoning: str = Field(..., description="AI reasoning for the verdict")
+    sources: List[Dict[str, Any]] = Field(default_factory=list, description="Supporting knowledge base sources")
+
+
+class KnowledgeSeedResponse(BaseModel):
+    documents_seeded: int = Field(..., description="Number of document chunks seeded")
+    sources: List[str] = Field(default_factory=list, description="Sources that were seeded")

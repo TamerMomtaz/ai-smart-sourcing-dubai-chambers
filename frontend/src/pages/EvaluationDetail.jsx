@@ -126,12 +126,80 @@ const DescPill = ({ label, status }) => {
   );
 };
 
+const RagVerificationBadge = ({ ragResult, loading: ragLoading, onVerify }) => {
+  if (ragLoading) {
+    return (
+      <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 flex items-center gap-3">
+        <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full" />
+        <span className="text-gray-400 text-sm">Verifying against official records...</span>
+      </div>
+    );
+  }
+
+  if (!ragResult) {
+    return (
+      <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium">Source-Grounded Verification</span>
+            <span className="text-gray-600 text-xs">(RAG)</span>
+          </div>
+          <button
+            onClick={onVerify}
+            className="text-xs px-3 py-1.5 rounded-lg border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
+          >
+            Verify against official records
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isVerified = ragResult.status === 'verified';
+  const isPartial = ragResult.status === 'partial';
+  const statusConfig = {
+    verified: { icon: '\u2713', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', label: '\u2713 Verified against official records' },
+    partial: { icon: '\u26A0', bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30', label: '\u26A0 Partially verified — some claims lack documentation' },
+    unverified: { icon: '\u26A0', bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30', label: '\u26A0 No supporting documentation found' },
+  };
+  const config = statusConfig[ragResult.status] || statusConfig.unverified;
+
+  return (
+    <div className={`${config.bg} rounded-lg p-4 border ${config.border}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`${config.text} font-bold text-sm`}>{config.label}</span>
+        </div>
+        <span className={`${config.text} font-bold text-sm`} style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+          {(ragResult.confidence * 100).toFixed(0)}% confidence
+        </span>
+      </div>
+      <p className="text-gray-400 text-xs mb-2">{ragResult.reasoning}</p>
+      {ragResult.sources && ragResult.sources.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-gray-700/30">
+          <span className="text-gray-500 text-xs font-medium">Sources cited:</span>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {ragResult.sources.map((src, idx) => (
+              <span key={idx} className="text-xs px-2 py-0.5 rounded bg-gray-700/50 text-gray-400">
+                {src.source.replace(/_/g, ' ')}
+                {src.similarity ? ` (${(src.similarity * 100).toFixed(0)}% match)` : ''}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => {
   const [shieldData, setShieldData] = useState(initialData || null);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
   const [claimsExpanded, setClaimsExpanded] = useState(false);
+  const [ragResult, setRagResult] = useState(null);
+  const [ragLoading, setRagLoading] = useState(false);
 
   useEffect(() => {
     if (!initialData && evaluationId) {
@@ -164,6 +232,36 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
       setError(getErrorMessage(err));
     } finally {
       setVerifying(false);
+    }
+  };
+
+  const handleRagVerify = async () => {
+    if (!shieldData) return;
+    try {
+      setRagLoading(true);
+      // Build a summary claim from the shield data for RAG verification
+      const claimSummary = (Array.isArray(shieldData.claims_detail)
+        ? shieldData.claims_detail
+        : typeof shieldData.claims_detail === 'string'
+          ? JSON.parse(shieldData.claims_detail)
+          : []
+      )
+        .filter(c => c.classification === 'grounded' || c.classification === 'partial')
+        .map(c => c.claim)
+        .slice(0, 3)
+        .join('. ');
+      const claim = claimSummary || 'Vendor claims DESC certification and ISO 27001 compliance';
+      const { data } = await api.post('/api/v1/compliance/verify-claim', { claim });
+      setRagResult(data);
+    } catch (err) {
+      setRagResult({
+        status: 'unverified',
+        confidence: 0,
+        reasoning: getErrorMessage(err) || 'RAG verification unavailable. Knowledge base may need seeding.',
+        sources: [],
+      });
+    } finally {
+      setRagLoading(false);
     }
   };
 
@@ -351,6 +449,43 @@ const HallucinationShieldPanel = ({ evaluationId, shieldData: initialData }) => 
           )}
         </div>
       )}
+
+      {/* Verification layers summary */}
+      <div className="px-6 pb-4">
+        <h4 className="text-gray-300 font-medium text-sm mb-3">Verification Layers</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          {/* Layer 1: Cross-model (existing) */}
+          <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-xs font-medium">Cross-Model AI Check</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-emerald-400 text-xs font-bold">G</span>
+                <span className="text-amber-400 text-xs font-bold">P</span>
+                <span className="text-red-400 text-xs font-bold">U</span>
+                <span className="text-gray-500 text-xs ml-1">
+                  {shieldData.grounded_claims}/{shieldData.total_claims} grounded
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* Layer 2: Source-grounded RAG */}
+          <div className="bg-[var(--color-table-header-bg)] rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-xs font-medium">Source-Grounded (RAG)</span>
+              {ragResult ? (
+                <span className={`text-xs font-bold ${ragResult.status === 'verified' ? 'text-emerald-400' : ragResult.status === 'partial' ? 'text-amber-400' : 'text-red-400'}`}>
+                  {ragResult.status === 'verified' ? '\u2713 Verified' : ragResult.status === 'partial' ? '\u26A0 Partial' : '\u26A0 Unverified'}
+                </span>
+              ) : (
+                <span className="text-gray-600 text-xs">Not checked</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* RAG verification detail */}
+        <RagVerificationBadge ragResult={ragResult} loading={ragLoading} onVerify={handleRagVerify} />
+      </div>
 
       {/* DESC compliance pills */}
       <div className="px-6 pb-4">
