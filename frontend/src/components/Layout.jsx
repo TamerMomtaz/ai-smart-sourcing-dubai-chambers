@@ -54,6 +54,7 @@ function Layout() {
     { name: t('nav.business_groups'), href: '/business-groups', icon: '🏛️', key: 'business-groups' },
     { name: t('nav.trend_analyses'), href: '/trend-analyses', icon: '📈', key: 'trend-analyses' },
     { name: t('nav.ai_transparency'), href: '/ai-interactions', icon: '🔬', key: 'ai-interactions' },
+    { name: t('nav.model_inventory'), href: '/model-inventory', icon: '🤖', key: 'model-inventory' },
     { name: t('nav.users'), href: '/users', icon: '👥', key: 'users' },
     { name: t('nav.board_brief'), href: '/board-brief', icon: '📄', key: 'board-brief' },
     { name: t('nav.api_docs'), href: '/api-reference', icon: '🔗', key: 'api-docs' },

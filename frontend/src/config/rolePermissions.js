@@ -3,7 +3,7 @@ export const ROLE_SIDEBAR_ITEMS = {
     'how-it-works', 'dashboard', 'sourcing-cases', 'pilot-tracker', 'proposals', 'vendors',
     'vendor-intelligence', 'evaluations', 'compare',
     'compliance-audits', 'documents', 'business-groups',
-    'trend-analyses', 'ai-interactions', 'api-docs', 'users'
+    'trend-analyses', 'ai-interactions', 'model-inventory', 'api-docs', 'users'
   ],
   analyst: [
     'how-it-works', 'dashboard', 'sourcing-cases', 'pilot-tracker', 'proposals', 'evaluations',
@@ -11,7 +11,7 @@ export const ROLE_SIDEBAR_ITEMS = {
   ],
   compliance_officer: [
     'how-it-works', 'dashboard', 'sourcing-cases', 'pilot-tracker', 'compliance-audits', 'evaluations',
-    'vendors', 'vendor-intelligence', 'ai-interactions', 'documents'
+    'vendors', 'vendor-intelligence', 'ai-interactions', 'model-inventory', 'documents'
   ],
   vendor: [
     'how-it-works', 'dashboard', 'proposals', 'documents',
@@ -51,6 +51,7 @@ export const ROUTE_TO_KEY = {
   '/business-groups': 'business-groups',
   '/trend-analyses': 'trend-analyses',
   '/ai-interactions': 'ai-interactions',
+  '/model-inventory': 'model-inventory',
   '/users': 'users',
   '/pilot-tracker': 'pilot-tracker',
   '/board-brief': 'board-brief',

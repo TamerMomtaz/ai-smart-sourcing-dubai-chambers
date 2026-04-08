@@ -39,6 +39,7 @@ import ApiDocs from './pages/ApiDocs';
 import SourcingCases from './pages/SourcingCases';
 import PilotTracker from './pages/PilotTracker';
 import VendorOnboard from './pages/VendorOnboard';
+import ModelInventory from './pages/ModelInventory';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -130,6 +131,7 @@ function App() {
             <Route path="compliance-audits/:id/edit" element={<ComplianceAuditForm />} />
             <Route path="trend-analyses" element={<TrendAnalysesList />} />
             <Route path="ai-interactions" element={<AIInteractionsList />} />
+            <Route path="model-inventory" element={<ModelInventory />} />
             <Route path="comments" element={<CommentsList />} />
             <Route path="documents" element={<DocumentsList />} />
             <Route path="documents/:id" element={<DocumentDetail />} />

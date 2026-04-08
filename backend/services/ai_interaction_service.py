@@ -274,6 +274,53 @@ def delete(user_id: UUID, interaction_id: UUID) -> bool:
     return bool(response.data)
 
 
+def get_model_inventory() -> List[Dict[str, Any]]:
+    """
+    Aggregate per-model stats from chamber_ai_interactions for the
+    AI Model Inventory page.  Returns one dict per model_name with:
+    model_name, total_calls, total_cost, total_tokens, avg_latency,
+    last_used, first_used.
+    """
+    response = (
+        supabase.table("chamber_ai_interactions")
+        .select("model_name, prompt_tokens, completion_tokens, cost_usd, latency_ms, timestamp")
+        .order("timestamp", desc=True)
+        .execute()
+    )
+    rows = response.data if response.data else []
+
+    models: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        name = row["model_name"]
+        if name not in models:
+            models[name] = {
+                "model_name": name,
+                "total_calls": 0,
+                "total_cost": 0.0,
+                "total_tokens": 0,
+                "latencies": [],
+                "last_used": row["timestamp"],
+                "first_used": row["timestamp"],
+            }
+        m = models[name]
+        m["total_calls"] += 1
+        m["total_cost"] += float(row["cost_usd"] or 0)
+        m["total_tokens"] += (row["prompt_tokens"] or 0) + (row["completion_tokens"] or 0)
+        m["latencies"].append(row["latency_ms"] or 0)
+        # rows are ordered desc, so first_used keeps getting overwritten to the oldest
+        m["first_used"] = row["timestamp"]
+
+    inventory = []
+    for m in models.values():
+        lats = m.pop("latencies")
+        m["avg_latency"] = round(sum(lats) / len(lats), 1) if lats else 0.0
+        inventory.append(m)
+
+    # Sort by total_calls descending
+    inventory.sort(key=lambda x: x["total_calls"], reverse=True)
+    return inventory
+
+
 def verify_integrity() -> Dict[str, Any]:
     """
     Walk the hash chain from newest to oldest and verify integrity.
