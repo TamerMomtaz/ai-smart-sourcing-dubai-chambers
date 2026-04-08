@@ -11,6 +11,7 @@ from auth import get_current_user
 from database import supabase
 from config import DOCUMENT_STORAGE_BUCKET
 from services.ai_provider import ai_complete
+from services.document_sanitization_service import sanitize_proposal_content
 
 logger = logging.getLogger(__name__)
 
@@ -429,6 +430,19 @@ async def confirm_ingestion(
         }).eq("id", str(vendor_id_for_proposal)).execute()
     except Exception as inc_err:
         logger.warning(f"Failed to increment submission count: {inc_err}")
+
+    # Run document sanitization on extracted text and/or description
+    try:
+        text_to_sanitize = payload.get("extracted_text", "") or description or ""
+        if text_to_sanitize.strip():
+            sanitize_proposal_content(
+                proposal_id=str(proposal["id"]),
+                raw_text=text_to_sanitize,
+                user_id=str(user_id),
+                source="ingest",
+            )
+    except Exception as san_err:
+        logger.warning(f"Document sanitization failed (non-blocking): {san_err}")
 
     return {
         "proposal": proposal,

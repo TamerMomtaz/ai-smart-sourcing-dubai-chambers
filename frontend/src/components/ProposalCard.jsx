@@ -16,6 +16,19 @@ const DESCShieldMini = () => (
   </span>
 );
 
+const SecurityFlagShield = () => (
+  <span className="group relative inline-flex items-center ml-1.5" title="Content security flags detected">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#F59E0B" fillOpacity="0.15" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 9v4M12 17h.01" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+      Content security flags detected &mdash; review recommended
+      <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+    </span>
+  </span>
+);
+
 const ProposalCard = ({ proposal }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -34,6 +47,7 @@ const ProposalCard = ({ proposal }) => {
             <h3 className="text-xl font-heading font-bold text-ink mb-2 line-clamp-2">
               {proposal.title}
               {proposal.vendor_desc_certified && <DESCShieldMini />}
+              {proposal.content_flags && <SecurityFlagShield />}
             </h3>
             <div className="flex flex-wrap gap-2 mb-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-body font-medium bg-teal/10 text-teal">

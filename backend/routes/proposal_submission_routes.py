@@ -11,6 +11,7 @@ from auth import get_current_user
 from database import supabase
 from services.evaluation_engine import EvaluationEngine
 from services.hallucination_service import HallucinationShield
+from services.document_sanitization_service import sanitize_proposal_content
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,21 @@ async def create_proposal(
         except Exception as inc_err:
             logger.warning(f"Failed to increment submission count for vendor {user_id}: {inc_err}")
 
-        return result.data[0]
+        # Run sanitization on description text (non-blocking)
+        created_proposal = result.data[0]
+        try:
+            desc_text = payload.description.strip() if payload.description else ""
+            if desc_text:
+                sanitize_proposal_content(
+                    proposal_id=str(created_proposal["id"]),
+                    raw_text=desc_text,
+                    user_id=str(user_id),
+                    source="description",
+                )
+        except Exception as san_err:
+            logger.warning(f"Proposal sanitization failed (non-blocking): {san_err}")
+
+        return created_proposal
 
     except HTTPException:
         raise
@@ -171,7 +186,7 @@ async def list_proposals(
         offset = (page - 1) * page_size
 
         query = supabase.table("chamber_proposals").select(
-            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, language, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, is_duplicate, requires_manual_review, business_group_id, description",
+            "id, title, submitter_id, submission_date, status, sector, technology_type, maturity_level, language, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, is_duplicate, requires_manual_review, business_group_id, description, content_flags",
             count="exact",
         )
 
@@ -509,12 +524,14 @@ async def trigger_ai_evaluation(
             # Get proposal text (description + all uploaded document texts)
             proposal_for_shield = (
                 supabase.table("chamber_proposals")
-                .select("description")
+                .select("description, sanitized_text")
                 .eq("id", str(proposal_id))
                 .maybe_single()
                 .execute()
             )
-            proposal_text = (proposal_for_shield.data or {}).get("description", "") or ""
+            shield_data = proposal_for_shield.data or {}
+            # Prefer sanitized_text over raw description for AI processing
+            proposal_text = shield_data.get("sanitized_text") or shield_data.get("description", "") or ""
 
             # Append extracted text from all uploaded documents
             try:
