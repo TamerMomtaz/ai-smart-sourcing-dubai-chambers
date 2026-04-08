@@ -73,7 +73,8 @@ from routes import (
     evaluation_override_routes,
     pilot_routes,
     transparency_routes,
-    audit_pack_routes
+    audit_pack_routes,
+    pipeline_kpi_routes
 )
 
 # Configure logging
@@ -283,6 +284,7 @@ app.include_router(evaluation_override_routes.router, prefix="/api/v1", tags=["E
 app.include_router(pilot_routes.router, prefix="/api/v1", tags=["Pilots"])
 app.include_router(transparency_routes.router, prefix="/api/v1", tags=["Transparency"])
 app.include_router(audit_pack_routes.router, prefix="/api/v1", tags=["Audit Evidence Pack"])
+app.include_router(pipeline_kpi_routes.router, prefix="/api/v1", tags=["Dashboard Pipeline KPIs"])
 
 if __name__ == "__main__":
     import uvicorn
