@@ -105,6 +105,7 @@ const VendorDetail = () => {
   const [licenseNumber, setLicenseNumber] = useState('');
   const [licenseSubmitting, setLicenseSubmitting] = useState(false);
   const [licenseMessage, setLicenseMessage] = useState('');
+  const [procurementReadiness, setProcurementReadiness] = useState(null);
 
   useEffect(() => {
     api.get('/api/v1/users/me').then(res => setCurrentUser(res.data)).catch(() => {});
@@ -115,6 +116,7 @@ const VendorDetail = () => {
     fetchReputation();
     fetchVscore();
     fetchLicenseStatus();
+    fetchProcurementReadiness();
   }, [id]);
 
   const fetchVendor = async () => {
@@ -151,6 +153,17 @@ const VendorDetail = () => {
     try {
       const { data } = await api.get(`/api/v1/vendors/${id}/license-status`);
       setLicenseStatus(data);
+    } catch {
+      // Non-critical
+    }
+  };
+
+  const fetchProcurementReadiness = async () => {
+    try {
+      const { data } = await api.get(`/api/v1/vendors/${id}/procurement-readiness`);
+      if (data && data.readiness_status !== 'not_ready') {
+        setProcurementReadiness(data);
+      }
     } catch {
       // Non-critical
     }
@@ -628,6 +641,125 @@ const VendorDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Procurement Readiness Card */}
+        {procurementReadiness && (
+          <div className="bg-white rounded-xl shadow-sm p-5 md:p-8 mt-6 border-l-4 border-teal">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+              <h3 className="font-heading text-xl text-ink">Procurement Readiness</h3>
+              <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold ${
+                procurementReadiness.readiness_status === 'ready_for_procurement'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : procurementReadiness.readiness_status === 'in_pilot'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-amber-100 text-amber-700'
+              }`}>
+                {procurementReadiness.readiness_status === 'ready_for_procurement'
+                  ? 'Ready for Procurement'
+                  : procurementReadiness.readiness_status === 'in_pilot'
+                  ? 'In Pilot'
+                  : 'Under Evaluation'}
+              </span>
+            </div>
+
+            {/* Registration Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <a
+                href="https://esupply.dubai.gov.ae"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-teal text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal/90 transition text-sm"
+              >
+                Register on eSupply
+                <span className="text-xs opacity-75">&#8599;</span>
+              </a>
+              <a
+                href="https://www.digitaldubai.ae/apps-services/details/smart-supplier"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-[#1E293B] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#334155] transition text-sm"
+              >
+                Register on Smart Supplier
+                <span className="text-xs opacity-75">&#8599;</span>
+              </a>
+            </div>
+
+            {/* Readiness Checklist */}
+            <div className="space-y-3">
+              {/* AI Evaluation */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <span className={`text-lg mt-0.5 ${procurementReadiness.evaluation.complete ? 'text-emerald-500' : 'text-gray-300'}`}>
+                  {procurementReadiness.evaluation.complete ? '\u2713' : '\u2717'}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">AI Evaluation Complete</p>
+                  {procurementReadiness.evaluation.composite_score != null && (
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      Score: {procurementReadiness.evaluation.composite_score}/100
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Evidence Validation */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <span className={`text-lg mt-0.5 ${procurementReadiness.evidence_validation.verified ? 'text-emerald-500' : 'text-gray-300'}`}>
+                  {procurementReadiness.evidence_validation.verified ? '\u2713' : '\u2717'}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">Evidence Validation Verified</p>
+                  {procurementReadiness.evidence_validation.grounding_score != null && (
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      Grounding: {procurementReadiness.evidence_validation.grounding_score}%
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* DESC Compliance */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <span className={`text-lg mt-0.5 ${procurementReadiness.desc_compliance.approved ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  {procurementReadiness.desc_compliance.approved ? '\u2713' : '\u2717'}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">DESC Compliance Checked</p>
+                </div>
+              </div>
+
+              {/* Trade License */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <span className={`text-lg mt-0.5 ${procurementReadiness.trade_license.verified ? 'text-emerald-500' : 'text-gray-300'}`}>
+                  {procurementReadiness.trade_license.verified ? '\u2713' : '\u2717'}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">Trade License Verified</p>
+                </div>
+              </div>
+
+              {/* Pilot */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <span className={`text-lg mt-0.5 ${procurementReadiness.pilot.completed ? 'text-emerald-500' : 'text-gray-300'}`}>
+                  {procurementReadiness.pilot.completed ? '\u2713' : '\u2717'}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">Pilot Completed</p>
+                  {procurementReadiness.pilot.outcome_rating != null && (
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      Rating: {procurementReadiness.pilot.outcome_rating}/5
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <p className="text-gray-400 text-xs italic">
+                In production, approved vendors are automatically registered in Dubai Government procurement systems.
+              </p>
+            </div>
+          </div>
+        )}
 
         {currentUser?.role === 'admin' && (
           <div className="mt-6 flex gap-4">

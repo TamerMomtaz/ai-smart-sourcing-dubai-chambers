@@ -85,6 +85,54 @@ async def get_vendor(
         )
 
 
+@router.get(
+    "/{vendor_id}/procurement-readiness",
+    status_code=status.HTTP_200_OK,
+    summary="Get vendor procurement readiness status",
+)
+async def get_procurement_readiness(
+    vendor_id: UUID,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Get procurement readiness data for a vendor.
+    Returns evaluation status, pilot completion, DESC compliance,
+    trade license verification, and evidence validation grounding.
+    """
+    try:
+        user_id = current_user.get("id")
+        user_role = current_user.get("role")
+
+        if not user_id or not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={"error": "Unauthorized", "detail": "Invalid authentication token", "code": 401},
+            )
+
+        result = vendor_service.get_procurement_readiness(
+            user_id=user_id,
+            vendor_id=vendor_id,
+            user_role=user_role,
+        )
+
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"error": "Not Found", "detail": "Vendor not found or access denied", "code": 404},
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"get_procurement_readiness: Unexpected error for vendor {vendor_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Internal Server Error", "detail": "Failed to retrieve procurement readiness", "code": 500},
+        )
+
+
 @router.patch(
     "/{vendor_id}",
     response_model=VendorUpdateResponse,

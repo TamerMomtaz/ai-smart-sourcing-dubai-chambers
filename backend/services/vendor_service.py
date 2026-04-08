@@ -301,3 +301,118 @@ def delete_vendor(user_id: str, user_role: str, vendor_id: UUID) -> bool:
     except Exception as e:
         print(f"Error deleting vendor: {e}")
         return False
+
+
+def get_procurement_readiness(user_id: str, vendor_id: UUID, user_role: str) -> Optional[Dict[str, Any]]:
+    """
+    Get procurement readiness data for a vendor.
+    Aggregates proposals, pilots, evaluations, hallucination checks,
+    DESC compliance, and trade license status.
+    """
+    try:
+        # Check permissions
+        if user_role == "vendor":
+            if str(vendor_id) != user_id:
+                return None
+        elif user_role not in ["analyst", "executive", "compliance_officer", "business_group_lead", "admin"]:
+            return None
+
+        vendor_id_str = str(vendor_id)
+
+        # Fetch vendor DESC status
+        vendor_resp = supabase.table("chamber_vendors").select(
+            "is_desc_approved"
+        ).eq("id", vendor_id_str).execute()
+        is_desc_approved = False
+        if vendor_resp.data:
+            is_desc_approved = vendor_resp.data[0].get("is_desc_approved", False)
+
+        # Fetch proposals for this vendor (shortlisted/evaluated/approved)
+        proposals_resp = supabase.table("chamber_proposals").select(
+            "id, title, status, composite_score"
+        ).eq("submitter_id", vendor_id_str).in_(
+            "status", ["shortlisted", "evaluated", "approved"]
+        ).order("composite_score", desc=True).execute()
+        proposals = proposals_resp.data or []
+
+        has_shortlisted = any(p.get("status") == "shortlisted" for p in proposals)
+        has_evaluated = len(proposals) > 0
+        best_score = proposals[0].get("composite_score") if proposals else None
+
+        # Fetch pilots for this vendor
+        pilots_resp = supabase.table("chamber_pilots").select(
+            "id, status, outcome_rating, adoption_decision"
+        ).eq("vendor_id", vendor_id_str).execute()
+        pilots = pilots_resp.data or []
+
+        completed_pilots = [p for p in pilots if p.get("status") == "completed"]
+        active_pilots = [p for p in pilots if p.get("status") in ("active", "extended")]
+        has_completed_pilot = len(completed_pilots) > 0
+        has_active_pilot = len(active_pilots) > 0
+        pilot_rating = completed_pilots[0].get("outcome_rating") if completed_pilots else None
+
+        # Fetch grounding scores from hallucination checks for this vendor's proposals
+        grounding_score = None
+        if proposals:
+            proposal_ids = [p["id"] for p in proposals]
+            evals_resp = supabase.table("chamber_evaluations").select(
+                "id"
+            ).in_("proposal_id", proposal_ids).execute()
+            eval_ids = [e["id"] for e in (evals_resp.data or [])]
+
+            if eval_ids:
+                hall_resp = supabase.table("chamber_hallucination_checks").select(
+                    "grounding_score"
+                ).in_("evaluation_id", eval_ids).order(
+                    "created_at", desc=True
+                ).limit(1).execute()
+                if hall_resp.data:
+                    grounding_score = hall_resp.data[0].get("grounding_score")
+
+        # Fetch trade license status
+        license_resp = supabase.table("chamber_vendors").select(
+            "trade_license_status"
+        ).eq("id", vendor_id_str).execute()
+        trade_license_verified = False
+        trade_license_status = "unverified"
+        if license_resp.data:
+            trade_license_status = license_resp.data[0].get("trade_license_status", "unverified") or "unverified"
+            trade_license_verified = trade_license_status == "verified"
+
+        # Determine readiness status
+        if has_completed_pilot and any(p.get("adoption_decision") == "adopt" for p in completed_pilots):
+            readiness_status = "ready_for_procurement"
+        elif has_active_pilot:
+            readiness_status = "in_pilot"
+        elif has_shortlisted or has_evaluated:
+            readiness_status = "under_evaluation"
+        else:
+            readiness_status = "not_ready"
+
+        return {
+            "readiness_status": readiness_status,
+            "evaluation": {
+                "complete": has_evaluated,
+                "composite_score": best_score,
+            },
+            "evidence_validation": {
+                "verified": grounding_score is not None and grounding_score >= 70,
+                "grounding_score": grounding_score,
+            },
+            "desc_compliance": {
+                "checked": True,
+                "approved": is_desc_approved,
+            },
+            "trade_license": {
+                "verified": trade_license_verified,
+                "status": trade_license_status,
+            },
+            "pilot": {
+                "completed": has_completed_pilot,
+                "outcome_rating": pilot_rating,
+            },
+        }
+
+    except Exception as e:
+        print(f"Error fetching procurement readiness: {e}")
+        return None
