@@ -43,6 +43,25 @@ def create_sourcing_case(
         data["compliance_requirements"] = compliance_requirements
     if assigned_analyst_id:
         data["assigned_analyst_id"] = assigned_analyst_id
+    elif sector:
+        # Auto-assign analyst based on sector mapping
+        try:
+            mapping = (
+                supabase.table("chamber_sector_assignments")
+                .select("assigned_user_id")
+                .eq("sector", sector)
+                .maybe_single()
+                .execute()
+            )
+            if mapping.data and mapping.data.get("assigned_user_id"):
+                data["assigned_analyst_id"] = mapping.data["assigned_user_id"]
+                logger.info(
+                    "Auto-assigned analyst %s for sector '%s'",
+                    mapping.data["assigned_user_id"],
+                    sector,
+                )
+        except Exception as e:
+            logger.warning("Sector auto-assignment lookup failed: %s", e)
 
     result = supabase.table("chamber_sourcing_cases").insert(data).execute()
     return result.data[0] if result.data else None
