@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from '../lib/language';
 import { getErrorMessage } from '../lib/api';
+import { config } from '../config';
 import LivePulseBanner from '../components/LivePulseBanner';
 
 function Login() {
@@ -106,6 +107,30 @@ function Login() {
               {loading ? t('auth.signing_in') : t('auth.sign_in')}
             </button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-ink/10"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-ink/50 font-body">or</span>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <a
+              href={`${config.apiUrl}/api/v1/auth/uaepass/login`}
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#00843D] text-white font-body py-2 px-4 rounded-lg hover:bg-[#006B31] transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6zm4 4h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+              </svg>
+              Sign in with UAE PASS
+            </a>
+            <p className="mt-2 text-xs font-body text-ink/40">
+              UAE PASS integration — coming soon
+            </p>
+          </div>
 
           <div className="mt-6 text-center space-y-2">
             <p className="text-sm font-body text-ink/70">
