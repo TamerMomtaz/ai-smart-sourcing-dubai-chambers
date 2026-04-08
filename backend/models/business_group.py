@@ -9,8 +9,9 @@ class EvaluationWeightConfig(BaseModel):
     feasibility_weight: float = Field(..., ge=0, le=1, description="Feasibility weight (0-1)")
     sector_alignment_weight: float = Field(..., ge=0, le=1, description="Sector alignment weight (0-1)")
     compliance_weight: float = Field(..., ge=0, le=1, description="Compliance weight (0-1)")
+    novelty_weight: float = Field(0.15, ge=0, le=1, description="Innovation novelty weight (0-1)")
 
-    @field_validator("relevance_weight", "feasibility_weight", "sector_alignment_weight", "compliance_weight")
+    @field_validator("relevance_weight", "feasibility_weight", "sector_alignment_weight", "compliance_weight", "novelty_weight")
     @classmethod
     def validate_sum(cls, v, info):
         return v

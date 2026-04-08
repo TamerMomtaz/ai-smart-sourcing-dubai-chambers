@@ -21,16 +21,26 @@ CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
 DEFAULT_WEIGHTS = {
     "relevance_weight": 0.25,
     "feasibility_weight": 0.25,
-    "sector_alignment_weight": 0.25,
-    "compliance_weight": 0.25,
+    "sector_alignment_weight": 0.15,
+    "compliance_weight": 0.20,
+    "novelty_weight": 0.15,
 }
 
 SYSTEM_PROMPT = (
     "You are the Dubai Chambers AI Smart Sourcing evaluation agent. "
-    "You evaluate technology vendor proposals for Dubai Chambers across 4 dimensions. "
+    "You evaluate technology vendor proposals for Dubai Chambers across 5 dimensions. "
     "Score each dimension 0-100. Be rigorous but fair. "
     "Consider Dubai's D33 Economic Agenda alignment, UAE regulatory requirements, "
     "and Dubai Chambers' mandate to source innovative technology solutions.\n\n"
+    "The 5 evaluation dimensions are:\n"
+    "1. Relevance (0-100): How well the proposal addresses Dubai Chambers' sourcing needs\n"
+    "2. Feasibility (0-100): Technical and operational viability\n"
+    "3. Sector Alignment (0-100): Alignment with Dubai's D33 Economic Agenda and sector KPIs\n"
+    "4. Compliance (0-100): Regulatory requirements, DESC compliance, security standards\n"
+    "5. Innovation Novelty (0-100): How original is this solution? "
+    "Cross-reference against the existing proposals in the same sector provided in the context. "
+    "Score higher if the approach is genuinely different. Score lower "
+    "if it substantially overlaps with existing solutions.\n\n"
     "For each dimension, provide:\n"
     "1. The score (0-100)\n"
     "2. A 2-3 sentence reasoning summary\n"
@@ -45,6 +55,7 @@ SYSTEM_PROMPT = (
     '  "feasibility": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
     '  "sector_alignment": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
     '  "compliance": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
+    '  "novelty": {"score": 0-100, "reasoning": "...", "evidence": [...], "risks": [...], "confidence": "..."},\n'
     '  "summary_en": "3-4 sentence executive summary in English",\n'
     '  "summary_ar": "3-4 sentence executive summary in Arabic",\n'
     '  "overall_reasoning": "2-3 sentences on how the composite score was derived",\n'
@@ -123,11 +134,18 @@ class EvaluationEngine:
                 case_id=proposal["sourcing_case_id"]
             )
 
+        # 2d. Fetch existing proposals in the same sector for novelty comparison
+        sector_proposals = self._fetch_sector_proposals(
+            sector=proposal.get("sector"),
+            exclude_proposal_id=proposal_id,
+        )
+
         # 3. Build user prompt and call Claude
         user_prompt = self._build_user_prompt(
             proposal=proposal, business_group=business_group,
             document_texts=document_texts,
             sourcing_case=sourcing_case,
+            sector_proposals=sector_proposals,
         )
 
         start_time = time.time()
@@ -142,8 +160,9 @@ class EvaluationEngine:
             parsed["relevance"]["score"] * weights.get("relevance_weight", 0.25)
             + parsed["feasibility"]["score"] * weights.get("feasibility_weight", 0.25)
             + parsed["sector_alignment"]["score"]
-            * weights.get("sector_alignment_weight", 0.25)
-            + parsed["compliance"]["score"] * weights.get("compliance_weight", 0.25)
+            * weights.get("sector_alignment_weight", 0.15)
+            + parsed["compliance"]["score"] * weights.get("compliance_weight", 0.20)
+            + parsed["novelty"]["score"] * weights.get("novelty_weight", 0.15)
         )
         composite_score = round(composite_score, 2)
 
@@ -153,6 +172,7 @@ class EvaluationEngine:
             parsed["feasibility"]["score"],
             parsed["sector_alignment"]["score"],
             parsed["compliance"]["score"],
+            parsed["novelty"]["score"],
         ]
         requires_review = False
         review_reason = parsed.get("review_reason")
@@ -184,7 +204,7 @@ class EvaluationEngine:
             "composite_score": composite_score,
             "overall_reasoning": parsed.get("overall_reasoning", ""),
         }
-        for dim_key in ["relevance", "feasibility", "sector_alignment", "compliance"]:
+        for dim_key in ["relevance", "feasibility", "sector_alignment", "compliance", "novelty"]:
             dim_data = parsed[dim_key]
             ai_attribution["dimensions"][dim_key] = {
                 "score": dim_data["score"],
@@ -205,6 +225,8 @@ class EvaluationEngine:
             sector_reasoning=parsed["sector_alignment"]["reasoning"],
             compliance_score=parsed["compliance"]["score"],
             compliance_reasoning=parsed["compliance"]["reasoning"],
+            novelty_score=parsed["novelty"]["score"],
+            novelty_reasoning=parsed["novelty"]["reasoning"],
             composite_score=composite_score,
             summary_en=parsed.get("summary_en", ""),
             summary_ar=parsed.get("summary_ar", ""),
@@ -220,6 +242,7 @@ class EvaluationEngine:
             "feasibility_score": parsed["feasibility"]["score"],
             "sector_alignment_score": parsed["sector_alignment"]["score"],
             "compliance_score": parsed["compliance"]["score"],
+            "novelty_score": parsed["novelty"]["score"],
             "composite_score": composite_score,
             "evaluation_timestamp": datetime.now(timezone.utc).isoformat(),
             "status": new_status,
@@ -274,6 +297,7 @@ class EvaluationEngine:
             "feasibility": parsed["feasibility"],
             "sector_alignment": parsed["sector_alignment"],
             "compliance": parsed["compliance"],
+            "novelty": parsed["novelty"],
             "ai_attribution": ai_attribution,
             "summary_en": parsed.get("summary_en", ""),
             "summary_ar": parsed.get("summary_ar", ""),
@@ -342,10 +366,31 @@ class EvaluationEngine:
             logger.warning(f"[EVAL] Failed to fetch document texts for proposal {proposal_id}: {e}")
         return []
 
+    def _fetch_sector_proposals(
+        self, sector: Optional[str], exclude_proposal_id: str
+    ) -> list:
+        """Fetch existing proposals in the same sector for novelty cross-reference."""
+        if not sector:
+            return []
+        try:
+            result = (
+                supabase.table("chamber_proposals")
+                .select("id, title, description")
+                .eq("sector", sector)
+                .neq("id", str(exclude_proposal_id))
+                .limit(20)
+                .execute()
+            )
+            return result.data or []
+        except Exception as e:
+            logger.warning(f"[EVAL] Failed to fetch sector proposals for novelty: {e}")
+            return []
+
     def _build_user_prompt(
         self, proposal: Dict[str, Any], business_group: Optional[Dict[str, Any]],
         document_texts: Optional[list] = None,
         sourcing_case: Optional[Dict[str, Any]] = None,
+        sector_proposals: Optional[list] = None,
     ) -> str:
         parts = [
             f"Proposal Title: {proposal.get('title', 'N/A')}",
@@ -398,8 +443,16 @@ class EvaluationEngine:
             if sourcing_case.get("compliance_requirements"):
                 parts.append(f"Compliance Requirements: {sourcing_case['compliance_requirements']}")
 
+        # Include existing sector proposals for novelty cross-reference
+        if sector_proposals:
+            parts.append("\n--- Existing Proposals in the Same Sector (for Innovation Novelty scoring) ---")
+            for sp in sector_proposals:
+                title = sp.get("title", "Untitled")
+                desc = (sp.get("description") or "")[:200]
+                parts.append(f"- {title}: {desc}")
+
         parts.append(
-            "\nEvaluate this proposal across the 4 dimensions and provide your assessment in the required JSON format."
+            "\nEvaluate this proposal across the 5 dimensions (including Innovation Novelty) and provide your assessment in the required JSON format."
         )
         return "\n".join(parts)
 
@@ -505,7 +558,7 @@ class EvaluationEngine:
             raise ValueError("Failed to parse AI evaluation response as JSON")
 
         # Validate required keys and coerce score types
-        for key in ["relevance", "feasibility", "sector_alignment", "compliance"]:
+        for key in ["relevance", "feasibility", "sector_alignment", "compliance", "novelty"]:
             if key not in parsed:
                 raise ValueError(f"Missing required key '{key}' in evaluation response")
             if isinstance(parsed[key], dict):

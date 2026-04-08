@@ -458,6 +458,7 @@ const EvidenceAttributionPanel = ({ aiAttribution }) => {
     feasibility: 'Feasibility',
     sector_alignment: 'Sector Alignment',
     compliance: 'Compliance',
+    novelty: 'Innovation Novelty',
   };
 
   return (
@@ -867,6 +868,9 @@ const EvaluationDetail = () => {
           <ScoreBar label="Feasibility" score={evaluation.feasibility_score} reasoning={evaluation.feasibility_reasoning} dimensionKey="feasibility" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
           <ScoreBar label="Sector Alignment" score={evaluation.sector_alignment_score} reasoning={evaluation.sector_reasoning} dimensionKey="sector_alignment" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
           <ScoreBar label="Compliance" score={evaluation.compliance_score} reasoning={evaluation.compliance_reasoning} dimensionKey="compliance" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
+          {evaluation.novelty_score != null && (
+            <ScoreBar label="Innovation Novelty" score={evaluation.novelty_score} reasoning={evaluation.novelty_reasoning} dimensionKey="novelty" overrides={overrides} canOverride={canOverride} onRequestOverride={handleRequestOverride} />
+          )}
         </div>
 
         {/* Evidence Attribution Panel */}

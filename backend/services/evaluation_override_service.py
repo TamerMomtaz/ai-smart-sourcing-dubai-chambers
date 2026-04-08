@@ -10,6 +10,7 @@ DIMENSION_COLUMN_MAP = {
     "feasibility": "feasibility_score",
     "compliance": "compliance_score",
     "sector_alignment": "sector_alignment_score",
+    "novelty": "novelty_score",
     "composite": "composite_score",
 }
 
@@ -85,11 +86,20 @@ def create_override(
             "feasibility": float(evaluation.get("feasibility_score", 0)),
             "sector_alignment": float(evaluation.get("sector_alignment_score", 0)),
             "compliance": float(evaluation.get("compliance_score", 0)),
+            "novelty": float(evaluation.get("novelty_score") or 0),
         }
         # Apply the override to the recalculation
         scores[dimension] = float(human_adjusted_score)
-        composite = sum(scores.values()) / 4.0
-        updates["composite_score"] = composite
+        # Use default weights: relevance 25%, feasibility 25%, compliance 20%, sector 15%, novelty 15%
+        weights = {
+            "relevance": 0.25,
+            "feasibility": 0.25,
+            "compliance": 0.20,
+            "sector_alignment": 0.15,
+            "novelty": 0.15,
+        }
+        composite = sum(scores[d] * weights[d] for d in weights)
+        updates["composite_score"] = round(composite, 2)
 
     update_response = (
         supabase.table("chamber_evaluations")

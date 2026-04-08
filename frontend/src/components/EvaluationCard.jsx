@@ -36,6 +36,12 @@ const EvaluationCard = ({ evaluation, proposalTitle }) => {
           </div>
         )}
 
+        {evaluation.novelty_score !== null && evaluation.novelty_score !== undefined && (
+          <div className="mb-4">
+            <ScoreBadge score={evaluation.novelty_score} label="Innovation Novelty" />
+          </div>
+        )}
+
         <div className="flex items-center justify-between text-sm font-body text-ink/60 pt-4 border-t border-ink/10">
           <span>Evaluated: {formatDate(evaluation.evaluated_at)}</span>
           {evaluation.hallucination_check_passed === false && (
