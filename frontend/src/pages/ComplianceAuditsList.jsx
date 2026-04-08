@@ -196,6 +196,108 @@ const PLANNED_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.filt
 const TOTAL_COUNT = PLATFORM_CONTROLS.reduce((sum, g) => sum + g.controls.length, 0);
 const PERCENT = 89; // Compliance score: 13 active + 4 aligned + 2 planned
 
+/* ── Dubai AI Ethics Assessment data ── */
+const AI_ETHICS_ITEMS = [
+  { id: 1, principle: 'Fairness', title: 'AI scoring does not discriminate by geography, company size, or founder demographics', status: 'active', detail: 'Multi-dimensional scoring with no demographic inputs' },
+  { id: 2, principle: 'Accountability', title: 'Every AI decision has a responsible human', status: 'active', detail: 'Role-based access, gate decisions, human override' },
+  { id: 3, principle: 'Transparency', title: 'AI operations are visible and logged', status: 'active', detail: 'σI Transparency Engine — all operations logged' },
+  { id: 4, principle: 'Explainability', title: 'AI scores include reasoning', status: 'active', detail: 'Full reasoning text per evaluation dimension' },
+  { id: 5, principle: 'Data Readiness', title: 'Training data is appropriate and unbiased', status: 'active', detail: 'No custom training — uses foundation models via API' },
+  { id: 6, principle: 'Technical Readiness', title: 'AI system is tested and monitored', status: 'active', detail: 'Evidence Validation Layer, multi-model verification' },
+  { id: 7, principle: 'Organizational Readiness', title: 'Governance structures exist', status: 'in_progress', detail: 'ISO 42001 certification planned' },
+  { id: 8, principle: 'Human Oversight', title: 'Humans can override AI decisions', status: 'active', detail: 'Evaluation override system, gate decisions' },
+  { id: 9, principle: 'Privacy Protection', title: 'Personal data is handled responsibly', status: 'active', detail: 'RLS on all tables, role-based data access' },
+  { id: 10, principle: 'Continuous Monitoring', title: 'AI performance is tracked over time', status: 'active', detail: 'σI logs every operation with cost/latency' },
+];
+
+const ETHICS_ACTIVE = AI_ETHICS_ITEMS.filter((i) => i.status === 'active').length;
+const ETHICS_TOTAL = AI_ETHICS_ITEMS.length;
+const ETHICS_PERCENT = Math.round((ETHICS_ACTIVE / ETHICS_TOTAL) * 100);
+
+/* ── AI Ethics Assessment Section Component ── */
+const AIEthicsAssessment = () => (
+  <div>
+    {/* Summary header */}
+    <div className="bg-[#1E293B] rounded-xl border border-gray-700/50 p-6 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-1">Dubai AI Ethics Self-Assessment</h3>
+          <p className="text-gray-400 text-sm">
+            Based on Digital Dubai's AI Ethics principles: Fairness, Accountability, Transparency, Explainability
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-right mr-2">
+            <span className="text-3xl font-bold text-emerald-400">{ETHICS_ACTIVE}</span>
+            <span className="text-xl text-gray-500">/{ETHICS_TOTAL}</span>
+          </div>
+          <div className="w-48">
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <span>Score</span>
+              <span className="text-emerald-400 font-bold">{ETHICS_PERCENT}%</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3 flex overflow-hidden">
+              <div
+                className="bg-emerald-500 h-3 transition-all"
+                style={{ width: `${ETHICS_PERCENT}%` }}
+              />
+              <div
+                className="bg-amber-500 h-3 transition-all"
+                style={{ width: `${Math.round(((ETHICS_TOTAL - ETHICS_ACTIVE) / ETHICS_TOTAL) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Checklist items */}
+    <div className="grid grid-cols-1 gap-3">
+      {AI_ETHICS_ITEMS.map((item) => (
+        <div
+          key={item.id}
+          className="bg-[#1E293B] rounded-xl border border-gray-700/50 px-6 py-4 flex items-start gap-4"
+        >
+          <span className={`text-lg mt-0.5 flex-shrink-0 ${item.status === 'active' ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {item.status === 'active' ? '✅' : '⏳'}
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/20">
+                {item.principle}
+              </span>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                item.status === 'active'
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+              }`}>
+                {item.status === 'active' ? '✓ Active' : '⏳ In Progress'}
+              </span>
+            </div>
+            <p className="text-white text-sm font-medium mt-1">{item.title}</p>
+            <p className="text-gray-400 text-xs mt-0.5">{item.detail}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Footer with link */}
+    <div className="mt-6 text-center">
+      <a
+        href="https://www.digitaldubai.ae/self-assessment"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[var(--color-accent)] hover:underline text-sm"
+      >
+        Based on Digital Dubai AI Ethics Self-Assessment Framework ↗
+      </a>
+      <p className="text-gray-500 text-xs mt-2">
+        Self-assessment as of {SELF_CHECK_DATE}. σI — Every AI principle is traceable.
+      </p>
+    </div>
+  </div>
+);
+
 /* ── Platform Self-Check Section Component ── */
 const PlatformSelfCheck = () => {
   const [collapsed, setCollapsed] = useState({});
@@ -403,6 +505,7 @@ const ComplianceAuditsList = () => {
   const tabs = [
     { id: 'audits', label: 'Vendor Audits' },
     { id: 'self-check', label: 'Platform Compliance Self-Check' },
+    { id: 'ai-ethics', label: 'Dubai AI Ethics Assessment' },
     { id: 'incidents', label: 'Incident Management' },
     ...(canViewAuditPack ? [{ id: 'audit-pack', label: 'Audit Evidence Pack' }] : []),
   ];
@@ -428,6 +531,11 @@ const ComplianceAuditsList = () => {
                 {tab.id === 'self-check' && (
                   <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     {PERCENT}%
+                  </span>
+                )}
+                {tab.id === 'ai-ethics' && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    {ETHICS_PERCENT}%
                   </span>
                 )}
               </button>
@@ -578,6 +686,9 @@ const ComplianceAuditsList = () => {
 
         {/* ═══ TAB: Platform Compliance Self-Check ═══ */}
         {activeTab === 'self-check' && <PlatformSelfCheck />}
+
+        {/* ═══ TAB: Dubai AI Ethics Assessment ═══ */}
+        {activeTab === 'ai-ethics' && <AIEthicsAssessment />}
 
         {/* ═══ TAB: Audit Evidence Pack ═══ */}
         {activeTab === 'audit-pack' && canViewAuditPack && <AuditEvidencePack />}
