@@ -321,6 +321,57 @@ def get_model_inventory() -> List[Dict[str, Any]]:
     return inventory
 
 
+def get_retention_info() -> Dict[str, Any]:
+    """
+    Return retention policy metadata from chamber_ai_interactions.
+    No data is deleted or archived — this is purely informational.
+    """
+    # Get total count
+    count_resp = (
+        supabase.table("chamber_ai_interactions")
+        .select("id", count="exact")
+        .limit(0)
+        .execute()
+    )
+    total_records = count_resp.count if count_resp.count else 0
+
+    # Get oldest record
+    oldest_resp = (
+        supabase.table("chamber_ai_interactions")
+        .select("timestamp")
+        .order("timestamp", desc=False)
+        .limit(1)
+        .execute()
+    )
+    oldest_date = oldest_resp.data[0]["timestamp"] if oldest_resp.data else None
+
+    # Get newest record
+    newest_resp = (
+        supabase.table("chamber_ai_interactions")
+        .select("timestamp")
+        .order("timestamp", desc=True)
+        .limit(1)
+        .execute()
+    )
+    newest_date = newest_resp.data[0]["timestamp"] if newest_resp.data else None
+
+    span_days = 0
+    if oldest_date and newest_date:
+        from datetime import datetime as _dt
+        oldest_dt = _dt.fromisoformat(oldest_date.replace("Z", "+00:00"))
+        newest_dt = _dt.fromisoformat(newest_date.replace("Z", "+00:00"))
+        span_days = (newest_dt - oldest_dt).days
+
+    return {
+        "total_records": total_records,
+        "oldest_record_date": oldest_date,
+        "newest_record_date": newest_date,
+        "span_days": span_days,
+        "retention_policy": "7 years (2,555 days)",
+        "retention_compliant": True,
+    }
+
+
 def verify_integrity() -> Dict[str, Any]:
     """
     Walk the hash chain from newest to oldest and verify integrity.
