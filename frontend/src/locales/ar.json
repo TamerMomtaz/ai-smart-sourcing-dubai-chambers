@@ -140,5 +140,13 @@
   "vendors.all_countries": "جميع الدول",
   "vendors.newest": "الأحدث",
 
-  "language.toggle": "EN | عربي"
+  "language.toggle": "EN | عربي",
+
+  "alerts.title": "التنبيهات",
+  "alerts.active_alerts": "التنبيهات النشطة",
+  "alerts.unresolved": "غير محلولة",
+  "alerts.none": "لا توجد تنبيهات نشطة",
+  "alerts.mark_resolved": "تعيين كمحلول",
+  "alerts.just_now": "الآن",
+  "alerts.ago": "مضت"
 }

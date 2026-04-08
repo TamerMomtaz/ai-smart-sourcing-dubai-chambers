@@ -78,7 +78,8 @@ from routes import (
     compliance_knowledge_routes,
     sourcing_intake_routes,
     trade_license_routes,
-    uaepass_routes
+    uaepass_routes,
+    alerts_routes
 )
 
 # Configure logging
@@ -293,6 +294,7 @@ app.include_router(compliance_knowledge_routes.router, prefix="/api/v1", tags=["
 app.include_router(sourcing_intake_routes.router, prefix="/api/v1", tags=["Sourcing Intake (Public)"])
 app.include_router(trade_license_routes.router, prefix="/api/v1", tags=["Trade License Verification"])
 app.include_router(uaepass_routes.router, prefix="/api/v1", tags=["UAE PASS SSO"])
+app.include_router(alerts_routes.router, prefix="/api/v1", tags=["Alerts"])
 
 if __name__ == "__main__":
     import uvicorn

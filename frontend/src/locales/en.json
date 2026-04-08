@@ -140,5 +140,13 @@
   "vendors.all_countries": "All Countries",
   "vendors.newest": "Newest",
 
-  "language.toggle": "EN | عربي"
+  "language.toggle": "EN | عربي",
+
+  "alerts.title": "Alerts",
+  "alerts.active_alerts": "Active Alerts",
+  "alerts.unresolved": "unresolved",
+  "alerts.none": "No active alerts",
+  "alerts.mark_resolved": "Mark Resolved",
+  "alerts.just_now": "just now",
+  "alerts.ago": "ago"
 }
