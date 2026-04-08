@@ -6,6 +6,7 @@ import { useTranslation } from '../lib/language';
 import { getErrorMessage } from '../lib/api';
 import { ROLE_SIDEBAR_ITEMS, DEFAULT_ITEMS, ROUTE_TO_KEY } from '../config/rolePermissions';
 import ThemeSwitcher from './ThemeSwitcher';
+import AlertBell from './AlertBell';
 
 /* Sidebar highlight state is now driven by HowItWorks custom events */
 
@@ -198,10 +199,15 @@ function Layout() {
               </svg>
             </button>
             <h1 className="md:hidden font-heading text-lg text-teal flex-1 text-center">{t('app.title')}</h1>
-            <div className="md:hidden w-9 h-9 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
-              {(user?.email || 'U').charAt(0).toUpperCase()}
+            <div className="md:hidden flex items-center gap-2">
+              <AlertBell />
+              <div className="w-9 h-9 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
+                {(user?.email || 'U').charAt(0).toUpperCase()}
+              </div>
             </div>
-            <div className="hidden md:block flex-1"></div>
+            <div className="hidden md:flex flex-1 justify-end">
+              <AlertBell />
+            </div>
           </div>
         </header>
 

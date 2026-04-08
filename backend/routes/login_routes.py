@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Request
 from models.auth import LoginRequest, TokenResponse
 from models.common import ErrorResponse
 from services.login_service import authenticate_user
+from services.chamber_alerts_service import create_alert
 from typing import Dict, Any
 import logging
 import time
@@ -112,6 +113,15 @@ async def login(
                 f"Failed login attempt for email: {login_request.email}",
                 extra={"email": login_request.email, "ip": client_ip}
             )
+            # Generate security alert after 3+ failed attempts in window
+            ip_record = rate_limit_store.get(client_ip)
+            if ip_record and ip_record["attempts"] >= 3:
+                create_alert(
+                    alert_type="security",
+                    severity="high",
+                    title="Multiple failed login attempts",
+                    description=f"IP {client_ip} has {ip_record['attempts']} failed login attempts in the last 5 minutes. Last email tried: {login_request.email}",
+                )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={

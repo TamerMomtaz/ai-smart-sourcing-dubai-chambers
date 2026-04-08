@@ -12,6 +12,7 @@ from database import supabase
 from services.evaluation_engine import EvaluationEngine
 from services.hallucination_service import HallucinationShield
 from services.document_sanitization_service import sanitize_proposal_content
+from services.chamber_alerts_service import create_alert
 
 logger = logging.getLogger(__name__)
 
@@ -565,6 +566,15 @@ async def trigger_ai_evaluation(
                 user_id=str(current_user["id"]),
             )
             logger.info(f"[SHIELD] Auto-verification complete for evaluation {result.get('evaluation_id')}: grounding={shield_report.get('grounding_score')}%")
+            # Alert on low grounding score
+            grounding = shield_report.get("grounding_score")
+            if grounding is not None and float(grounding) < 30:
+                create_alert(
+                    alert_type="ai_anomaly",
+                    severity="medium",
+                    title="Low grounding score detected",
+                    description=f"Evaluation {result.get('evaluation_id')} for proposal {proposal_id} has a grounding score of {grounding}%.",
+                )
         except Exception as shield_err:
             logger.error(f"[SHIELD] Verification failed (non-blocking): {shield_err}")
 

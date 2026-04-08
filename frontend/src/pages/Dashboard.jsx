@@ -663,11 +663,64 @@ const PipelineKPIs = ({ kpis }) => {
   );
 };
 
+// --- Active Alerts Banner (above stat cards) ---
+const ALERT_SEVERITY_STYLES = {
+  critical: 'bg-red-100 text-red-800 border-red-300',
+  high: 'bg-orange-100 text-orange-800 border-orange-300',
+  medium: 'bg-amber-100 text-amber-800 border-amber-300',
+  low: 'bg-blue-100 text-blue-800 border-blue-300',
+};
+
+const ALERT_TYPE_ICONS = {
+  security: '\u{1F6E1}\uFE0F',
+  compliance: '\u{1F512}',
+  ai_anomaly: '\u{1F916}',
+  system: '\u{2699}\uFE0F',
+};
+
+const ActiveAlerts = ({ alerts, onResolve }) => {
+  const { t } = useTranslation();
+  if (!alerts || alerts.length === 0) return null;
+
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-8">
+      <div className="flex items-center gap-2 mb-3">
+        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <h3 className="font-heading text-base text-red-800">{t('alerts.active_alerts')}</h3>
+        <span className="ml-auto text-xs text-red-600 font-semibold">{alerts.length} {t('alerts.unresolved')}</span>
+      </div>
+      <div className="space-y-2">
+        {alerts.slice(0, 5).map((alert) => (
+          <div
+            key={alert.id}
+            className="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-red-100"
+          >
+            <span className="text-base">{ALERT_TYPE_ICONS[alert.alert_type] || '\u26A0\uFE0F'}</span>
+            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${ALERT_SEVERITY_STYLES[alert.severity] || ALERT_SEVERITY_STYLES.medium}`}>
+              {alert.severity?.toUpperCase()}
+            </span>
+            <span className="flex-1 text-sm text-ink font-medium truncate">{alert.title}</span>
+            <button
+              onClick={() => onResolve(alert.id)}
+              className="text-xs px-2.5 py-1 rounded-md bg-teal/10 text-teal hover:bg-teal/20 transition-colors font-medium flex-shrink-0"
+            >
+              {t('alerts.mark_resolved')}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const { session, loading: authLoading } = useAuth();
   const { role: userRole } = useUserRole();
   const { t } = useTranslation();
   const isVendor = userRole === 'vendor';
+  const canViewAlerts = userRole === 'admin' || userRole === 'compliance_officer';
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -679,6 +732,7 @@ const Dashboard = () => {
   const [engagements, setEngagements] = useState(null);
   const [sectors, setSectors] = useState(null);
   const [pipelineKpis, setPipelineKpis] = useState(null);
+  const [activeAlerts, setActiveAlerts] = useState([]);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -729,6 +783,16 @@ const Dashboard = () => {
           }
         }
 
+        // Fetch active alerts (admin/compliance only)
+        if (userRes.data?.role === 'admin' || userRes.data?.role === 'compliance_officer') {
+          try {
+            const alertsRes = await api.get('/api/v1/alerts');
+            setActiveAlerts(alertsRes.data || []);
+          } catch {
+            // Non-critical
+          }
+        }
+
         // Fetch vendor-specific summary if vendor role
         if (userRes.data?.role === 'vendor') {
           try {
@@ -759,6 +823,15 @@ const Dashboard = () => {
     };
     fetchData();
   }, [authLoading, session, navigate]);
+
+  const handleResolveAlert = async (alertId) => {
+    try {
+      await api.put(`/api/v1/alerts/${alertId}/resolve`);
+      setActiveAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    } catch {
+      // Silently fail
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -810,6 +883,9 @@ const Dashboard = () => {
 
         {/* σI Impact Meter — ABOVE existing stats */}
         {!isVendor && <ImpactMeter impact={impact} timeline={timeline} />}
+
+        {/* Active Alerts — admin/compliance only */}
+        {canViewAlerts && <ActiveAlerts alerts={activeAlerts} onResolve={handleResolveAlert} />}
 
         {/* Vendor-specific summary cards */}
         {isVendor && vendorSummary && (

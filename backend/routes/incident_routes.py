@@ -17,6 +17,7 @@ from services.incident_service import (
     update_incident,
     get_incident_summary,
 )
+from services.chamber_alerts_service import create_alert
 import logging
 
 logger = logging.getLogger(__name__)
@@ -125,6 +126,15 @@ async def create_new_incident(
                     "detail": "Failed to create incident",
                     "code": "INCIDENT_CREATION_FAILED",
                 },
+            )
+
+        # Generate compliance alert for high-severity incidents
+        if request.severity in ("high", "critical"):
+            create_alert(
+                alert_type="compliance",
+                severity="high",
+                title="High-severity incident reported",
+                description=f"Incident \"{request.title}\" created with severity={request.severity}, type={request.incident_type}.",
             )
 
         return incident
