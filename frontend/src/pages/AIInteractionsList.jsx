@@ -118,6 +118,83 @@ const ShieldStatsSection = ({ stats }) => {
   );
 };
 
+const IntegrityBadge = () => {
+  const [status, setStatus] = useState(null); // null | 'loading' | 'verified' | 'broken' | 'error'
+  const [result, setResult] = useState(null);
+
+  const runVerification = async () => {
+    setStatus('loading');
+    try {
+      const res = await api.get('/api/v1/transparency/verify-integrity');
+      setResult(res.data);
+      setStatus(res.data.chain_valid ? 'verified' : 'broken');
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setStatus('error');
+        setResult({ detail: 'Requires admin or compliance role' });
+      } else {
+        setStatus('error');
+        setResult({ detail: getErrorMessage(err) });
+      }
+    }
+  };
+
+  const badgeStyles = {
+    verified: { bg: '#10B98120', border: '#10B981', text: '#10B981' },
+    broken:   { bg: '#EF444420', border: '#EF4444', text: '#EF4444' },
+    loading:  { bg: '#F59E0B20', border: '#F59E0B', text: '#F59E0B' },
+    error:    { bg: '#64748B20', border: '#64748B', text: '#94A3B8' },
+  };
+  const style = badgeStyles[status] || { bg: `${GOLD}15`, border: GOLD, text: GOLD };
+
+  return (
+    <div style={{ display: 'inline-block' }}>
+      <button
+        onClick={runVerification}
+        disabled={status === 'loading'}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+        style={{
+          backgroundColor: style.bg,
+          border: `1px solid ${style.border}`,
+          color: style.text,
+          opacity: status === 'loading' ? 0.7 : 1,
+        }}
+      >
+        {!status && (
+          <>
+            <span style={{ fontSize: 14 }}>🔗</span>
+            Chain Integrity: Click to Verify
+          </>
+        )}
+        {status === 'loading' && (
+          <>
+            <span className="animate-pulse" style={{ fontSize: 14 }}>⏳</span>
+            Verifying...
+          </>
+        )}
+        {status === 'verified' && (
+          <>
+            <span style={{ fontSize: 14 }}>✓</span>
+            Chain Integrity: Verified ({result.total_records} records)
+          </>
+        )}
+        {status === 'broken' && (
+          <>
+            <span style={{ fontSize: 14 }}>⚠</span>
+            Integrity Break Detected at record [{result.first_broken_at}]
+          </>
+        )}
+        {status === 'error' && (
+          <>
+            <span style={{ fontSize: 14 }}>—</span>
+            {result?.detail || 'Verification unavailable'}
+          </>
+        )}
+      </button>
+    </div>
+  );
+};
+
 const AIInteractionsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -237,6 +314,9 @@ const AIInteractionsList = () => {
                 <span style={{ color: TEAL, fontWeight: 600 }}>Tamer Momtaz</span>
               </p>
             </div>
+          </div>
+          <div className="mt-4">
+            <IntegrityBadge />
           </div>
         </header>
 
