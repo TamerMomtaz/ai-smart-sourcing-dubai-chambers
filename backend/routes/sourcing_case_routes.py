@@ -25,6 +25,7 @@ class SourcingCaseCreate(BaseModel):
     sector: Optional[str] = None
     technology_domain: Optional[str] = None
     urgency: Optional[str] = Field(default="medium")
+    compliance_tier: Optional[str] = Field(default="standard", pattern="^(open|standard|government|critical)$")
     compliance_requirements: Optional[str] = None
     assigned_analyst_id: Optional[str] = None
 
@@ -196,6 +197,7 @@ async def create_sourcing_case(
         sector=payload.sector.strip() if payload.sector else None,
         technology_domain=payload.technology_domain.strip() if payload.technology_domain else None,
         urgency=payload.urgency or "medium",
+        compliance_tier=payload.compliance_tier or "standard",
         compliance_requirements=payload.compliance_requirements.strip() if payload.compliance_requirements else None,
         assigned_analyst_id=payload.assigned_analyst_id,
         created_by=str(current_user["id"]),
