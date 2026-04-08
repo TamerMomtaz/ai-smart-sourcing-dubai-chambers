@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 import { useUserRole } from '../lib/userRole';
+import AuditEvidencePack from './AuditEvidencePack';
 
 const ScoreBadge = ({ score }) => {
   if (score == null) return <span className="text-gray-400 text-sm">—</span>;
@@ -397,10 +398,13 @@ const ComplianceAuditsList = () => {
     );
   }
 
+  const canViewAuditPack = role === 'admin' || role === 'compliance_officer';
+
   const tabs = [
     { id: 'audits', label: 'Vendor Audits' },
     { id: 'self-check', label: 'Platform Compliance Self-Check' },
     { id: 'incidents', label: 'Incident Management' },
+    ...(canViewAuditPack ? [{ id: 'audit-pack', label: 'Audit Evidence Pack' }] : []),
   ];
 
   return (
@@ -574,6 +578,9 @@ const ComplianceAuditsList = () => {
 
         {/* ═══ TAB: Platform Compliance Self-Check ═══ */}
         {activeTab === 'self-check' && <PlatformSelfCheck />}
+
+        {/* ═══ TAB: Audit Evidence Pack ═══ */}
+        {activeTab === 'audit-pack' && canViewAuditPack && <AuditEvidencePack />}
 
         {/* ═══ TAB: Incident Management ═══ */}
         {activeTab === 'incidents' && (
