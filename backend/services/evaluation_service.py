@@ -11,7 +11,7 @@ def get_by_proposal_id(user_id: UUID, proposal_id: UUID) -> Optional[Dict[str, A
     """
     # First verify the proposal exists and user has access
     proposal_response = supabase.table("chamber_proposals").select(
-        "id, submitter_id, business_group_id"
+        "id, submitter_id, business_group_id, sourcing_case_id"
     ).eq("id", str(proposal_id)).maybe_single().execute()
 
     if not proposal_response.data:
@@ -71,6 +71,25 @@ def get_by_proposal_id(user_id: UUID, proposal_id: UUID) -> Optional[Dict[str, A
         if ai_response.data:
             ai_interactions = ai_response.data
 
+    # Fetch sourcing case context if proposal is linked to one
+    sourcing_case_context = None
+    if proposal.get("sourcing_case_id"):
+        try:
+            case_response = supabase.table("chamber_sourcing_cases").select(
+                "id, title, problem_statement, sector, technology_domain, compliance_requirements"
+            ).eq("id", str(proposal["sourcing_case_id"])).maybe_single().execute()
+            if case_response.data:
+                sourcing_case_context = {
+                    "id": case_response.data["id"],
+                    "title": case_response.data.get("title", ""),
+                    "problem_statement": case_response.data.get("problem_statement", ""),
+                    "sector": case_response.data.get("sector"),
+                    "technology_domain": case_response.data.get("technology_domain"),
+                    "compliance_requirements": case_response.data.get("compliance_requirements"),
+                }
+        except Exception:
+            pass  # Non-critical — evaluation still valid without case context
+
     # Build response
     result = {
         "id": evaluation["id"],
@@ -90,7 +109,8 @@ def get_by_proposal_id(user_id: UUID, proposal_id: UUID) -> Optional[Dict[str, A
         "prompt_injection_detected": evaluation.get("prompt_injection_detected", False),
         "summary_en": evaluation.get("summary_en", ""),
         "summary_ar": evaluation.get("summary_ar", ""),
-        "ai_interactions": ai_interactions
+        "ai_interactions": ai_interactions,
+        "sourcing_case_context": sourcing_case_context,
     }
 
     return result

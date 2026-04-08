@@ -591,6 +591,40 @@ const VendorContextBanner = ({ evaluation }) => {
   );
 };
 
+const SourcingCaseContextBanner = ({ sourcingCaseContext }) => {
+  if (!sourcingCaseContext) return null;
+
+  return (
+    <div className="bg-[#1E293B] border border-blue-500/30 rounded-xl p-5 mb-6 overflow-hidden" style={{ borderTop: '3px solid #3B82F6' }}>
+      <div className="flex items-start gap-3">
+        <span className="text-lg mt-0.5">🎯</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-blue-400 text-sm font-medium mb-1">
+            Evaluated in context of: <span className="text-white font-semibold">{sourcingCaseContext.title}</span>
+          </p>
+          {sourcingCaseContext.problem_statement && (
+            <p className="text-gray-400 text-sm leading-relaxed">{sourcingCaseContext.problem_statement}</p>
+          )}
+          {(sourcingCaseContext.sector || sourcingCaseContext.technology_domain) && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {sourcingCaseContext.sector && (
+                <span className="px-2 py-0.5 rounded-full text-xs bg-blue-500/15 text-blue-400 border border-blue-500/30 capitalize">
+                  {sourcingCaseContext.sector}
+                </span>
+              )}
+              {sourcingCaseContext.technology_domain && (
+                <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                  {sourcingCaseContext.technology_domain}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OverrideModal = ({ dimension, dimensionLabel, currentScore, onClose, onSubmit, submitting }) => {
   const [adjustedScore, setAdjustedScore] = useState(currentScore);
   const [reason, setReason] = useState('');
@@ -773,6 +807,9 @@ const EvaluationDetail = () => {
 
         {/* Vendor Context Banner */}
         <VendorContextBanner evaluation={evaluation} />
+
+        {/* Sourcing Case Context Banner */}
+        <SourcingCaseContextBanner sourcingCaseContext={evaluation.sourcing_case_context} />
 
         {/* Proposal Info */}
         {evaluation.proposal && (
