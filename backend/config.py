@@ -92,6 +92,14 @@ INTAKE_API_KEY = _get_env("INTAKE_API_KEY", required=False, default=None)
 
 REDIS_URL = _get_env("REDIS_URL", required=False, default=None)
 
+# UAE PASS SSO (OAuth 2.0 / OIDC) — credentials obtained via UAE TDRA registration
+UAE_PASS_CLIENT_ID = _get_env("UAE_PASS_CLIENT_ID", required=False, default=None)
+UAE_PASS_CLIENT_SECRET = _get_env("UAE_PASS_CLIENT_SECRET", required=False, default=None)
+UAE_PASS_AUTH_URL = _get_env("UAE_PASS_AUTH_URL", required=False, default="https://stg-id.uaepass.ae/idshub/authorize")
+UAE_PASS_TOKEN_URL = _get_env("UAE_PASS_TOKEN_URL", required=False, default="https://stg-id.uaepass.ae/idshub/token")
+UAE_PASS_USERINFO_URL = _get_env("UAE_PASS_USERINFO_URL", required=False, default="https://stg-id.uaepass.ae/idshub/userinfo")
+UAE_PASS_REDIRECT_URI = _get_env("UAE_PASS_REDIRECT_URI", required=False, default="http://localhost:8000/api/v1/auth/uaepass/callback")
+
 APP_VERSION = _get_env("APP_VERSION", required=False, default="1.0.0")
 
 def validate_env_vars():

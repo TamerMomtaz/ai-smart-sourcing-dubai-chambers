@@ -77,7 +77,8 @@ from routes import (
     pipeline_kpi_routes,
     compliance_knowledge_routes,
     sourcing_intake_routes,
-    trade_license_routes
+    trade_license_routes,
+    uaepass_routes
 )
 
 # Configure logging
@@ -291,6 +292,7 @@ app.include_router(pipeline_kpi_routes.router, prefix="/api/v1", tags=["Dashboar
 app.include_router(compliance_knowledge_routes.router, prefix="/api/v1", tags=["Compliance Knowledge Base"])
 app.include_router(sourcing_intake_routes.router, prefix="/api/v1", tags=["Sourcing Intake (Public)"])
 app.include_router(trade_license_routes.router, prefix="/api/v1", tags=["Trade License Verification"])
+app.include_router(uaepass_routes.router, prefix="/api/v1", tags=["UAE PASS SSO"])
 
 if __name__ == "__main__":
     import uvicorn
