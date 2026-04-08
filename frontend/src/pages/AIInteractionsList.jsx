@@ -195,6 +195,75 @@ const IntegrityBadge = () => {
   );
 };
 
+const RetentionPolicyCard = ({ retention }) => {
+  if (!retention) return null;
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric',
+    });
+  };
+
+  return (
+    <div
+      className="rounded-xl p-6 mb-8"
+      style={{
+        backgroundColor: DARK_SURFACE,
+        borderLeft: `4px solid ${GOLD}`,
+      }}
+    >
+      <div className="flex items-start gap-3 mb-4">
+        <span style={{ fontSize: 22 }}>🛡️</span>
+        <div>
+          <h3 className="text-white text-lg font-bold">Data Retention Policy</h3>
+          <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+            All AI interaction logs, compliance audits, evaluation records,
+            and incident reports are retained for a minimum of 7 years
+            in compliance with DESC ISR V3 requirements.
+          </p>
+          <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+            Records are immutable — no audit log entry can be modified
+            or deleted after creation.
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
+          <p
+            className="text-2xl font-bold text-white"
+            style={{ fontFamily: '"JetBrains Mono", monospace' }}
+          >
+            {retention.total_records.toLocaleString()}
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Total Records</p>
+        </div>
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
+          <p
+            className="text-2xl font-bold text-white"
+            style={{ fontFamily: '"JetBrains Mono", monospace' }}
+          >
+            {retention.span_days.toLocaleString()}
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Days Spanned</p>
+        </div>
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
+          <p className="text-sm font-semibold text-slate-300">
+            {formatDate(retention.oldest_record_date)}
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Oldest Record</p>
+        </div>
+        <div className="bg-[var(--color-table-header-bg)] rounded-lg p-4 text-center">
+          <p className="text-sm font-semibold text-emerald-400 flex items-center justify-center gap-1">
+            <span>✓</span> Active
+          </p>
+          <p className="text-slate-400 text-xs mt-1">Policy Compliance</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AIInteractionsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -204,6 +273,7 @@ const AIInteractionsList = () => {
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [shieldStats, setShieldStats] = useState(null);
+  const [retention, setRetention] = useState(null);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 50;
@@ -215,6 +285,7 @@ const AIInteractionsList = () => {
   useEffect(() => {
     fetchSummary();
     fetchShieldStats();
+    fetchRetention();
   }, []);
 
   const fetchSummary = async () => {
@@ -235,6 +306,16 @@ const AIInteractionsList = () => {
       setShieldStats(res.data);
     } catch (err) {
       console.error('Failed to load shield stats:', err);
+    }
+  };
+
+  const fetchRetention = async () => {
+    try {
+      const res = await api.get('/api/v1/transparency/retention-info');
+      setRetention(res.data);
+    } catch (err) {
+      // Non-critical — silently ignore (403 for non-admin/compliance is expected)
+      console.error('Failed to load retention info:', err);
     }
   };
 
@@ -319,6 +400,9 @@ const AIInteractionsList = () => {
             <IntegrityBadge />
           </div>
         </header>
+
+        {/* Data Retention Policy */}
+        <RetentionPolicyCard retention={retention} />
 
         {error && (
           <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
