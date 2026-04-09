@@ -25,6 +25,7 @@
   "nav.model_inventory": "AI Model Inventory",
   "nav.users": "Users",
   "nav.board_brief": "Executive Board Brief",
+  "nav.ai_team": "AI Team",
   "nav.api_docs": "API Docs",
 
   "auth.sign_in": "Sign In",
@@ -152,5 +153,13 @@
   "alerts.none": "No active alerts",
   "alerts.mark_resolved": "Mark Resolved",
   "alerts.just_now": "just now",
-  "alerts.ago": "ago"
+  "alerts.ago": "ago",
+
+  "ai_team.title": "Meet the \u03c3I Team",
+  "ai_team.subtitle": "The AI specialists behind every decision. Each operates under human oversight. None acts alone.",
+  "ai_team.tagline": "Human IS the Loop \u2014 \u03c3I Added Intelligence",
+  "ai_team.philosophy_title": "Team Philosophy",
+  "ai_team.philosophy_body": "Every \u03c3I specialist operates under the same principle: AI recommends, human decides. No autonomous actions. Full transparency. Complete audit trail. Added Intelligence \u2014 not Artificial Intelligence.",
+  "ai_team.footer_sigma": "\u03c3I \u2014 Sigma Intelligence | Awareness Implemented",
+  "ai_team.footer_built": "Built by DEVONEERS | Powered by Anthropic Claude, OpenAI GPT-4o, Google Gemini"
 }
