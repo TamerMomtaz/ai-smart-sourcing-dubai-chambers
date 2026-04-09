@@ -6,6 +6,7 @@ import { useTranslation } from '../lib/language';
 import { ROLE_BADGES } from '../config/rolePermissions';
 import { useUserRole } from '../lib/userRole';
 import DemoBanner from '../components/DemoBanner';
+import VendorDashboard from './VendorDashboard';
 
 // --- Animated counter hook ---
 function useCountUp(target, duration = 1500) {
@@ -1023,6 +1024,18 @@ const Dashboard = () => {
         <div className="max-w-4xl mx-auto bg-burgundy/10 border border-burgundy rounded-lg p-6">
           <h2 className="font-heading text-2xl text-burgundy mb-2">Error Loading Dashboard</h2>
           <p className="text-ink">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Vendor role gets a dedicated dashboard experience
+  if (isVendor) {
+    return (
+      <div className="min-h-screen bg-cream p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <DemoBanner />
+          <VendorDashboard user={user} />
         </div>
       </div>
     );
