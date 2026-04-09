@@ -18,7 +18,9 @@ const STAGES = [
   { id: 10, name: 'Ecosystem Intelligence', sidebar: 'Dashboard' },
   { id: 11, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
   { id: 12, name: 'About', sidebar: null },
-  { id: 13, name: 'Finale', sidebar: null },
+  { id: 13, name: 'Deployment Roadmap', sidebar: null },
+  { id: 14, name: 'Demo Path', sidebar: null },
+  { id: 15, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
@@ -560,6 +562,112 @@ function AboutSection() {
   );
 }
 
+/* ─── Deployment Roadmap Section (Stage 13) ─── */
+function DeploymentRoadmapSection() {
+  const phases = [
+    {
+      phase: 'Phase 1 — MVP (12 weeks)',
+      description: 'Deploy on DESC-certified AWS UAE / Azure UAE North. Multi-channel intake, AI evaluation, vendor intelligence, DESC compliance engine.',
+    },
+    {
+      phase: 'Phase 2 — Intelligence (6 months)',
+      description: 'ISO 27001 certification initiated. Advanced semantic matching, Ignyte and Business in Dubai API integrations.',
+    },
+    {
+      phase: 'Phase 3 — Scale (12 months)',
+      description: 'DESC CSP certification application. Multi-language expansion, white-label for other chamber networks.',
+    },
+  ];
+
+  return (
+    <div style={{ maxWidth: '700px', width: '100%', padding: '40px', textAlign: 'center' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#1E293B', marginBottom: '28px' }}>
+        Deployment Roadmap
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
+        {phases.map((p, i) => (
+          <div key={i} style={{
+            background: '#F0FDFA', border: '1px solid #99F6E4',
+            borderRadius: '12px', padding: '24px', textAlign: 'left',
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#0D9488', marginBottom: '8px' }}>
+              {p.phase}
+            </div>
+            <div style={{ fontSize: '14px', color: '#475569', lineHeight: 1.7 }}>
+              {p.description}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{
+        fontSize: '13px', color: '#64748B', lineHeight: 1.7,
+        background: '#F8FAFC', border: '1px solid #E2E8F0',
+        borderRadius: '8px', padding: '16px', textAlign: 'left',
+      }}>
+        Devoneers is an early-stage company. The platform deploys on DESC-certified cloud
+        infrastructure from Day 1. Our certification roadmap runs in parallel with the partnership.
+      </p>
+    </div>
+  );
+}
+
+/* ─── Guided Demo Path Section (Stage 14) ─── */
+function GuidedDemoPathSection() {
+  const steps = [
+    { description: 'AI structures a raw email', link: '/sourcing-cases' },
+    { description: 'Vendors discovered and matched', link: '/vendors' },
+    { description: 'Compliance Gate checks proposal', link: '/proposals' },
+    { description: '5-dimension AI evaluation', link: '/evaluations' },
+    { description: 'Stage-Gate decision (GO/HOLD)', link: '/proposals' },
+    { description: 'Vendor vScore profile', link: '/vendor-intelligence' },
+    { description: 'DESC Audit Evidence Pack', link: '/compliance-audits' },
+    { description: 'σI Transparency log', link: '/ai-interactions' },
+    { description: 'Switch to Arabic', link: null },
+  ];
+
+  return (
+    <div style={{ maxWidth: '700px', width: '100%', padding: '40px' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#1E293B', marginBottom: '24px', textAlign: 'center' }}>
+        Recommended Demo Path
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: '16px',
+            padding: '12px 16px', borderRadius: '8px',
+            background: i % 2 === 0 ? '#F8FAFC' : '#fff',
+            border: '1px solid #E2E8F0',
+          }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: '#0D9488', color: '#fff', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: '14px', fontWeight: 600, flexShrink: 0,
+            }}>
+              {i + 1}
+            </div>
+            <div style={{ flex: 1, fontSize: '14px', color: '#1E293B' }}>
+              {s.description}
+            </div>
+            {s.link ? (
+              <a href={s.link} style={{
+                color: '#0D9488', fontSize: '13px', textDecoration: 'none',
+                fontWeight: 500, whiteSpace: 'nowrap',
+              }}>
+                {s.link} →
+              </a>
+            ) : (
+              <span style={{ color: '#94A3B8', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                (toggle language)
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Finale Section ─── */
 function FinaleSection({ impact, onReplay, onExplore, onBack }) {
   const [phase, setPhase] = useState(0);
@@ -689,7 +797,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 13));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 15));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -706,7 +814,7 @@ export default function HowItWorks() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
           <ProblemSection />
         </div>
-        <NavigationBar current={1} total={12} stageName="The Problem" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+        <NavigationBar current={1} total={14} stageName="The Problem" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
       </div>
     );
   }
@@ -720,7 +828,7 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={11} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+          <NavigationBar current={11} total={14} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
@@ -733,13 +841,37 @@ export default function HowItWorks() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
           <AboutSection />
         </div>
-        <NavigationBar current={12} total={12} stageName="About" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+        <NavigationBar current={12} total={14} stageName="About" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
       </div>
     );
   }
 
-  // Render finale if stage 13
+  // Stage 13: Deployment Roadmap
   if (currentStage === 13) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <DeploymentRoadmapSection />
+        </div>
+        <NavigationBar current={13} total={14} stageName="Deployment Roadmap" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+      </div>
+    );
+  }
+
+  // Stage 14: Guided Demo Path
+  if (currentStage === 14) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <GuidedDemoPathSection />
+        </div>
+        <NavigationBar current={14} total={14} stageName="Demo Path" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+      </div>
+    );
+  }
+
+  // Render finale if stage 15
+  if (currentStage === 15) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -747,7 +879,7 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(12)}
+          onBack={() => setCurrentStage(14)}
         />
       </div>
     );
@@ -759,7 +891,7 @@ export default function HowItWorks() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={12} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+      <NavigationBar current={currentStage} total={14} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
     </div>
   );
 }
