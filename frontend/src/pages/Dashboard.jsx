@@ -1019,7 +1019,8 @@ const Dashboard = () => {
         <DemoBanner />
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl md:text-4xl text-teal mb-2">{t('nav.dashboard')}</h1>
+            <h1 className="font-heading text-3xl md:text-4xl text-teal mb-1">{t('nav.dashboard')}</h1>
+            <p className="text-sm text-teal/70 font-medium mb-1">{t('dashboard.command_center')}</p>
             <p className="text-ink/70 flex items-center gap-2">
               {t('dashboard.title')}, {user?.full_name || t('common.user')}
               {user?.role && ROLE_BADGES[user.role] && (

@@ -113,6 +113,7 @@ function Layout() {
           {/* Logo */}
           <div className="p-6 border-b border-ink/10">
             <h1 className="font-heading text-2xl text-teal">{t('app.title')}</h1>
+            <p className="font-body text-[10px] font-semibold text-teal/70 tracking-wide mt-0.5">{t('app.sidebar_subtitle')}</p>
             <p className="font-body text-xs text-ink/60 mt-1">{t('app.subtitle_short')}</p>
           </div>
 
