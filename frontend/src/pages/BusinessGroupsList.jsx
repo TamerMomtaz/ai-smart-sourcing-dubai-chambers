@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api, { getErrorMessage } from '../lib/api';
 
 const WeightBar = ({ label, value }) => {
@@ -22,9 +22,12 @@ const BusinessGroupsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [sourcingBySector, setSourcingBySector] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchGroups();
+    fetchSourcingCases();
   }, []);
 
   const fetchGroups = async () => {
@@ -38,6 +41,37 @@ const BusinessGroupsList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchSourcingCases = async () => {
+    try {
+      const res = await api.get('/api/v1/sourcing-cases');
+      const cases = res.data?.sourcing_cases || res.data || [];
+      const bySector = {};
+      cases.forEach(c => {
+        const sector = (c.sector || '').toLowerCase();
+        if (sector) {
+          bySector[sector] = (bySector[sector] || 0) + 1;
+        }
+      });
+      setSourcingBySector(bySector);
+    } catch {
+      // Non-critical
+    }
+  };
+
+  const getSourcingCount = (groupName) => {
+    const key = (groupName || '').toLowerCase();
+    // Match sector by checking if group name is contained in sector key or vice versa
+    let count = sourcingBySector[key] || 0;
+    if (count === 0) {
+      for (const [sector, cnt] of Object.entries(sourcingBySector)) {
+        if (sector.includes(key) || key.includes(sector)) {
+          count += cnt;
+        }
+      }
+    }
+    return count;
   };
 
   if (loading) {
@@ -118,6 +152,25 @@ const BusinessGroupsList = () => {
                         <p className="text-xs text-[#94A3B8]">Default evaluation weights</p>
                       </div>
                     )}
+
+                    {/* Recent Sourcing Cases */}
+                    <div className="border-t border-gray-700 pt-4 mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Recent Sourcing Cases</p>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
+                          {getSourcingCount(g.name)}
+                        </span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/sourcing-cases?sector=${encodeURIComponent(g.name)}`);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30 transition-colors"
+                      >
+                        Submit Innovation Need
+                      </button>
+                    </div>
                   </div>
                 </Link>
               );

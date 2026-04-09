@@ -884,6 +884,8 @@ const Dashboard = () => {
   const [pipelineKpis, setPipelineKpis] = useState(null);
   const [activeAlerts, setActiveAlerts] = useState([]);
   const [channelAnalytics, setChannelAnalytics] = useState(null);
+  const [activeSourcingCases, setActiveSourcingCases] = useState(0);
+  const [signalsThisMonth, setSignalsThisMonth] = useState(0);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -939,6 +941,19 @@ const Dashboard = () => {
           } catch {
             // Non-critical
           }
+        }
+
+        // Fetch sourcing cases for Active Sourcing Cases + Signals This Month
+        try {
+          const scRes = await api.get('/api/v1/sourcing-cases');
+          const cases = scRes.data?.sourcing_cases || scRes.data || [];
+          const activeStatuses = ['open', 'matching', 'evaluating'];
+          setActiveSourcingCases(cases.filter(c => activeStatuses.includes(c.status)).length);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          setSignalsThisMonth(cases.filter(c => c.created_at && new Date(c.created_at) >= thirtyDaysAgo).length);
+        } catch {
+          // Non-critical
         }
 
         // Fetch active alerts (admin/compliance only)
@@ -1039,9 +1054,6 @@ const Dashboard = () => {
             </button>
           )}
         </header>
-
-        {/* σI Impact Meter — ABOVE existing stats */}
-        {!isVendor && <ImpactMeter impact={impact} timeline={timeline} />}
 
         {/* Active Alerts — admin/compliance only */}
         {canViewAlerts && <ActiveAlerts alerts={activeAlerts} onResolve={handleResolveAlert} />}
@@ -1148,9 +1160,21 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6 mb-8">
           <StatCard
-            title="Total Proposals"
+            title="Active Sourcing Cases"
+            value={activeSourcingCases}
+            icon="🎯"
+            color="teal"
+          />
+          <StatCard
+            title="Signals This Month"
+            value={signalsThisMonth}
+            icon="📡"
+            color="teal"
+          />
+          <StatCard
+            title="Solutions Submitted"
             value={stats?.total_proposals || 0}
             icon="📋"
             color="teal"
@@ -1168,7 +1192,7 @@ const Dashboard = () => {
             color="teal"
           />
           <StatCard
-            title="Pending Evaluation"
+            title="Awaiting Assessment"
             value={stats?.pending_evaluation || 0}
             icon="⏳"
             color="gold"
@@ -1187,11 +1211,14 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Pipeline Performance KPIs */}
+        {/* Pipeline Performance KPIs — right after stat cards */}
         {!isVendor && <PipelineKPIs kpis={pipelineKpis} />}
 
         {/* Channel Analytics */}
         {!isVendor && <ChannelAnalytics data={channelAnalytics} />}
+
+        {/* σI Impact Meter — below Pipeline & Channel Analytics */}
+        {!isVendor && <ImpactMeter impact={impact} timeline={timeline} />}
 
         {/* Pilot & Engagement Outcomes */}
         <EngagementOutcomes data={engagements} />
