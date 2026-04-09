@@ -1,7 +1,9 @@
 {
   "app.title": "AI Smart Sourcing",
-  "app.subtitle": "Dubai Chambers Smart Sourcing Platform",
+  "app.subtitle": "AI-Powered Innovation & Sourcing Orchestration Platform",
+  "app.tagline": "From fragmented signals to institutional intelligence — the AI operating system for Dubai's innovation ecosystem.",
   "app.subtitle_short": "Dubai Chambers | by Tamer Momtaz",
+  "app.sidebar_subtitle": "Innovation Orchestration",
   "app.footer": "Created by Tamer Momtaz | Powered by σI (Added Intelligence)",
   "app.built_by": "Built by Tamer Momtaz | Powered by σI",
 
@@ -54,6 +56,7 @@
   "layout.open_menu": "Open menu",
 
   "dashboard.title": "Welcome back",
+  "dashboard.command_center": "Your innovation orchestration command center",
   "dashboard.impact_meter": "Impact Meter — Return on Time",
   "dashboard.hours_saved": "analyst-hours saved",
   "dashboard.days_saved": "working days saved",

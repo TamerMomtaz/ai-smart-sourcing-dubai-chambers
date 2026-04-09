@@ -54,7 +54,8 @@ function Login() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="font-heading text-4xl text-teal mb-2">{t('app.title')}</h1>
-          <p className="font-body text-ink/70">{t('app.subtitle')}</p>
+          <p className="font-body text-sm font-semibold text-ink/80 tracking-wide">{t('app.subtitle')}</p>
+          <p className="font-body text-xs text-ink/50 mt-2 max-w-sm mx-auto leading-relaxed">{t('app.tagline')}</p>
         </div>
 
         <LivePulseBanner />

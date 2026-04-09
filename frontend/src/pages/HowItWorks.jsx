@@ -20,7 +20,8 @@ const STAGES = [
   { id: 12, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
   { id: 13, name: 'Vendor Intelligence — vScore', sidebar: 'Vendor Intelligence' },
   { id: 14, name: 'Incident Response & Platform Compliance', sidebar: 'Compliance Audits' },
-  { id: 15, name: 'Finale', sidebar: null },
+  { id: 15, name: 'Why AI Smart Sourcing?', sidebar: null },
+  { id: 16, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
@@ -690,6 +691,53 @@ const STAGE_CONTENT = {
       );
     }
   },
+
+  15: {
+    title: "Why AI Smart Sourcing?",
+    render: () => {
+      const rows = [
+        { dimension: 'Starting point', generic: 'Vendor submits proposal', platform: 'Ecosystem signal arrives' },
+        { dimension: 'Evaluation context', generic: 'Proposal in isolation', platform: 'Against specific sourcing case' },
+        { dimension: 'Vendor view', generic: 'Per-submission only', platform: 'Cumulative trust score (vScore)' },
+        { dimension: 'Compliance', generic: 'Checkbox / afterthought', platform: 'Embedded from intake' },
+        { dimension: 'Lifecycle', generic: 'Submission → Score', platform: 'Intake → Pilot → Outcome' },
+        { dimension: 'Institutional memory', generic: 'None', platform: 'Full ecosystem intelligence' },
+        { dimension: 'Arabic support', generic: 'None', platform: 'Native RTL + Arabic UI' },
+        { dimension: 'DESC compliance', generic: 'Claimed', platform: 'Architecture-level, auditable' },
+      ];
+
+      return (
+        <div>
+          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
+            Not another scoring tool — an innovation operating system.
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: '13px' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#94A3B8', fontWeight: 600, borderRadius: '8px 0 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dimension</th>
+                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#94A3B8', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Generic AI Tools</th>
+                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#0D9488', fontWeight: 600, borderRadius: '0 8px 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Smart Sourcing</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => (
+                  <tr key={row.dimension} style={{
+                    background: i % 2 === 0 ? '#F8FAFC' : '#fff',
+                    animation: `slideUp 0.4s ease-out ${0.1 * i}s both`
+                  }}>
+                    <td style={{ padding: '10px 14px', fontWeight: 600, color: '#1E293B', borderBottom: '1px solid #E2E8F0' }}>{row.dimension}</td>
+                    <td style={{ padding: '10px 14px', color: '#94A3B8', borderBottom: '1px solid #E2E8F0' }}>{row.generic}</td>
+                    <td style={{ padding: '10px 14px', color: '#0D9488', fontWeight: 500, borderBottom: '1px solid #E2E8F0' }}>{row.platform}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+  },
 };
 
 /* ─── Stage Card ─── */
@@ -979,7 +1027,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 15));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 16));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -998,14 +1046,14 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={12} total={14} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+          <NavigationBar current={12} total={15} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
   }
 
-  // Render finale if stage 15
-  if (currentStage === 15) {
+  // Render finale if stage 16
+  if (currentStage === 16) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -1013,7 +1061,7 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(14)}
+          onBack={() => setCurrentStage(15)}
         />
       </div>
     );
@@ -1025,7 +1073,7 @@ export default function HowItWorks() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={14} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 14} />
+      <NavigationBar current={currentStage} total={15} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 15} />
     </div>
   );
 }
