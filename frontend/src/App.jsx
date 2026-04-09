@@ -43,6 +43,7 @@ import SourcingBoard from './pages/SourcingBoard';
 import PilotTracker from './pages/PilotTracker';
 import VendorOnboard from './pages/VendorOnboard';
 import ModelInventory from './pages/ModelInventory';
+import AITeam from './pages/AITeam';
 import NotFound from './components/NotFound';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -144,6 +145,7 @@ function App() {
             <Route path="desc-certified-providers" element={<DESCCertifiedProvidersList />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="ai-team" element={<AITeam />} />
             <Route path="api-reference" element={<ApiDocs />} />
           </Route>
           <Route path="*" element={<NotFound />} />

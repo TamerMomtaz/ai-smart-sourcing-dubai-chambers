@@ -41,6 +41,7 @@ function Layout() {
 
   const allNavigation = [
     { name: t('nav.how_it_works'), href: '/guide', icon: '💡', key: 'how-it-works' },
+    { name: t('nav.ai_team'), href: '/ai-team', icon: '🤝', key: 'ai-team' },
     { name: t('nav.dashboard'), href: '/dashboard', icon: '📊', key: 'dashboard' },
     { name: t('nav.sourcing_cases'), href: '/sourcing-cases', icon: '🎯', key: 'sourcing-cases' },
     { name: t('nav.pilot_tracker'), href: '/pilot-tracker', icon: '🧪', key: 'pilot-tracker' },
