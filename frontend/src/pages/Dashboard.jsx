@@ -663,6 +663,156 @@ const PipelineKPIs = ({ kpis }) => {
   );
 };
 
+// --- Channel Analytics Section ---
+const CHANNEL_LABELS = {
+  manual: 'Manual',
+  business_in_dubai: 'Business in Dubai',
+  expand_north_star: 'Expand North Star',
+  ignyte: 'Ignyte',
+  partner_referral: 'Partner Referral',
+  email: 'Email',
+  api: 'API',
+};
+
+const CHANNEL_DOT_COLORS = {
+  manual: 'bg-gray-500',
+  business_in_dubai: 'bg-blue-500',
+  expand_north_star: 'bg-purple-500',
+  ignyte: 'bg-orange-500',
+  partner_referral: 'bg-indigo-500',
+  email: 'bg-sky-500',
+  api: 'bg-emerald-500',
+};
+
+const CHANNEL_BAR_COLORS = {
+  manual: 'bg-gray-400',
+  business_in_dubai: 'bg-blue-500',
+  expand_north_star: 'bg-purple-500',
+  ignyte: 'bg-orange-500',
+  partner_referral: 'bg-indigo-500',
+  email: 'bg-sky-500',
+  api: 'bg-emerald-500',
+};
+
+const ChannelAnalytics = ({ data }) => {
+  if (!data) return null;
+
+  const { channels, top_channel, best_converting, total_signals } = data;
+  const maxCases = Math.max(...channels.map(ch => ch.total_cases), 1);
+
+  return (
+    <div className="mb-8">
+      <div className="mb-4">
+        <h2 className="font-heading text-2xl text-teal">Channel Analytics</h2>
+        <p className="text-ink/50 text-sm mt-1">Volume, conversion rates, and performance by intake source</p>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <div className="text-xs text-ink/50 mb-1">Total Signals</div>
+          <div className="text-3xl font-mono font-bold text-teal">{total_signals}</div>
+          <div className="text-[11px] text-ink/40 mt-1">Across all channels</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <div className="text-xs text-ink/50 mb-1">Top Channel</div>
+          <div className="flex items-center gap-2 mt-1">
+            {top_channel && <span className={`inline-block w-3 h-3 rounded-full ${CHANNEL_DOT_COLORS[top_channel] || 'bg-gray-400'}`} />}
+            <span className="text-lg font-heading font-bold text-ink/80">{top_channel ? CHANNEL_LABELS[top_channel] || top_channel : '—'}</span>
+          </div>
+          <div className="text-[11px] text-ink/40 mt-1">Highest volume</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <div className="text-xs text-ink/50 mb-1">Best Converting</div>
+          <div className="flex items-center gap-2 mt-1">
+            {best_converting && <span className={`inline-block w-3 h-3 rounded-full ${CHANNEL_DOT_COLORS[best_converting] || 'bg-gray-400'}`} />}
+            <span className="text-lg font-heading font-bold text-ink/80">{best_converting ? CHANNEL_LABELS[best_converting] || best_converting : '—'}</span>
+          </div>
+          <div className="text-[11px] text-ink/40 mt-1">Highest conversion rate</div>
+        </div>
+      </div>
+
+      {/* Volume bars */}
+      <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6">
+        <h3 className="text-sm font-semibold text-ink/70 mb-4">Volume by Channel</h3>
+        <div className="space-y-3">
+          {channels.map((ch) => (
+            <div key={ch.channel} className="flex items-center gap-3">
+              <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 ${CHANNEL_DOT_COLORS[ch.channel] || 'bg-gray-400'}`} />
+              <span className="text-sm text-ink/70 w-36 truncate flex-shrink-0">{CHANNEL_LABELS[ch.channel] || ch.channel}</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${CHANNEL_BAR_COLORS[ch.channel] || 'bg-gray-400'} transition-all duration-500`}
+                  style={{ width: `${Math.max((ch.total_cases / maxCases) * 100, ch.total_cases > 0 ? 2 : 0)}%` }}
+                />
+              </div>
+              <span className="text-sm font-mono font-semibold text-ink/60 w-10 text-right flex-shrink-0">{ch.total_cases}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Detailed table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 text-left text-xs text-ink/50">
+              <th className="px-5 py-3 font-medium">Channel</th>
+              <th className="px-4 py-3 font-medium text-right">Cases</th>
+              <th className="px-4 py-3 font-medium text-right">Active</th>
+              <th className="px-4 py-3 font-medium text-right">Completed</th>
+              <th className="px-4 py-3 font-medium text-right">Conversion</th>
+              <th className="px-4 py-3 font-medium text-right">Avg Days</th>
+              <th className="px-4 py-3 font-medium text-right">Proposals</th>
+              <th className="px-4 py-3 font-medium text-right">Avg Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {channels.map((ch) => (
+              <tr key={ch.channel} className="border-b border-gray-50 hover:bg-gray-50/50">
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${CHANNEL_DOT_COLORS[ch.channel] || 'bg-gray-400'}`} />
+                    <span className="font-medium text-ink/80">{CHANNEL_LABELS[ch.channel] || ch.channel}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right font-mono text-ink/70">{ch.total_cases}</td>
+                <td className="px-4 py-3 text-right font-mono text-ink/70">{ch.active_cases}</td>
+                <td className="px-4 py-3 text-right font-mono text-ink/70">{ch.completed_cases}</td>
+                <td className="px-4 py-3 text-right">
+                  <span className={`font-mono font-semibold ${
+                    ch.conversion_rate >= 50 ? 'text-emerald-600' :
+                    ch.conversion_rate >= 20 ? 'text-amber-600' :
+                    ch.total_cases > 0 ? 'text-ink/60' : 'text-ink/30'
+                  }`}>
+                    {ch.conversion_rate}%
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right font-mono text-ink/60">
+                  {ch.avg_time_to_completion != null ? `${ch.avg_time_to_completion}d` : '—'}
+                </td>
+                <td className="px-4 py-3 text-right font-mono text-ink/70">{ch.linked_proposals}</td>
+                <td className="px-4 py-3 text-right">
+                  {ch.avg_evaluation_score != null ? (
+                    <span className={`font-mono font-semibold ${
+                      ch.avg_evaluation_score >= 70 ? 'text-emerald-600' :
+                      ch.avg_evaluation_score >= 50 ? 'text-amber-600' : 'text-red-500'
+                    }`}>
+                      {ch.avg_evaluation_score}
+                    </span>
+                  ) : (
+                    <span className="text-ink/30">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 // --- Active Alerts Banner (above stat cards) ---
 const ALERT_SEVERITY_STYLES = {
   critical: 'bg-red-100 text-red-800 border-red-300',
@@ -733,6 +883,7 @@ const Dashboard = () => {
   const [sectors, setSectors] = useState(null);
   const [pipelineKpis, setPipelineKpis] = useState(null);
   const [activeAlerts, setActiveAlerts] = useState([]);
+  const [channelAnalytics, setChannelAnalytics] = useState(null);
 
   useEffect(() => {
     // Don't fetch until auth has settled
@@ -773,11 +924,18 @@ const Dashboard = () => {
           // Non-critical
         }
 
-        // Fetch pipeline KPIs (admin/analyst/executive only)
+        // Fetch pipeline KPIs and channel analytics (admin/analyst/executive only)
         if (userRes.data?.role !== 'vendor') {
           try {
             const kpiRes = await api.get('/api/v1/dashboard/pipeline-kpis');
             setPipelineKpis(kpiRes.data?.kpis || null);
+          } catch {
+            // Non-critical
+          }
+
+          try {
+            const channelRes = await api.get('/api/v1/dashboard/channel-analytics');
+            setChannelAnalytics(channelRes.data || null);
           } catch {
             // Non-critical
           }
@@ -1030,6 +1188,9 @@ const Dashboard = () => {
 
         {/* Pipeline Performance KPIs */}
         {!isVendor && <PipelineKPIs kpis={pipelineKpis} />}
+
+        {/* Channel Analytics */}
+        {!isVendor && <ChannelAnalytics data={channelAnalytics} />}
 
         {/* Pilot & Engagement Outcomes */}
         <EngagementOutcomes data={engagements} />
