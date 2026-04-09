@@ -38,6 +38,7 @@ import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
 import ApiDocs from './pages/ApiDocs';
 import SourcingCases from './pages/SourcingCases';
+import CaseProposalComparison from './pages/CaseProposalComparison';
 import SourcingBoard from './pages/SourcingBoard';
 import PilotTracker from './pages/PilotTracker';
 import VendorOnboard from './pages/VendorOnboard';
@@ -111,6 +112,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
             <Route path="sourcing-cases" element={<SourcingCases />} />
+            <Route path="sourcing-cases/:caseId/compare" element={<CaseProposalComparison />} />
             <Route path="pilot-tracker" element={<PilotTracker />} />
             <Route path="proposals" element={<ProposalsList />} />
             <Route path="proposals/new" element={<ProposalForm />} />

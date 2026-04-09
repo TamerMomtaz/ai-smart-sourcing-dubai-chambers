@@ -188,6 +188,149 @@ def update_sourcing_case_status(*, case_id: str, new_status: str):
     return result.data[0] if result.data else None
 
 
+def get_compare_proposals(*, case_id: str) -> Optional[Dict[str, Any]]:
+    """Get all proposals linked to a sourcing case with evaluation data for comparison."""
+    # Verify case exists
+    case_result = (
+        supabase.table("chamber_sourcing_cases")
+        .select("id, title, problem_statement, sector, compliance_tier")
+        .eq("id", case_id)
+        .maybe_single()
+        .execute()
+    )
+    if not case_result.data:
+        return None
+
+    case = case_result.data
+
+    # Fetch linked proposals with vendor info
+    proposals_result = (
+        supabase.table("chamber_proposals")
+        .select("id, title, status, sector, technology_type, created_at, composite_score, submitter_id")
+        .eq("sourcing_case_id", case_id)
+        .order("composite_score", desc=True)
+        .execute()
+    )
+    proposals = proposals_result.data or []
+    if not proposals:
+        return {"case": case, "proposals": []}
+
+    proposal_ids = [p["id"] for p in proposals]
+    submitter_ids = list({p["submitter_id"] for p in proposals if p.get("submitter_id")})
+
+    # Fetch evaluations for these proposals
+    eval_result = (
+        supabase.table("chamber_evaluations")
+        .select("proposal_id, composite_score, relevance_score, feasibility_score, sector_alignment_score, compliance_score, innovation_score, ai_recommendation, evaluated_at")
+        .in_("proposal_id", proposal_ids)
+        .execute()
+    )
+    eval_map = {}
+    for ev in (eval_result.data or []):
+        eval_map[ev["proposal_id"]] = ev
+
+    # Fetch compliance gate results
+    compliance_map = {}
+    try:
+        comp_result = (
+            supabase.table("chamber_compliance_gates")
+            .select("proposal_id, gate_status, checked_at")
+            .in_("proposal_id", proposal_ids)
+            .execute()
+        )
+        for cg in (comp_result.data or []):
+            compliance_map[cg["proposal_id"]] = cg
+    except Exception as e:
+        logger.warning("Failed to fetch compliance gates: %s", e)
+
+    # Fetch hallucination shield (evidence grounding) data
+    shield_map = {}
+    try:
+        shield_result = (
+            supabase.table("chamber_hallucination_checks")
+            .select("evaluation_id, grounding_score")
+            .execute()
+        )
+        # Map evaluation_id -> grounding_score, then we'll map via proposal
+        eval_id_to_grounding = {}
+        for sh in (shield_result.data or []):
+            eval_id_to_grounding[sh["evaluation_id"]] = sh.get("grounding_score")
+        # Now map proposal_id -> grounding_score via eval
+        for pid, ev in eval_map.items():
+            if ev.get("id") in eval_id_to_grounding:
+                shield_map[pid] = eval_id_to_grounding[ev["id"]]
+    except Exception as e:
+        logger.warning("Failed to fetch hallucination checks: %s", e)
+
+    # Fetch vendor info
+    vendor_map = {}
+    if submitter_ids:
+        try:
+            vendor_result = (
+                supabase.table("chamber_vendors")
+                .select("id, company_name")
+                .in_("id", submitter_ids)
+                .execute()
+            )
+            for v in (vendor_result.data or []):
+                vendor_map[v["id"]] = v
+        except Exception as e:
+            logger.warning("Failed to fetch vendors: %s", e)
+
+    # Fetch vendor vScores
+    vscore_map = {}
+    if submitter_ids:
+        try:
+            vscore_result = (
+                supabase.table("chamber_vendor_scores")
+                .select("vendor_id, vscore, tier")
+                .in_("vendor_id", submitter_ids)
+                .execute()
+            )
+            for vs in (vscore_result.data or []):
+                vscore_map[vs["vendor_id"]] = vs
+        except Exception as e:
+            logger.warning("Failed to fetch vendor scores: %s", e)
+
+    # Build enriched proposal list
+    enriched = []
+    for p in proposals:
+        ev = eval_map.get(p["id"], {})
+        vendor = vendor_map.get(p.get("submitter_id"), {})
+        vscore = vscore_map.get(p.get("submitter_id"), {})
+        gate = compliance_map.get(p["id"], {})
+        grounding = shield_map.get(p["id"])
+
+        enriched.append({
+            "id": p["id"],
+            "title": p["title"],
+            "status": p["status"],
+            "sector": p.get("sector"),
+            "technology_type": p.get("technology_type"),
+            "created_at": p.get("created_at"),
+            "vendor_name": vendor.get("company_name", "Unknown"),
+            "vendor_id": p.get("submitter_id"),
+            # Evaluation scores
+            "composite_score": ev.get("composite_score") or p.get("composite_score"),
+            "relevance_score": ev.get("relevance_score"),
+            "feasibility_score": ev.get("feasibility_score"),
+            "sector_alignment_score": ev.get("sector_alignment_score"),
+            "compliance_score": ev.get("compliance_score"),
+            "innovation_score": ev.get("innovation_score"),
+            "ai_recommendation": ev.get("ai_recommendation"),
+            "evaluated_at": ev.get("evaluated_at"),
+            # Compliance gate
+            "gate_status": gate.get("gate_status"),
+            # Evidence grounding
+            "grounding_score": grounding,
+            # Vendor vScore
+            "vscore": vscore.get("vscore"),
+            "vscore_tier": vscore.get("tier"),
+        })
+
+    return {"case": case, "proposals": enriched}
+
+
 def merge_sourcing_cases(*, source_id: str, target_id: str, merged_by: str) -> Optional[Dict[str, Any]]:
     """
     Merge source sourcing case into target.

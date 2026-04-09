@@ -560,12 +560,23 @@ const SourcingCases = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-heading text-xl text-ink">Linked Proposals ({selectedCase.proposals?.length || 0})</h2>
-            <button
-              onClick={() => navigate(`/proposals?sourcing_case=${selectedCase.id}`)}
-              className="text-teal text-sm hover:underline font-body"
-            >
-              View in Proposals →
-            </button>
+            <div className="flex items-center gap-3">
+              {(selectedCase.proposals?.length || 0) >= 2 && (
+                <button
+                  onClick={() => navigate(`/sourcing-cases/${selectedCase.id}/compare`)}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
+                  style={{ backgroundColor: '#0D9488' }}
+                >
+                  Compare Proposals
+                </button>
+              )}
+              <button
+                onClick={() => navigate(`/proposals?sourcing_case=${selectedCase.id}`)}
+                className="text-teal text-sm hover:underline font-body"
+              >
+                View in Proposals →
+              </button>
+            </div>
           </div>
           {(selectedCase.proposals?.length || 0) === 0 ? (
             <p className="text-ink/50 font-body text-sm">No proposals linked to this case yet.</p>
