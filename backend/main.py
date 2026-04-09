@@ -85,7 +85,8 @@ from routes import (
     vendor_matching_routes,
     case_deduplication_routes,
     factsheet_routes,
-    sourcing_board_routes
+    sourcing_board_routes,
+    channel_analytics_routes
 )
 
 # Configure logging
@@ -307,6 +308,7 @@ app.include_router(alerts_routes.router, prefix="/api/v1", tags=["Alerts"])
 app.include_router(model_inventory_routes.router, prefix="/api/v1", tags=["AI Model Inventory"])
 app.include_router(sector_assignment_routes.router, prefix="/api/v1", tags=["Sector Assignments"])
 app.include_router(vendor_matching_routes.router, prefix="/api/v1", tags=["Vendor Matching"])
+app.include_router(channel_analytics_routes.router, prefix="/api/v1", tags=["Dashboard Channel Analytics"])
 
 if __name__ == "__main__":
     import uvicorn
