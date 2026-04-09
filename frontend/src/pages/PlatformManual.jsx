@@ -112,6 +112,13 @@ const SECTIONS = [
         navPath: '/compliance-audits',
       },
       {
+        name: 'Compliance Tiers',
+        description: 'Open / Standard / Government / Critical filtering applied to sourcing cases. Each tier enforces escalating compliance requirements, ensuring the right governance level for every innovation case.',
+        features: ['4-tier classification system', 'Automatic tier assignment', 'Escalating compliance gates', 'Government-tier DESC enforcement'],
+        roles: ALL_ROLES,
+        navPath: '/sourcing-cases',
+      },
+      {
         name: '6. AI Evaluation',
         description: 'Five-dimension scoring with evidence attribution using multi-model pipeline. Each proposal receives independent assessments from Claude, GPT-4o, and Gemini with cross-validation.',
         features: ['5-dimension scoring framework', 'Multi-model consensus evaluation', 'Evidence attribution per score', 'Innovation novelty cross-referencing', 'Human override with reasoning'],
@@ -194,8 +201,14 @@ const SECTIONS = [
         navPath: '/vendors',
       },
       {
-        name: 'Proposal Comparison',
-        description: 'AI-generated comparative analysis across multiple proposals for the same sourcing case. Side-by-side scoring with evidence highlights for faster decision-making.',
+        name: 'Vendor Factsheet Generation',
+        description: 'AI-generated one-pager summaries for vendor introductions. Consolidates capability profile, compliance status, vScore, and engagement history into a structured factsheet ready for stakeholder sharing.',
+        roles: ADMIN_ANALYST,
+        navPath: '/vendors',
+      },
+      {
+        name: 'Proposal Comparison Workspace',
+        description: 'AI-generated comparative analysis with side-by-side comparison of up to 4 proposals for the same sourcing case. Scoring with evidence highlights for faster decision-making.',
         roles: ADMIN_ANALYST_EXEC,
         navPath: '/compare',
       },
@@ -296,6 +309,12 @@ const SECTIONS = [
         navPath: '/vendors',
       },
       {
+        name: 'Vendor-Side Dashboard',
+        description: 'Dedicated vendor portal showing proposal submissions, vScore, open sourcing opportunities, and compliance status. Gives vendors full visibility into their platform engagement and next steps.',
+        roles: ['Admin', 'Vendor'],
+        navPath: '/vendor-dashboard',
+      },
+      {
         name: 'Procurement Readiness',
         description: 'eSupply/Smart Supplier dashboard integration stub. Shows vendor readiness status for government procurement platforms and smart supplier certification.',
         roles: ADMIN_ANALYST,
@@ -361,6 +380,24 @@ const SECTIONS = [
         roles: ADMIN_ANALYST_EXEC,
         navPath: '/dashboard',
       },
+      {
+        name: 'Business Groups → Cases',
+        description: 'Direct need submission from business groups. Groups can create sourcing cases from their innovation needs without analyst intermediation, streamlining the intake pipeline.',
+        roles: ALL_ROLES,
+        navPath: '/business-groups',
+      },
+      {
+        name: 'Guided Demo Path',
+        description: '9-step interactive walkthrough in How It Works. Demonstrates the complete innovation lifecycle from signal intake through pilot tracking with live platform examples.',
+        roles: ALL_ROLES,
+        navPath: '/how-it-works',
+      },
+      {
+        name: 'Deployment Roadmap',
+        description: '3-phase deployment plan with DESC certification timeline. Covers sandbox validation, pilot rollout, and production launch with regulatory milestones and go-live criteria.',
+        roles: ADMIN_ONLY,
+        navPath: null,
+      },
     ],
   },
 ];
@@ -401,7 +438,7 @@ function PlatformManual() {
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-block font-mono text-[11px] text-teal bg-teal/10 px-3 py-1 rounded-full font-semibold">
-            v2.0 | April 2026
+            v2.1 | April 2026
           </span>
           <span className="inline-block font-mono text-[11px] text-ink/50 bg-ink/5 px-3 py-1 rounded-full">
             {totalCapabilities} capabilities across {SECTIONS.length} domains
@@ -489,7 +526,7 @@ function PlatformManual() {
       {/* Footer */}
       <div className="mt-10 pt-6 border-t border-ink/10 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="font-body text-xs text-ink/40 text-center md:text-left">
-          AI Smart Sourcing v2.0 | Built by Tamer Momtaz | Powered by {'\u03C3'}I — Added Intelligence | DEVONEERS
+          AI Smart Sourcing v2.1 | Built by Tamer Momtaz | Powered by {'\u03C3'}I — Added Intelligence | DEVONEERS
         </p>
         <button
           onClick={() => window.print()}
