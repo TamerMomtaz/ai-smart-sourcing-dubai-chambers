@@ -288,3 +288,148 @@ async def update_sourcing_case_status(
             },
         )
     return result
+
+
+@router.get("/{case_id}/compare-proposals")
+async def compare_proposals(
+    case_id: UUID,
+    current_user: dict = Depends(get_current_user),
+):
+    """Get all proposals linked to a sourcing case with evaluation data for comparison."""
+    result = sourcing_case_service.get_compare_proposals(case_id=str(case_id))
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "NotFound",
+                "detail": "Sourcing case not found",
+                "code": "CASE_NOT_FOUND",
+            },
+        )
+    return result
+
+
+class AIComparisonRequest(BaseModel):
+    proposal_ids: List[str] = Field(..., min_length=2, max_length=4)
+
+
+@router.post("/{case_id}/compare-proposals/ai-summary")
+async def ai_comparison_summary(
+    case_id: UUID,
+    payload: AIComparisonRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Generate an AI comparison summary for selected proposals within a sourcing case."""
+    user_role = current_user.get("role", "").strip()
+    allowed_roles = ["admin", "analyst", "executive", "business_group_lead"]
+    if user_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "Forbidden",
+                "detail": "Insufficient permissions for AI comparison",
+                "code": "INSUFFICIENT_PERMISSIONS",
+            },
+        )
+
+    # Fetch case + proposal data
+    compare_data = sourcing_case_service.get_compare_proposals(case_id=str(case_id))
+    if compare_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "NotFound",
+                "detail": "Sourcing case not found",
+                "code": "CASE_NOT_FOUND",
+            },
+        )
+
+    case_info = compare_data["case"]
+    all_proposals = compare_data["proposals"]
+
+    # Filter to only selected proposals
+    selected = [p for p in all_proposals if p["id"] in payload.proposal_ids]
+    if len(selected) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "BadRequest",
+                "detail": "At least 2 valid proposal IDs required from this sourcing case",
+                "code": "INSUFFICIENT_PROPOSALS",
+            },
+        )
+
+    # Build AI prompt
+    proposals_text = ""
+    for i, p in enumerate(selected, 1):
+        proposals_text += f"""
+Proposal {i}: "{p['title']}" by {p['vendor_name']}
+- Composite Score: {p.get('composite_score', 'N/A')}
+- Relevance: {p.get('relevance_score', 'N/A')}
+- Feasibility: {p.get('feasibility_score', 'N/A')}
+- Sector Alignment: {p.get('sector_alignment_score', 'N/A')}
+- Compliance: {p.get('compliance_score', 'N/A')}
+- Innovation: {p.get('innovation_score', 'N/A')}
+- Compliance Gate: {p.get('gate_status', 'N/A')}
+- Evidence Grounding: {p.get('grounding_score', 'N/A')}
+- Vendor vScore: {p.get('vscore', 'N/A')} ({p.get('vscore_tier', 'N/A')})
+"""
+
+    system_prompt = """You are an AI sourcing analyst for Dubai Chambers.
+Compare the given proposals and provide a concise 2-paragraph summary.
+Paragraph 1: Compare strengths and weaknesses across all evaluation dimensions.
+Paragraph 2: Recommend the strongest match and explain why, considering all dimensions.
+Be specific, data-driven, and reference actual scores. Keep it professional and concise."""
+
+    user_prompt = f"""Given these {len(selected)} proposals for sourcing case "{case_info['title']}":
+Problem Statement: {case_info.get('problem_statement', 'N/A')}
+Sector: {case_info.get('sector', 'N/A')}
+{proposals_text}
+Which is the strongest match and why? Consider all dimensions."""
+
+    start_time = time.time()
+    try:
+        ai_response = await ai_complete(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            max_tokens=1024,
+        )
+    except Exception as e:
+        logger.error(f"AI comparison failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail={
+                "error": "AI Service Error",
+                "detail": "All AI providers failed to process the request",
+                "code": "AI_PROVIDERS_FAILED",
+            },
+        )
+    latency_ms = int((time.time() - start_time) * 1000)
+
+    # Log to chamber_ai_interactions
+    prompt_tokens = len(user_prompt.split()) + len(system_prompt.split())
+    completion_tokens = len(ai_response.split())
+    try:
+        ai_interaction_service.create(
+            user_id=current_user["id"],
+            session_id=uuid4(),
+            model_name="claude-sonnet-4-5-20250929",
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            latency_ms=latency_ms,
+            cost_usd=round(prompt_tokens * 0.000003 + completion_tokens * 0.000015, 6),
+            energy_kwh=round(latency_ms * 0.0000003, 6),
+            carbon_gco2=round(latency_ms * 0.0000001, 6),
+            intelligence_units=round((prompt_tokens + completion_tokens) * 0.001, 4),
+            operation_type="proposal_evaluation",
+        )
+    except Exception as e:
+        logger.warning(f"Failed to log AI interaction: {e}")
+
+    return {
+        "case_id": str(case_id),
+        "case_title": case_info["title"],
+        "proposals_compared": len(selected),
+        "proposal_ids": [p["id"] for p in selected],
+        "summary": ai_response,
+    }
