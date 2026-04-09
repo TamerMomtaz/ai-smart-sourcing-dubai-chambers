@@ -26,6 +26,7 @@
   "nav.users": "Users",
   "nav.board_brief": "Executive Board Brief",
   "nav.ai_team": "AI Team",
+  "nav.platform_manual": "Platform Manual",
   "nav.api_docs": "API Docs",
 
   "auth.sign_in": "Sign In",
