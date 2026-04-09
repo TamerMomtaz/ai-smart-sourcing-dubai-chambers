@@ -237,8 +237,9 @@ function Layout() {
         </main>
 
         {/* Footer */}
-        <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body">
-          {t('app.footer')}
+        <footer className="px-6 py-4 text-center text-xs text-ink/50 font-body space-y-1">
+          <div>{t('app.footer')}</div>
+          <div>{t('app.footer_powered')}</div>
         </footer>
       </div>
     </div>
