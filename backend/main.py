@@ -84,7 +84,8 @@ from routes import (
     sector_assignment_routes,
     vendor_matching_routes,
     case_deduplication_routes,
-    factsheet_routes
+    factsheet_routes,
+    sourcing_board_routes
 )
 
 # Configure logging
@@ -288,6 +289,7 @@ app.include_router(board_brief_routes.router, prefix="/api/v1", tags=["Board Bri
 app.include_router(vscore_routes.router, prefix="/api/v1", tags=["vScore"])  # vendor sub-endpoints
 app.include_router(incident_routes.router, prefix="/api/v1", tags=["Incident Management"])
 app.include_router(public_stats_routes.router, prefix="/api/v1", tags=["Public Stats"])
+app.include_router(sourcing_board_routes.router, prefix="/api/v1", tags=["Public Sourcing Board"])
 app.include_router(case_deduplication_routes.router, prefix="/api/v1", tags=["Sourcing Case Deduplication"])
 app.include_router(sourcing_case_routes.router, prefix="/api/v1", tags=["Sourcing Cases"])
 app.include_router(compliance_gate_routes.router, prefix="/api/v1", tags=["Compliance Gate"])

@@ -38,6 +38,7 @@ import ProposalCompare from './pages/ProposalCompare';
 import HowItWorks from './pages/HowItWorks';
 import ApiDocs from './pages/ApiDocs';
 import SourcingCases from './pages/SourcingCases';
+import SourcingBoard from './pages/SourcingBoard';
 import PilotTracker from './pages/PilotTracker';
 import VendorOnboard from './pages/VendorOnboard';
 import ModelInventory from './pages/ModelInventory';
@@ -101,6 +102,7 @@ function App() {
           <Route path="/api-docs" element={<ApiDocsStandalone />} />
           <Route path="/onboard/:token" element={<VendorOnboard />} />
           <Route path="/apply" element={<VendorOnboard />} />
+          <Route path="/sourcing-board" element={<SourcingBoard />} />
           <Route path="/board-brief" element={<PrivateRoute><BoardBrief /></PrivateRoute>} />
           <Route path="/compliance-audits/:id/report" element={<PrivateRoute><AuditReport /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><UserRoleProvider><Layout /></UserRoleProvider></PrivateRoute>}>

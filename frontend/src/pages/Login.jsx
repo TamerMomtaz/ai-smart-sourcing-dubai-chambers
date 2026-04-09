@@ -151,6 +151,11 @@ function Login() {
                 {t('auth.vendor_apply')} &rarr;
               </Link>
             </p>
+            <p className="text-sm font-body text-ink/50">
+              <Link to="/sourcing-board" className="text-teal hover:underline">
+                Browse open innovation opportunities &rarr;
+              </Link>
+            </p>
           </div>
         </div>
 
