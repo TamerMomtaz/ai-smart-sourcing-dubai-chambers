@@ -6,30 +6,32 @@ import LivePulseBanner from '../components/LivePulseBanner';
 
 const STAGES = [
   { id: 0, name: 'Welcome', sidebar: null },
-  { id: 1, name: 'Signal Received', sidebar: 'Proposals' },
-  { id: 2, name: 'Case Structured', sidebar: 'Proposals' },
-  { id: 3, name: 'Vendors Discovered', sidebar: 'Vendors' },
-  { id: 4, name: 'Compliance Gate', sidebar: 'Compliance Audits' },
-  { id: 5, name: 'AI Evaluation', sidebar: 'Evaluations' },
-  { id: 6, name: 'Stage-Gate', sidebar: 'Compare' },
-  { id: 7, name: 'Pilot Tracking', sidebar: 'Dashboard' },
-  { id: 8, name: 'Compliance', sidebar: 'Compliance Audits' },
-  { id: 9, name: 'Ecosystem Intelligence', sidebar: 'Dashboard' },
-  { id: 10, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
-  { id: 11, name: 'Finale', sidebar: null },
+  { id: 1, name: 'The Problem', sidebar: null },
+  { id: 2, name: 'Signal Received', sidebar: 'Proposals' },
+  { id: 3, name: 'Case Structured', sidebar: 'Proposals' },
+  { id: 4, name: 'Vendors Discovered', sidebar: 'Vendors' },
+  { id: 5, name: 'Compliance Gate', sidebar: 'Compliance Audits' },
+  { id: 6, name: 'AI Evaluation', sidebar: 'Evaluations' },
+  { id: 7, name: 'Stage-Gate', sidebar: 'Compare' },
+  { id: 8, name: 'Pilot Tracking', sidebar: 'Dashboard' },
+  { id: 9, name: 'Compliance', sidebar: 'Compliance Audits' },
+  { id: 10, name: 'Ecosystem Intelligence', sidebar: 'Dashboard' },
+  { id: 11, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
+  { id: 12, name: 'About', sidebar: null },
+  { id: 13, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
-  1: 'Proposals — multi-channel intake from ecosystem partners',
-  2: 'Proposals — AI extracts and classifies sourcing needs',
-  3: 'Vendors — AI matches vendors to cases proactively',
-  4: 'Compliance Audits — rule-based checks before AI evaluation',
-  5: 'Evaluations — 5-dimension scoring with evidence attribution',
-  6: 'Compare — GO/KILL/HOLD decisions by human committees',
-  7: 'Dashboard — lifecycle from setup to measured outcomes',
-  8: 'Compliance Audits — DESC, OWASP, Ethics, Audit Evidence Pack',
-  9: 'Dashboard — Board Brief, KPIs, channel analytics',
-  10: 'ΣI Transparency — full AI cost and environmental accountability',
+  2: 'Proposals — multi-channel intake from ecosystem partners',
+  3: 'Proposals — AI extracts and classifies sourcing needs',
+  4: 'Vendors — AI matches vendors to cases proactively',
+  5: 'Compliance Audits — rule-based checks before AI evaluation',
+  6: 'Evaluations — 5-dimension scoring with evidence attribution',
+  7: 'Compare — GO/KILL/HOLD decisions by human committees',
+  8: 'Dashboard — lifecycle from setup to measured outcomes',
+  9: 'Compliance Audits — DESC, OWASP, Ethics, Audit Evidence Pack',
+  10: 'Dashboard — Board Brief, KPIs, channel analytics',
+  11: 'ΣI Transparency — full AI cost and environmental accountability',
 };
 
 /* ─── Particle Field ─── */
@@ -176,9 +178,9 @@ function HeroSection({ onStart, impact, session }) {
   );
 }
 
-/* ─── Stage Content (9 stages + σI reveal) ─── */
+/* ─── Stage Content (stages 2–11) ─── */
 const STAGE_CONTENT = {
-  1: {
+  2: {
     title: "Signal Received — Multi-channel intake",
     render: () => (
       <div>
@@ -195,7 +197,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  2: {
+  3: {
     title: "Case Structured — AI extracts and classifies",
     render: () => (
       <div>
@@ -212,7 +214,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  3: {
+  4: {
     title: "Vendors Discovered — proactive AI matching",
     render: () => (
       <div>
@@ -229,7 +231,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  4: {
+  5: {
     title: "Compliance Gate — rule-based pre-screening",
     render: () => (
       <div>
@@ -245,7 +247,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  5: {
+  6: {
     title: "AI Evaluation — 5-dimension scoring with evidence",
     render: () => (
       <div>
@@ -262,7 +264,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  6: {
+  7: {
     title: "Stage-Gate — human decision authority",
     render: () => (
       <div>
@@ -278,7 +280,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  7: {
+  8: {
     title: "Pilot Tracking — from setup to outcomes",
     render: () => (
       <div>
@@ -295,7 +297,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  8: {
+  9: {
     title: "Compliance — DESC, OWASP, Ethics, Audit Evidence Pack",
     render: () => (
       <div>
@@ -312,7 +314,7 @@ const STAGE_CONTENT = {
     )
   },
 
-  9: {
+  10: {
     title: "Ecosystem Intelligence — Board Brief, KPIs, analytics",
     render: () => (
       <div>
@@ -329,11 +331,60 @@ const STAGE_CONTENT = {
     )
   },
 
-  10: {
+  11: {
     title: "σI Transparency",
     render: () => null // Handled by RevealSection in main render
   },
 };
+
+/* ─── Problem Section (Stage 1) ─── */
+function ProblemSection() {
+  const stats = [
+    { value: '1,690+', label: 'startups supported (2025)' },
+    { value: '114', label: 'Business in Dubai partners' },
+    { value: '35+', label: 'Business Groups' },
+    { value: '7,500+', label: 'startups on Ignyte' },
+  ];
+
+  return (
+    <div style={{ maxWidth: '800px', width: '100%', padding: '40px', textAlign: 'center' }}>
+      <h2 style={{ fontSize: '28px', fontWeight: 600, color: '#1E293B', marginBottom: '16px' }}>
+        The Problem We Solve
+      </h2>
+      <p style={{
+        color: '#475569', lineHeight: 1.8, fontSize: '15px',
+        marginBottom: '32px', maxWidth: '700px', margin: '0 auto 32px'
+      }}>
+        Dubai Chambers manages 1,690+ startups through Business in Dubai,
+        35+ Business Groups surfacing sector needs, Expand North Star
+        connecting startups with 1,200+ investors, and 7,500+ startups
+        on Ignyte — all flowing through disconnected channels with no
+        unified lifecycle visibility.
+      </p>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+        gap: '16px',
+      }}>
+        {stats.map((s, i) => (
+          <div key={i} style={{
+            background: '#F0FDFA', border: '1px solid #99F6E4',
+            borderRadius: '12px', padding: '24px 16px', textAlign: 'center',
+          }}>
+            <div style={{
+              fontSize: '28px', fontWeight: 700, color: '#0D9488', marginBottom: '8px'
+            }}>
+              {s.value}
+            </div>
+            <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.4 }}>
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Stage Card ─── */
 function StageCard({ stage }) {
@@ -493,6 +544,22 @@ function RevealSection({ impact }) {
   );
 }
 
+/* ─── About Section (Stage 12) ─── */
+function AboutSection() {
+  return (
+    <div style={{ maxWidth: '700px', width: '100%', padding: '40px', textAlign: 'center' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#1E293B', marginBottom: '20px' }}>
+        About
+      </h2>
+      <p style={{ color: '#475569', lineHeight: 1.8, fontSize: '16px' }}>
+        Conceived and architected by Tamer Momtaz, Lead R&amp;D at Devoneers.
+        Powered by σI (Added Intelligence). Ready for commercial partnership
+        — Phase 1 deploys on DESC-certified infrastructure in 12 weeks.
+      </p>
+    </div>
+  );
+}
+
 /* ─── Finale Section ─── */
 function FinaleSection({ impact, onReplay, onExplore, onBack }) {
   const [phase, setPhase] = useState(0);
@@ -622,7 +689,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 11));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 13));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -632,8 +699,20 @@ export default function HowItWorks() {
     return <HeroSection onStart={startJourney} impact={impactData} session={session} />;
   }
 
-  // Stage 10 gets the dark cinematic treatment (like the hero)
-  if (currentStage === 10) {
+  // Stage 1: The Problem We Solve
+  if (currentStage === 1) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <ProblemSection />
+        </div>
+        <NavigationBar current={1} total={12} stageName="The Problem" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+      </div>
+    );
+  }
+
+  // Stage 11 gets the dark cinematic treatment (like the hero)
+  if (currentStage === 11) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -641,14 +720,26 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={10} total={10} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+          <NavigationBar current={11} total={12} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
   }
 
-  // Render finale if stage 11
-  if (currentStage === 11) {
+  // Stage 12: About
+  if (currentStage === 12) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <AboutSection />
+        </div>
+        <NavigationBar current={12} total={12} stageName="About" onNext={next} onBack={back} onJump={jumpTo} isLast={true} />
+      </div>
+    );
+  }
+
+  // Render finale if stage 13
+  if (currentStage === 13) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -656,19 +747,19 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(10)}
+          onBack={() => setCurrentStage(12)}
         />
       </div>
     );
   }
 
-  // Stages 1-9: normal content cards
+  // Stages 2-10: normal content cards
   return (
     <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={10} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 10} />
+      <NavigationBar current={currentStage} total={12} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
     </div>
   );
 }
