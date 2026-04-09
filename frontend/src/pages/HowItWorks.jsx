@@ -6,39 +6,30 @@ import LivePulseBanner from '../components/LivePulseBanner';
 
 const STAGES = [
   { id: 0, name: 'Welcome', sidebar: null },
-  { id: 1, name: 'Submit a Proposal', sidebar: 'Proposals' },
-  { id: 2, name: 'AI Evaluation', sidebar: 'Evaluations' },
-  { id: 3, name: 'Evidence Validation Layer', sidebar: 'Evaluations' },
-  { id: 4, name: 'DESC Compliance', sidebar: 'Compliance Audits' },
-  { id: 5, name: 'Market Intelligence', sidebar: 'Trend Analyses' },
-  { id: 6, name: 'Compare Proposals', sidebar: 'Compare' },
-  { id: 7, name: 'Dashboard', sidebar: 'Dashboard' },
-  { id: 8, name: 'Vendors', sidebar: 'Vendors' },
-  { id: 9, name: 'Documents', sidebar: 'Documents' },
-  { id: 10, name: 'Business Groups', sidebar: 'Business Groups' },
-  { id: 11, name: 'Users', sidebar: 'Users' },
-  { id: 12, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
-  { id: 13, name: 'Vendor Intelligence — vScore', sidebar: 'Vendor Intelligence' },
-  { id: 14, name: 'Incident Response & Platform Compliance', sidebar: 'Compliance Audits' },
-  { id: 15, name: 'Why AI Smart Sourcing?', sidebar: null },
-  { id: 16, name: 'Finale', sidebar: null },
+  { id: 1, name: 'Signal Received', sidebar: 'Proposals' },
+  { id: 2, name: 'Case Structured', sidebar: 'Proposals' },
+  { id: 3, name: 'Vendors Discovered', sidebar: 'Vendors' },
+  { id: 4, name: 'Compliance Gate', sidebar: 'Compliance Audits' },
+  { id: 5, name: 'AI Evaluation', sidebar: 'Evaluations' },
+  { id: 6, name: 'Stage-Gate', sidebar: 'Compare' },
+  { id: 7, name: 'Pilot Tracking', sidebar: 'Dashboard' },
+  { id: 8, name: 'Compliance', sidebar: 'Compliance Audits' },
+  { id: 9, name: 'Ecosystem Intelligence', sidebar: 'Dashboard' },
+  { id: 10, name: 'σI Transparency', sidebar: 'ΣI Transparency' },
+  { id: 11, name: 'Finale', sidebar: null },
 ];
 
 const TOOLTIPS = {
-  1: 'Proposals — submit via PDF upload or manual form',
-  2: 'Evaluations — AI-powered scoring with full reasoning',
-  3: 'Evaluations — Shield verification inside each evaluation',
-  4: 'Compliance Audits — automated DESC framework assessment',
-  5: 'Trend Analyses — on-demand market intelligence with PDF export',
-  6: 'Compare — side-by-side decision-making tool',
-  7: 'Dashboard — live metrics with Impact Meter and Board Brief',
-  8: 'Vendors — profiles with DESC certification status',
-  9: 'Documents — source of truth powering AI accuracy',
-  10: 'Business Groups — sector-specific evaluation configuration',
-  11: 'Users — role-based access management',
-  12: 'ΣI Transparency — full AI cost and environmental accountability',
-  13: 'Vendor Intelligence — supplier credit scoring with vScore',
-  14: 'Incident Response — platform self-audit and DESC compliance',
+  1: 'Proposals — multi-channel intake from ecosystem partners',
+  2: 'Proposals — AI extracts and classifies sourcing needs',
+  3: 'Vendors — AI matches vendors to cases proactively',
+  4: 'Compliance Audits — rule-based checks before AI evaluation',
+  5: 'Evaluations — 5-dimension scoring with evidence attribution',
+  6: 'Compare — GO/KILL/HOLD decisions by human committees',
+  7: 'Dashboard — lifecycle from setup to measured outcomes',
+  8: 'Compliance Audits — DESC, OWASP, Ethics, Audit Evidence Pack',
+  9: 'Dashboard — Board Brief, KPIs, channel analytics',
+  10: 'ΣI Transparency — full AI cost and environmental accountability',
 };
 
 /* ─── Particle Field ─── */
@@ -185,558 +176,162 @@ function HeroSection({ onStart, impact, session }) {
   );
 }
 
-/* ─── Stage Content (all 12 stages) ─── */
+/* ─── Stage Content (9 stages + σI reveal) ─── */
 const STAGE_CONTENT = {
   1: {
-    title: "Submit a proposal",
+    title: "Signal Received — Multi-channel intake",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Vendors can <strong style={{color:'#0F172A'}}>upload a PDF</strong> and
-          AI extracts everything automatically — company info, technology type,
-          sector, and maturity level. Or they can{' '}
-          <strong style={{color:'#0F172A'}}>fill in the details manually</strong> using
-          the submission form.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-          Vendor records are auto-created on first submission. Business group
-          auto-assigned based on sector.
-        </p>
-        {/* Visual: animated tags */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {['Cybersecurity', 'Production', 'Dubai', 'DESC Certified'].map((tag, i) => (
-            <span key={tag} style={{
-              background: 'rgba(13,148,136,0.15)', color: '#0D9488',
-              padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
-              animation: `slideUp 0.5s ease-out ${0.3 * i}s both`
-            }}>{tag}</span>
-          ))}
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Sourcing requests arrive from ecosystem partners, internal teams, and government channels</li>
+          <li>Multi-format intake: PDF uploads, manual forms, API feeds, email forwarding</li>
+          <li>AI auto-classifies urgency, sector, and technology domain on arrival</li>
+          <li>Each signal creates a trackable case with full provenance chain</li>
+        </ul>
+        <a href="/proposals" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Proposals
+        </a>
       </div>
     )
   },
 
   2: {
-    title: "AI evaluation — multi-model scoring",
+    title: "Case Structured — AI extracts and classifies",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Each proposal is scored across 4 dimensions{' '}
-          <strong style={{color:'#0F172A'}}>in seconds</strong> — not hours, not days.
-          Multi-model AI (Claude, GPT-4o, Gemini) ensures no single-model bias.
-          Full reasoning is provided for every score.
-        </p>
-        {/* Visual: score bars */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {[
-            { label: 'Relevance', score: 92 },
-            { label: 'Feasibility', score: 88 },
-            { label: 'Sector Alignment', score: 95 },
-            { label: 'Compliance', score: 94 },
-          ].map((dim, i) => (
-            <div key={dim.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ width: '120px', fontSize: '13px', color: '#475569' }}>{dim.label}</span>
-              <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#E2E8F0' }}>
-                <div style={{
-                  height: '100%', borderRadius: '3px', background: '#0D9488',
-                  width: `${dim.score}%`,
-                  animation: `barFill 1.5s ease-out ${0.3 * i}s both`
-                }} />
-              </div>
-              <span style={{ width: '32px', fontSize: '14px', color: '#0D9488', fontWeight: 500, textAlign: 'right' }}>
-                {dim.score}
-              </span>
-            </div>
-          ))}
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>AI extracts company info, technology type, sector, and maturity level from uploaded documents</li>
+          <li>Sourcing needs classified against Dubai's D33 economic agenda priorities</li>
+          <li>Missing fields flagged for analyst review before proceeding</li>
+          <li>Structured case record auto-linked to relevant business group</li>
+        </ul>
+        <a href="/proposals" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Proposals
+        </a>
       </div>
     )
   },
 
   3: {
-    title: "Evidence Validation Layer — can you trust the AI?",
+    title: "Vendors Discovered — proactive AI matching",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          After every evaluation, a <strong style={{color:'#0F172A'}}>second AI pass</strong> verifies
-          every factual claim against the source document. A{' '}
-          <strong style={{color:'#0F172A'}}>different AI model</strong> independently
-          re-scores to detect anomalies. Claims are classified as:
-        </p>
-        {/* Visual: claim types */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {[
-            { icon: 'G', color: '#0D9488', bg: 'rgba(13,148,136,0.15)', text: 'Grounded — claim directly supported by proposal text' },
-            { icon: 'P', color: '#BA7517', bg: 'rgba(186,117,23,0.15)', text: 'Partial — related content exists but claim is extrapolated' },
-            { icon: 'U', color: '#A32D2D', bg: 'rgba(163,45,45,0.15)', text: 'Ungrounded — no supporting text found in the source' },
-          ].map((claim, i) => (
-            <div key={claim.icon} style={{
-              display: 'flex', alignItems: 'center', gap: '12px',
-              animation: `slideUp 0.5s ease-out ${0.4 * i}s both`
-            }}>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%',
-                background: claim.bg, color: claim.color,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '12px', fontWeight: 600, flexShrink: 0
-              }}>{claim.icon}</div>
-              <span style={{ fontSize: '13px', color: '#475569' }}>{claim.text}</span>
-            </div>
-          ))}
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>AI searches the vendor registry to match capabilities to case requirements</li>
+          <li>vScore-ranked shortlist generated with match rationale for each vendor</li>
+          <li>New vendors auto-onboarded with profile creation on first submission</li>
+          <li>Historical performance and compliance status surfaced alongside each match</li>
+        </ul>
+        <a href="/vendors" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Vendors
+        </a>
       </div>
     )
   },
 
   4: {
-    title: "DESC compliance — automated",
+    title: "Compliance Gate — rule-based pre-screening",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Automated review against three DESC frameworks: DESC ISR V3 Controls, DESC AI Security
-          Policy (5-Phase Lifecycle), and DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5).
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-          Each control is checked individually with pass, fail, or warning status
-          and supporting evidence. Data residency violations are flagged automatically.
-        </p>
-        {/* Visual: framework badges */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {[
-            { name: 'DESC ISR V3 Controls', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
-            { name: 'DESC AI Security Policy (5-Phase Lifecycle)', status: 'Pass', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
-            { name: 'DESC CSP Standards (ISO/IEC 27001, ISO/IEC 27017, CSA CCM v4.0.5)', status: 'Warning', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
-          ].map((fw, i) => (
-            <div key={fw.name} style={{
-              padding: '10px 20px', borderRadius: '8px', background: fw.bg,
-              animation: `slideUp 0.5s ease-out ${0.5 * i}s both`
-            }}>
-              <span style={{ color: fw.color, fontSize: '14px', fontWeight: 500 }}>
-                {fw.name}: {fw.status} {fw.status === 'Pass' ? '✓' : '⚠'}
-              </span>
-            </div>
-          ))}
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Automated checks against DESC ISR V3, AI Security Policy, and CSP Standards</li>
+          <li>Data residency violations flagged before any AI evaluation begins</li>
+          <li>Mandatory certifications verified: ISO 27001, ISO 27017, CSA CCM v4</li>
+        </ul>
+        <a href="/compliance-audits" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Compliance Audits
+        </a>
       </div>
     )
   },
 
   5: {
-    title: "Market intelligence — generated on demand",
+    title: "AI Evaluation — 5-dimension scoring with evidence",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          From this page, you can <strong style={{color:'#0F172A'}}>generate AI-powered
-          market intelligence reports</strong> covering any time period. The AI analyzes
-          all evaluated proposals and produces sector breakdowns, technology trends,
-          D33 alignment scores, and actionable recommendations.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-          Reports can be <strong style={{color:'#0F172A'}}>exported as professional PDFs</strong> —
-          ready for board meetings. One click to generate, one click to export.
-        </p>
-        {/* Visual: mini report card */}
-        <div style={{
-          border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
-          padding: '16px 20px', animation: 'slideUp 0.6s ease-out'
-        }}>
-          <div style={{ color: '#0F172A', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
-            Smart Sourcing Report
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', lineHeight: 1.8 }}>
-            Sector breakdown • D33 alignment • Technology trends • 8 recommendations
-          </div>
-          <div style={{
-            marginTop: '12px', display: 'inline-block',
-            padding: '4px 12px', borderRadius: '4px',
-            background: 'rgba(13,148,136,0.15)', color: '#0D9488', fontSize: '12px'
-          }}>
-            Export PDF ↓
-          </div>
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Multi-model AI (Claude, GPT-4o, Gemini) scores across 5 dimensions to eliminate single-model bias</li>
+          <li>Full reasoning and evidence attribution provided for every score</li>
+          <li>Evidence Validation Layer verifies every claim against source documents</li>
+          <li>Claims classified as Grounded, Partial, or Ungrounded by a second AI pass</li>
+        </ul>
+        <a href="/evaluations" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Evaluations
+        </a>
       </div>
     )
   },
 
   6: {
-    title: "Compare proposals side by side",
+    title: "Stage-Gate — human decision authority",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Select 2 or 3 proposals and compare everything in one view — evaluation
-          scores, hallucination shield integrity, compliance status, and proposal
-          details. The highest scorer per dimension is highlighted automatically.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-          The tool procurement officers actually need — no more switching between tabs.
-        </p>
-        {/* Visual: two mini columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <div style={{
-            border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px',
-            padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out'
-          }}>
-            <div style={{ fontSize: '13px', color: '#475569' }}>Proposal A</div>
-            <div style={{ fontSize: '24px', fontWeight: 500, color: '#0D9488', marginTop: '4px' }}>92.3</div>
-            <span style={{
-              fontSize: '10px', background: 'rgba(13,148,136,0.15)',
-              color: '#0D9488', padding: '2px 8px', borderRadius: '10px'
-            }}>Best</span>
-          </div>
-          <div style={{
-            border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px',
-            padding: '14px', textAlign: 'center', animation: 'slideUp 0.5s ease-out 0.2s both'
-          }}>
-            <div style={{ fontSize: '13px', color: '#475569' }}>Proposal B</div>
-            <div style={{ fontSize: '24px', fontWeight: 500, color: '#475569', marginTop: '4px' }}>91.5</div>
-          </div>
-        </div>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Committee reviews AI scores, compliance status, and vendor profiles</li>
+          <li>GO / KILL / HOLD decisions recorded with rationale and accountability</li>
+          <li>Side-by-side proposal comparison with automatic highest-scorer highlighting</li>
+        </ul>
+        <a href="/compare" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Compare
+        </a>
       </div>
     )
   },
 
   7: {
-    title: "Your command center",
+    title: "Pilot Tracking — from setup to outcomes",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          The Dashboard shows <strong style={{color:'#0F172A'}}>live platform metrics</strong> —
-          total proposals, evaluations completed, compliance audits, and average scores.
-          All numbers update in real time as new proposals are processed.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          At the top: the <strong style={{color:'#0F172A'}}>σI Impact Meter</strong> —
-          a live Return on Time calculator showing analyst-hours saved, working days
-          recovered, and total AI cost. With full methodology explaining every estimate.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7 }}>
-          One click to generate the <strong style={{color:'#0F172A'}}>Executive Board
-          Brief</strong> — a professional 3-page PDF report ready for leadership.
-        </p>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Approved vendors enter structured pilot programs with defined success metrics</li>
+          <li>Milestone tracking from kickoff through measured business outcomes</li>
+          <li>σI Impact Meter calculates analyst-hours saved and total AI cost in real time</li>
+          <li>Executive Board Brief generated on demand — professional PDF for leadership</li>
+        </ul>
+        <a href="/dashboard" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Dashboard
+        </a>
       </div>
     )
   },
 
   8: {
-    title: "Know your vendors",
+    title: "Compliance — DESC, OWASP, Ethics, Audit Evidence Pack",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Every vendor who submits a proposal gets a profile — company details,
-          country of origin, DESC certification status, and complete submission history.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7 }}>
-          From this page, you can review vendor backgrounds before evaluating
-          their proposals.
-        </p>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>Platform audits itself: live DESC compliance self-check across 19 controls</li>
+          <li>OWASP security controls embedded at the architecture level</li>
+          <li>Ethics framework ensures responsible AI with full transparency</li>
+          <li>Incident management system tracks, resolves, and reports security events to DESC</li>
+        </ul>
+        <a href="/compliance-audits" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Compliance Audits
+        </a>
       </div>
     )
   },
 
   9: {
-    title: "Central document library",
+    title: "Ecosystem Intelligence — Board Brief, KPIs, analytics",
     render: () => (
       <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          Every document uploaded with a proposal — PDFs, presentations,
-          spreadsheets — lives here in one searchable library.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7 }}>
-          <strong style={{color:'#0F172A'}}>Why this matters:</strong> the AI reads
-          these documents during evaluation and the Evidence Validation Layer verifies
-          claims against them. The richer the document, the more accurate the AI
-          assessment. Documents are the source of truth.
-        </p>
+        <ul style={{ color: '#475569', lineHeight: 1.8, paddingLeft: '20px', marginBottom: '20px' }}>
+          <li>AI-generated market intelligence reports covering any time period</li>
+          <li>Sector breakdowns, technology trends, and D33 alignment scores</li>
+          <li>KPI dashboards with live platform metrics updating in real time</li>
+          <li>One-click PDF export for board meetings and stakeholder presentations</li>
+        </ul>
+        <a href="/dashboard" style={{ color: '#0D9488', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+          Try it → Dashboard
+        </a>
       </div>
     )
   },
 
   10: {
-    title: "Organized by sector",
-    render: () => (
-      <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          From this page, you can <strong style={{color:'#0F172A'}}>view all sector
-          groups</strong> and <strong style={{color:'#0F172A'}}>configure how each
-          sector is evaluated</strong>. Different sectors have different priorities —
-          a cybersecurity proposal should weigh compliance higher, while an AgTech
-          proposal should weigh feasibility higher.
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7 }}>
-          Each group has its own evaluation weight configuration that shapes how
-          the AI scores proposals in that sector.
-        </p>
-      </div>
-    )
-  },
-
-  11: {
-    title: "Role-based access",
-    render: () => (
-      <div>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-          From this page, you can manage platform users and assign roles.
-          Different roles see different capabilities:
-        </p>
-        <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-          Vendors submit proposals. Analysts run evaluations. Compliance Officers
-          conduct audits. Executives access board briefs and trend reports. Each
-          role sees only what they need.
-        </p>
-        {/* Visual: role badges */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {['Admin', 'Analyst', 'Compliance Officer', 'Vendor'].map((role, i) => (
-            <span key={role} style={{
-              padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
-              background: 'rgba(13,148,136,0.15)', color: '#0D9488',
-              animation: `slideUp 0.5s ease-out ${0.2 * i}s both`
-            }}>{role}</span>
-          ))}
-        </div>
-      </div>
-    )
-  },
-
-  12: {
     title: "σI Transparency",
     render: () => null // Handled by RevealSection in main render
-  },
-
-  13: {
-    title: "Vendor Intelligence — vScore",
-    render: () => {
-      /* Animated vScore gauge count-up */
-      const VScoreDemo = () => {
-        const [val, setVal] = useState(300);
-        useEffect(() => {
-          const duration = 2000;
-          const start = performance.now();
-          const animate = (now) => {
-            const pct = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - pct, 3); // ease-out cubic
-            setVal(Math.round(300 + eased * 532));
-            if (pct < 1) requestAnimationFrame(animate);
-          };
-          requestAnimationFrame(animate);
-        }, []);
-        return (
-          <div style={{
-            width: '100px', height: '100px', borderRadius: '50%',
-            border: '4px solid #0D9488', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            fontSize: '28px', fontWeight: 700, color: '#0D9488',
-            margin: '0 auto 16px', animation: 'slideUp 0.6s ease-out'
-          }}>
-            {val}
-          </div>
-        );
-      };
-
-      return (
-        <div>
-          <VScoreDemo />
-          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-            Every vendor gets a vScore — a 300 to 900 credit score that tells
-            you how much you can trust them. Like a financial credit bureau, but
-            for suppliers. Platinum, Gold, Silver, Bronze, or Under Review.
-          </p>
-          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-            The vScore aggregates five dimensions: Performance History from past
-            engagements, Proposal Quality from AI evaluations, Compliance from
-            DESC and ISO certifications, Claim Integrity from the Hallucination
-            Shield, and Entity Intelligence from related company analysis.
-          </p>
-          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-            Every score comes with an AI-generated risk narrative — a plain-English
-            assessment that reads like a credit report. And because this is σI,
-            every factor, every data point, every calculation is transparent and
-            traceable.
-          </p>
-
-          {/* Tier badges appearing one by one */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-            {[
-              { name: 'Platinum', color: '#0D9488' },
-              { name: 'Gold', color: '#B8904A' },
-              { name: 'Silver', color: '#3B82F6' },
-              { name: 'Bronze', color: '#F59E0B' },
-              { name: 'Under Review', color: '#EF4444' },
-            ].map((tier, i) => (
-              <span key={tier.name} style={{
-                padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
-                background: `${tier.color}20`, color: tier.color, fontWeight: 600,
-                animation: `slideUp 0.5s ease-out ${0.3 * i}s both`
-              }}>{tier.name}</span>
-            ))}
-          </div>
-
-          {/* Mini radar chart representation */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
-            maxWidth: '400px'
-          }}>
-            {[
-              { dim: 'Performance', pct: 85 },
-              { dim: 'Quality', pct: 78 },
-              { dim: 'Compliance', pct: 92 },
-              { dim: 'Integrity', pct: 88 },
-              { dim: 'Entity', pct: 72 },
-            ].map((d, i) => (
-              <div key={d.dim} style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                animation: `slideUp 0.5s ease-out ${0.2 * i + 1.5}s both`
-              }}>
-                <span style={{ width: '80px', fontSize: '12px', color: '#475569' }}>{d.dim}</span>
-                <div style={{ flex: 1, height: '5px', borderRadius: '3px', background: '#E2E8F0' }}>
-                  <div style={{
-                    height: '100%', borderRadius: '3px', background: '#0D9488',
-                    width: `${d.pct}%`,
-                    animation: `barFill 1.5s ease-out ${0.2 * i + 1.5}s both`
-                  }} />
-                </div>
-                <span style={{ width: '24px', fontSize: '11px', color: '#0D9488', fontWeight: 500, textAlign: 'right' }}>
-                  {d.pct}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-  },
-
-  14: {
-    title: "Incident Response & Platform Compliance",
-    render: () => {
-      /* Animated compliance arc */
-      const ComplianceArc = () => {
-        const [active, setActive] = useState(0);
-        useEffect(() => {
-          const duration = 1500;
-          const start = performance.now();
-          const animate = (now) => {
-            const pct = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - pct, 3);
-            setActive(Math.round(eased * 17));
-            if (pct < 1) requestAnimationFrame(animate);
-          };
-          requestAnimationFrame(animate);
-        }, []);
-
-        const pct = (active / 19) * 100;
-        return (
-          <div style={{
-            width: '120px', height: '120px', borderRadius: '50%',
-            background: `conic-gradient(#0D9488 ${pct}%, #1E293B ${pct}%)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 20px', animation: 'slideUp 0.6s ease-out'
-          }}>
-            <div style={{
-              width: '90px', height: '90px', borderRadius: '50%',
-              background: '#fff', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '12px', color: '#64748B' }}>DESC</span>
-              <span style={{ fontSize: '22px', fontWeight: 700, color: '#0D9488' }}>
-                {active}/19
-              </span>
-            </div>
-          </div>
-        );
-      };
-
-      return (
-        <div>
-          <ComplianceArc />
-          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-            The platform doesn't just audit vendors — it audits itself.
-            A live DESC compliance self-check shows{' '}
-            <strong style={{color:'#0F172A'}}>17 of 19 controls active</strong>.
-            An incident management system tracks, resolves, and reports security
-            events to DESC.
-          </p>
-          <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '24px' }}>
-            Because responsible AI means being accountable for your own platform,
-            not just the solutions you evaluate.
-          </p>
-
-          {/* Example incident cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {[
-              { severity: 'Low', title: 'Rate-limit threshold reached', status: 'Resolved', color: '#0D9488', bg: 'rgba(13,148,136,0.15)' },
-              { severity: 'Medium', title: 'Unusual API token pattern detected', status: 'Mitigated', color: '#BA7517', bg: 'rgba(186,117,23,0.15)' },
-              { severity: 'High', title: 'Data residency flag — model endpoint outside UAE', status: 'Escalated', color: '#A32D2D', bg: 'rgba(163,45,45,0.15)' },
-            ].map((inc, i) => (
-              <div key={inc.title} style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '10px 16px', borderRadius: '8px', background: inc.bg,
-                animation: `slideUp 0.5s ease-out ${0.4 * i + 1.5}s both`
-              }}>
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  background: `${inc.color}30`, color: inc.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '11px', fontWeight: 700, flexShrink: 0
-                }}>
-                  {inc.severity[0]}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', color: '#0F172A', fontWeight: 500 }}>{inc.title}</div>
-                  <div style={{ fontSize: '11px', color: '#64748B' }}>{inc.status}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-  },
-
-  15: {
-    title: "Why AI Smart Sourcing?",
-    render: () => {
-      const rows = [
-        { dimension: 'Starting point', generic: 'Vendor submits proposal', platform: 'Ecosystem signal arrives' },
-        { dimension: 'Evaluation context', generic: 'Proposal in isolation', platform: 'Against specific sourcing case' },
-        { dimension: 'Vendor view', generic: 'Per-submission only', platform: 'Cumulative trust score (vScore)' },
-        { dimension: 'Compliance', generic: 'Checkbox / afterthought', platform: 'Embedded from intake' },
-        { dimension: 'Lifecycle', generic: 'Submission → Score', platform: 'Intake → Pilot → Outcome' },
-        { dimension: 'Institutional memory', generic: 'None', platform: 'Full ecosystem intelligence' },
-        { dimension: 'Arabic support', generic: 'None', platform: 'Native RTL + Arabic UI' },
-        { dimension: 'DESC compliance', generic: 'Claimed', platform: 'Architecture-level, auditable' },
-      ];
-
-      return (
-        <div>
-          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
-            Not another scoring tool — an innovation operating system.
-          </p>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: '13px' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#94A3B8', fontWeight: 600, borderRadius: '8px 0 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dimension</th>
-                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#94A3B8', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Generic AI Tools</th>
-                  <th style={{ textAlign: 'left', padding: '10px 14px', background: '#0F172A', color: '#0D9488', fontWeight: 600, borderRadius: '0 8px 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Smart Sourcing</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr key={row.dimension} style={{
-                    background: i % 2 === 0 ? '#F8FAFC' : '#fff',
-                    animation: `slideUp 0.4s ease-out ${0.1 * i}s both`
-                  }}>
-                    <td style={{ padding: '10px 14px', fontWeight: 600, color: '#1E293B', borderBottom: '1px solid #E2E8F0' }}>{row.dimension}</td>
-                    <td style={{ padding: '10px 14px', color: '#94A3B8', borderBottom: '1px solid #E2E8F0' }}>{row.generic}</td>
-                    <td style={{ padding: '10px 14px', color: '#0D9488', fontWeight: 500, borderBottom: '1px solid #E2E8F0' }}>{row.platform}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      );
-    }
   },
 };
 
@@ -812,7 +407,7 @@ function NavigationBar({ current, total, stageName, onNext, onBack, onJump, isLa
   );
 }
 
-/* ─── Reveal Section (Stage 12) ─── */
+/* ─── Reveal Section (Stage 10) ─── */
 function RevealSection({ impact }) {
   const [phase, setPhase] = useState(0);
 
@@ -1027,7 +622,7 @@ export default function HowItWorks() {
     };
   }, [currentStage]);
 
-  const next = () => setCurrentStage(prev => Math.min(prev + 1, 16));
+  const next = () => setCurrentStage(prev => Math.min(prev + 1, 11));
   const back = () => setCurrentStage(prev => Math.max(prev - 1, 0));
   const jumpTo = (stage) => setCurrentStage(stage);
   const startJourney = () => { setCurrentStage(1); };
@@ -1037,8 +632,8 @@ export default function HowItWorks() {
     return <HeroSection onStart={startJourney} impact={impactData} session={session} />;
   }
 
-  // Stage 12 gets the dark cinematic treatment (like the hero)
-  if (currentStage === 12) {
+  // Stage 10 gets the dark cinematic treatment (like the hero)
+  if (currentStage === 10) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -1046,14 +641,14 @@ export default function HowItWorks() {
           <RevealSection impact={impactData} />
         </div>
         <div style={{ position: 'relative', zIndex: 10, borderTop: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)' }}>
-          <NavigationBar current={12} total={15} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
+          <NavigationBar current={10} total={10} stageName="σI Transparency" onNext={next} onBack={back} onJump={jumpTo} isLast={false} />
         </div>
       </div>
     );
   }
 
-  // Render finale if stage 16
-  if (currentStage === 16) {
+  // Render finale if stage 11
+  if (currentStage === 11) {
     return (
       <div style={{ minHeight: 'calc(100vh - 64px)', background: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <ParticleField />
@@ -1061,19 +656,19 @@ export default function HowItWorks() {
           impact={impactData}
           onReplay={() => setCurrentStage(0)}
           onExplore={() => navigate('/dashboard')}
-          onBack={() => setCurrentStage(15)}
+          onBack={() => setCurrentStage(10)}
         />
       </div>
     );
   }
 
-  // Stages 1-11, 13-14: normal content cards
+  // Stages 1-9: normal content cards
   return (
     <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <StageCard stage={currentStage} />
       </div>
-      <NavigationBar current={currentStage} total={15} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 15} />
+      <NavigationBar current={currentStage} total={10} stageName={STAGES[currentStage]?.name} onNext={next} onBack={back} onJump={jumpTo} isLast={currentStage === 10} />
     </div>
   );
 }
