@@ -26,7 +26,11 @@ if not SUPABASE_ANON_KEY:
 SUPABASE_SERVICE_ROLE_KEY = _get_env("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_JWT_SECRET = _get_env("SUPABASE_JWT_SECRET", required=False, default=None)
 
-CORS_ORIGINS_RAW = _get_env("CORS_ORIGINS", required=False, default="http://localhost:3000")
+CORS_ORIGINS_RAW = _get_env(
+    "CORS_ORIGINS",
+    required=False,
+    default="http://localhost:3000,https://ai-smart-sourcing-dubai-chambers.vercel.app,https://smart-sourcing.devoneerstechnology.ai",
+)
 CORS_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_RAW.split(",") if origin.strip()]
 
 PORT = 8000
