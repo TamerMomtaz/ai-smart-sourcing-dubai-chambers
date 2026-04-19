@@ -310,7 +310,12 @@
 }
 
 @media (min-width: 768px) {
-  [dir="rtl"] aside {
+  /* Selector must match the specificity of [dir="rtl"] aside.-translate-x-full
+     above, otherwise -translate-x-full wins on desktop and pushes the sidebar
+     off-screen to the right. */
+  [dir="rtl"] aside,
+  [dir="rtl"] aside.-translate-x-full,
+  [dir="rtl"] aside.translate-x-0 {
     transform: translateX(0);
   }
 }
