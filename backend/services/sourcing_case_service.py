@@ -146,7 +146,7 @@ def get_sourcing_case(*, case_id: str):
     if case.get("sector"):
         vendors_result = (
             supabase.table("chamber_vendors")
-            .select("id, company_name, country, email")
+            .select("id, company_name:name, country, email:contact_email")
             .limit(20)
             .execute()
         )
@@ -268,7 +268,7 @@ def get_compare_proposals(*, case_id: str) -> Optional[Dict[str, Any]]:
         try:
             vendor_result = (
                 supabase.table("chamber_vendors")
-                .select("id, company_name")
+                .select("id, company_name:name")
                 .in_("id", submitter_ids)
                 .execute()
             )
