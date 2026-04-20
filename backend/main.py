@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 import logging
 import sys
+import traceback
 
 from config import CORS_ORIGINS, APP_VERSION, ENVIRONMENT, validate_env_vars
 from database import supabase
@@ -118,34 +119,79 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global exception handler middleware
-@app.middleware("http")
-async def error_handler_middleware(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as exc:
-        logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "error": "Internal Server Error",
-                "detail": str(exc) if ENVIRONMENT == "development" else "An unexpected error occurred",
-                "code": "INTERNAL_ERROR"
-            }
-        )
+# ── Friendly error handlers ────────────────────────────────────────────────
+# Every error response carries: { error, message, user_action }. Full
+# stacktraces still hit Railway logs for debugging.
 
-# Request validation error handler
+# HTTPException handler — must come FIRST so explicit raises are caught
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": f"http_{exc.status_code}",
+            "message": exc.detail if isinstance(exc.detail, str) else "Request failed.",
+            "user_action": "sign_in" if exc.status_code == 401
+                        else "check_input" if exc.status_code < 500
+                        else "retry",
+        },
+        headers=getattr(exc, "headers", None),
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning(f"Validation error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "Validation Error",
+            "error": "validation_error",
+            "message": "The request could not be processed. Please check your input.",
             "detail": exc.errors(),
-            "code": "VALIDATION_ERROR"
-        }
+            "user_action": "check_input",
+        },
+    )
+
+
+# Generic Exception handler — LAST resort
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        f"Unhandled exception on {request.method} {request.url.path}: "
+        f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
+    )
+
+    error_str = str(exc).lower()
+
+    # PostgREST column/table errors
+    if "does not exist" in error_str or "42703" in error_str or "42p01" in error_str:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": "feature_preparing",
+                "message": "This feature is still being prepared. Please try again shortly.",
+                "user_action": "retry_later",
+            },
+        )
+
+    # JWT / auth errors
+    if "jwt" in error_str or "expired" in error_str or "invalid token" in error_str:
+        return JSONResponse(
+            status_code=401,
+            content={
+                "error": "session_expired",
+                "message": "Your session has expired. Please sign in again.",
+                "user_action": "sign_in",
+            },
+        )
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "unexpected_error",
+            "message": "An unexpected error occurred. Please try again.",
+            "user_action": "retry",
+        },
     )
 
 # Startup event for environment validation

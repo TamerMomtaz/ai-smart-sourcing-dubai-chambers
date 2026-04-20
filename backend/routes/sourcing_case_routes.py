@@ -351,12 +351,8 @@ async def ai_comparison_summary(
     selected = [p for p in all_proposals if p["id"] in payload.proposal_ids]
     if len(selected) < 2:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "error": "BadRequest",
-                "detail": "At least 2 valid proposal IDs required from this sourcing case",
-                "code": "INSUFFICIENT_PROPOSALS",
-            },
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Comparison requires at least 2 proposals. Please select more proposals.",
         )
 
     # Build AI prompt

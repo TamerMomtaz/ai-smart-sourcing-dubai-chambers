@@ -5,6 +5,8 @@ import time
 import uuid
 from typing import Optional, Dict, Any
 
+from fastapi import HTTPException, status
+
 from database import supabase
 from services.ai_provider import ai_complete
 from services import ai_interaction_service
@@ -57,7 +59,10 @@ async def generate_factsheet(
     ).eq("id", vendor_id).maybe_single().execute()
 
     if not vendor_resp.data:
-        raise ValueError("Vendor not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vendor not found. It may have been removed or the link is outdated.",
+        )
 
     vendor = vendor_resp.data
 
@@ -101,6 +106,15 @@ async def generate_factsheet(
         .execute()
     )
     top_proposals = proposals_resp.data or []
+
+    if not top_proposals:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Factsheet requires at least one completed proposal. "
+                "This vendor has not yet participated in any sourcing cases."
+            ),
+        )
 
     # Fetch evaluation detail for those proposals
     top_evaluations = []

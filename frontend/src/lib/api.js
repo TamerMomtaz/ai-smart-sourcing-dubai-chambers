@@ -33,10 +33,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    // Normalize error.friendly for components to consume
+    const status = error.response?.status;
+    const data = error.response?.data;
+
+    error.friendly = {
+      status: status || 0,
+      error: data?.error || 'network_error',
+      message: data?.message
+        || (status === 0 || !status ? 'Unable to reach the server. Check your connection.'
+            : 'An unexpected error occurred. Please try again.'),
+      user_action: data?.user_action || 'retry'
+    };
+
+    // Auth handling — redirect to login on 401
+    if (status === 401) {
       await supabase.auth.signOut();
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );

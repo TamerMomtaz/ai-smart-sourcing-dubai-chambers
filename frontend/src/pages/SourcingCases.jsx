@@ -112,10 +112,17 @@ const Toast = ({ message, type, onClose }) => {
     const t = setTimeout(onClose, 4000);
     return () => clearTimeout(t);
   }, [onClose]);
-  const bg = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+  const bg =
+    type === 'success' ? 'bg-emerald-600' :
+    type === 'info' ? 'bg-blue-600' :
+    'bg-red-600';
+  const icon =
+    type === 'success' ? '✓' :
+    type === 'info' ? 'ℹ' :
+    '✕';
   return (
     <div className={`fixed top-6 right-6 z-50 ${bg} text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3`}>
-      <span>{type === 'success' ? '✓' : '✕'}</span>
+      <span>{icon}</span>
       <span>{message}</span>
       <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">×</button>
     </div>
@@ -451,7 +458,10 @@ const SourcingCases = () => {
       if (res.data.compliance_tier) setMatchComplianceTier(res.data.compliance_tier);
       setToast({ message: `Discovered ${res.data.count || 0} matching vendors`, type: 'success' });
     } catch (err) {
-      setToast({ message: getErrorMessage(err), type: 'error' });
+      const friendly = err?.friendly || {};
+      // 409 = prerequisite not met (e.g. no candidate vendors) — informational, not an error
+      const toastType = friendly.status === 409 || friendly.status === 503 ? 'info' : 'error';
+      setToast({ message: friendly.message || getErrorMessage(err), type: toastType });
     } finally {
       setDiscoverLoading(false);
     }
