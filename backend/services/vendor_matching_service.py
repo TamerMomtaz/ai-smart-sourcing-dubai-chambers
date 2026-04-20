@@ -58,7 +58,7 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
 
     # 2. Query candidate vendors
     vendor_query = supabase.table("chamber_vendors").select(
-        "id, company_name, country, email, sector, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency"
+        "id, company_name:name, country, email:contact_email, sector, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency"
     )
 
     # Apply vScore threshold
@@ -276,7 +276,7 @@ def get_matched_vendors(*, case_id: str) -> Optional[Dict[str, Any]]:
     vendor_ids = list({m["vendor_id"] for m in matches})
     vendors_result = (
         supabase.table("chamber_vendors")
-        .select("id, company_name, country, email, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency")
+        .select("id, company_name:name, country, email:contact_email, vscore, desc_certified, is_desc_approved, iso_27001_certified, uae_data_residency")
         .in_("id", vendor_ids)
         .execute()
     )
