@@ -223,7 +223,7 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
             energy_kwh=round(latency_ms * 0.0000003, 6),
             carbon_gco2=round(latency_ms * 0.0000001, 6),
             intelligence_units=round((prompt_tokens + completion_tokens) * 0.001, 4),
-            operation_type="vendor_matching",
+            operation_type="classification",
         )
     except Exception as e:
         logger.warning("Failed to log AI interaction for vendor matching: %s", e)
@@ -270,7 +270,7 @@ def get_matched_vendors(*, case_id: str) -> Optional[Dict[str, Any]]:
     matches = matches_result.data or []
 
     if not matches:
-        return []
+        return {"matches": [], "compliance_tier": compliance_tier}
 
     # Enrich with vendor details
     vendor_ids = list({m["vendor_id"] for m in matches})
