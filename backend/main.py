@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 import logging
 import sys
+import traceback
 
 from config import CORS_ORIGINS, APP_VERSION, ENVIRONMENT, validate_env_vars
 from database import supabase
@@ -118,34 +119,134 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global exception handler middleware
-@app.middleware("http")
-async def error_handler_middleware(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as exc:
-        logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "error": "Internal Server Error",
-                "detail": str(exc) if ENVIRONMENT == "development" else "An unexpected error occurred",
-                "code": "INTERNAL_ERROR"
-            }
-        )
+# ── Friendly error handlers ────────────────────────────────────────────────
+# Every error response carries: { error, message, user_action }. The goal is
+# UI-layer graceful messaging. Full stacktraces still hit Railway logs.
 
-# Request validation error handler
+_FRIENDLY_HTTP_MESSAGES = {
+    400: "The request could not be processed. Please check your input.",
+    401: "Your session has expired. Please sign in again.",
+    403: "You don't have permission to perform this action.",
+    404: "The requested resource was not found.",
+    409: "This action cannot be completed. Required prerequisites may be missing.",
+    422: "The request could not be processed. Please check your input.",
+    502: "An upstream service is temporarily unavailable. Please try again shortly.",
+    503: "This feature is still being prepared. Please try again shortly.",
+}
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Reshape HTTPExceptions into the friendly payload while preserving legacy
+    `detail` so existing frontend code that reads error.response.data.detail
+    continues to work."""
+    if isinstance(exc.detail, str):
+        message = exc.detail
+        detail_payload = exc.detail
+    elif isinstance(exc.detail, dict):
+        # Legacy pattern: {"error": "...", "detail": "...", "code": ...}
+        message = (
+            exc.detail.get("detail")
+            or exc.detail.get("message")
+            or _FRIENDLY_HTTP_MESSAGES.get(exc.status_code, "Request failed.")
+        )
+        detail_payload = exc.detail
+    else:
+        message = _FRIENDLY_HTTP_MESSAGES.get(exc.status_code, "Request failed.")
+        detail_payload = exc.detail
+
+    if exc.status_code == 401:
+        user_action = "sign_in"
+    elif exc.status_code == 409:
+        user_action = "check_prerequisites"
+    elif exc.status_code >= 500:
+        user_action = "retry"
+    else:
+        user_action = "check_input"
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": f"http_{exc.status_code}",
+            "message": message,
+            "detail": detail_payload,
+            "user_action": user_action,
+        },
+        headers=getattr(exc, "headers", None),
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning(f"Validation error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "Validation Error",
+            "error": "validation_error",
+            "message": "The request could not be processed. Please check your input.",
             "detail": exc.errors(),
-            "code": "VALIDATION_ERROR"
-        }
+            "user_action": "check_input",
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def friendly_exception_handler(request: Request, exc: Exception):
+    """Catch-all for unhandled exceptions. ALWAYS logs full stacktrace, then
+    returns a classified friendly payload. Never exposes raw error strings
+    or stacktraces to the client."""
+    logger.error(
+        "Unhandled exception on %s %s: %s: %s\n%s",
+        request.method,
+        request.url.path,
+        type(exc).__name__,
+        exc,
+        traceback.format_exc(),
+    )
+
+    error_str = str(exc).lower()
+
+    # PostgREST column-not-found (42703), table-not-found (42P01), or relation/column errors
+    if (
+        "does not exist" in error_str
+        or "42703" in error_str
+        or "42p01" in error_str
+        or "undefined column" in error_str
+        or "undefined table" in error_str
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "error": "feature_preparing",
+                "message": "This feature is still being prepared. Please try again shortly.",
+                "user_action": "If this persists, please contact platform support.",
+            },
+        )
+
+    # Supabase auth / JWT errors
+    if (
+        "jwt" in error_str
+        or "expired" in error_str
+        or "invalid token" in error_str
+        or "not authenticated" in error_str
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "error": "session_expired",
+                "message": "Your session has expired. Please sign in again.",
+                "user_action": "sign_in",
+            },
+        )
+
+    # Generic fallback — never expose stacktrace to client
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "unexpected_error",
+            "message": "An unexpected error occurred. Our team has been notified.",
+            "user_action": "retry_or_contact_support",
+        },
     )
 
 # Startup event for environment validation

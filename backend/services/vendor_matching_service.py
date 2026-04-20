@@ -5,6 +5,8 @@ import time
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
+from fastapi import HTTPException, status
+
 from database import supabase
 from services.ai_provider import ai_complete
 from services import ai_interaction_service
@@ -86,7 +88,13 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
     candidates = vendor_result.data or []
 
     if not candidates:
-        return []
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "No matching vendors found. Try broadening the compliance "
+                "tier or adding more vendors to the platform."
+            ),
+        )
 
     # 3. Enrich with proposal history & evaluation averages
     vendor_ids = [v["id"] for v in candidates]

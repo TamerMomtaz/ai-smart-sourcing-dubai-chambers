@@ -23,7 +23,7 @@ export default function BoardBrief() {
   useEffect(() => {
     api.get('/api/v1/reports/board-brief/data')
       .then(res => setData(res.data))
-      .catch(err => setError(err?.response?.data?.detail || 'Failed to load board brief data'))
+      .catch(err => setError(err?.friendly?.message || 'Board Brief data is being prepared.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -43,9 +43,9 @@ export default function BoardBrief() {
   if (error) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#fff' }}>
-        <div style={{ textAlign: 'center', color: '#dc2626' }}>
-          <p style={{ fontSize: 18, fontWeight: 600 }}>Error</p>
-          <p>{typeof error === 'string' ? error : JSON.stringify(error)}</p>
+        <div style={{ maxWidth: 520, textAlign: 'center', padding: 32, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12 }}>
+          <p style={{ fontSize: 18, fontWeight: 600, color: '#0f172a', marginBottom: 8 }}>Board Brief Not Ready</p>
+          <p style={{ color: '#475569' }}>{typeof error === 'string' ? error : 'Board Brief data is being prepared.'}</p>
         </div>
       </div>
     );

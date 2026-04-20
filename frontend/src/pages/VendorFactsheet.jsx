@@ -38,7 +38,7 @@ export default function VendorFactsheet() {
   const [factsheet, setFactsheet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState(null);
+  const [emptyStateMessage, setEmptyStateMessage] = useState(null);
 
   useEffect(() => {
     fetchFactsheet();
@@ -47,15 +47,17 @@ export default function VendorFactsheet() {
   const fetchFactsheet = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setEmptyStateMessage(null);
       const params = sourcingCaseId ? `?sourcing_case_id=${sourcingCaseId}` : '';
       const { data } = await api.get(`/api/v1/vendors/${id}/factsheet${params}`);
       setFactsheet(data);
     } catch (err) {
-      if (err?.response?.status === 404) {
-        setFactsheet(null);
-      } else {
-        setError(err?.response?.data?.detail || 'Failed to load factsheet');
+      setFactsheet(null);
+      // 404 = no factsheet generated yet — page-body UI offers Generate button
+      if (err?.friendly?.status !== 404) {
+        setEmptyStateMessage(
+          err?.friendly?.message || 'Factsheet data is being prepared.'
+        );
       }
     } finally {
       setLoading(false);
@@ -65,12 +67,14 @@ export default function VendorFactsheet() {
   const handleGenerate = async () => {
     try {
       setGenerating(true);
-      setError(null);
+      setEmptyStateMessage(null);
       const body = sourcingCaseId ? { sourcing_case_id: sourcingCaseId } : {};
       const { data } = await api.post(`/api/v1/vendors/${id}/factsheet`, body);
       setFactsheet(data);
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Generation failed');
+      setEmptyStateMessage(
+        err?.friendly?.message || 'Factsheet data is being prepared.'
+      );
     } finally {
       setGenerating(false);
     }
@@ -97,14 +101,16 @@ export default function VendorFactsheet() {
     );
   }
 
-  if (!factsheet && !error) {
+  if (!factsheet) {
     return (
       <div className="max-w-3xl mx-auto py-8 px-4">
         <button onClick={() => navigate(-1)} className="text-teal hover:underline text-sm mb-6 block">
           ← Back
         </button>
         <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <p className="text-ink/60 mb-4">No factsheet has been generated for this vendor yet.</p>
+          <p className="text-ink/70 mb-4">
+            {emptyStateMessage || 'No factsheet has been generated for this vendor yet.'}
+          </p>
           <button
             onClick={handleGenerate}
             disabled={generating}
@@ -112,20 +118,6 @@ export default function VendorFactsheet() {
           >
             {generating ? 'Generating...' : 'Generate Factsheet'}
           </button>
-          {error && <p className="text-red-600 text-sm mt-4">{typeof error === 'string' ? error : JSON.stringify(error)}</p>}
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !factsheet) {
-    return (
-      <div className="max-w-3xl mx-auto py-8 px-4">
-        <button onClick={() => navigate(-1)} className="text-teal hover:underline text-sm mb-6 block">
-          ← Back
-        </button>
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center text-red-600">
-          <p>{typeof error === 'string' ? error : JSON.stringify(error)}</p>
         </div>
       </div>
     );

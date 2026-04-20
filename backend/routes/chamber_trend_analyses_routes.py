@@ -227,14 +227,13 @@ async def generate_trend_analysis(
 
         proposals = proposals_response.data or []
 
-        if not proposals:
+        if len(proposals) < 5:
             raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "Bad Request",
-                    "detail": "No evaluated proposals available for trend analysis",
-                    "code": 400,
-                },
+                status_code=409,
+                detail=(
+                    "Trend analysis requires at least 5 evaluated proposals "
+                    "for statistical significance."
+                ),
             )
 
         # Check for audit info

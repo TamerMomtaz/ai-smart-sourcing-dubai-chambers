@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict
 from datetime import datetime
 import logging
@@ -36,6 +36,15 @@ async def get_board_brief_data(current_user: Dict = Depends(get_current_user)):
 
     # Evaluated proposals have a composite_score
     evaluated = [p for p in all_proposals if p.get("composite_score") is not None]
+
+    if not evaluated:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Board Brief requires at least one evaluated proposal. "
+                "Submit or evaluate proposals first."
+            ),
+        )
     avg_score = round(
         sum(p["composite_score"] for p in evaluated) / max(len(evaluated), 1), 1
     )
