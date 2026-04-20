@@ -52,7 +52,7 @@ async def generate_factsheet(
     vendor_resp = supabase.table("chamber_vendors").select(
         "id, name, country, contact_email, website, is_desc_approved, "
         "desc_badge_issued_date, onboarding_status, average_compliance_score, "
-        "trade_license_status, desc_certified, desc_certification_level, "
+        "trade_license_status, desc_certified_provider_id, "
         "vscore, vscore_tier"
     ).eq("id", vendor_id).maybe_single().execute()
 
@@ -243,7 +243,7 @@ async def generate_factsheet(
         },
         "desc_status": {
             "approved": vendor.get("is_desc_approved", False),
-            "certified": vendor.get("desc_certified", False),
+            "certified": bool(vendor.get("desc_certified_provider_id")) or vendor.get("is_desc_approved", False),
             "certification_level": vendor.get("desc_certification_level"),
             "badge_issued_date": vendor.get("desc_badge_issued_date"),
         },

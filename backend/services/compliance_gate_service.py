@@ -171,7 +171,7 @@ def run_compliance_gate(*, proposal_id: str) -> Dict[str, Any]:
     # Fetch vendor info
     vendor_resp = (
         supabase.table("chamber_vendors")
-        .select("id, name, is_desc_approved, desc_certified_provider_id, country, data_residency")
+        .select("id, name, is_desc_approved, desc_certified_provider_id, country")
         .eq("id", vendor_id)
         .maybe_single()
         .execute()
