@@ -1,0 +1,5 @@
+# Intermediate pipeline state and the large UPLOADABLE blobs are NOT committed.
+# Hand train/eval *.jsonl to the user as artifacts (see manifest.json sha256s).
+out/
+dist/
+# Committed: generators/, manifest.json, report.md, smoke.*.jsonl, meta/, index/, decisions/
