@@ -1,0 +1,8 @@
+[
+  {
+    "sha": "81760017be1ba4e51e758327f0e2330db952bb23",
+    "file": "frontend/src/pages/HowItWorks.jsx",
+    "hunk": "@@ -185,559 +176,163 @@ function HeroSection({ onStart, impact, session }) {",
+    "net_lines": 574
+  }
+]

@@ -1,0 +1,319 @@
+{
+  "counts": {
+    "commit_dropped": 1,
+    "no_parent": 1,
+    "units": 243,
+    "file_dropped": 15,
+    "hunk_dropped_monster": 1
+  },
+  "redaction_hits": {
+    "infra-literal": 2
+  },
+  "decisions": [
+    {
+      "sha": "aad2d3163ce349acb9018e2beb026407660779db",
+      "subject": "Merge pull request #108 from TamerMomtaz/claude/rename-hallucination-shield-DLm3e",
+      "action": "drop-commit",
+      "reason": "merge"
+    },
+    {
+      "sha": "8812559309430fba0a0864d85332b7ae7e329477",
+      "subject": "Add Sourcing Case Engine with full CRUD, frontend page, and proposal linking",
+      "action": "skip",
+      "reason": "no-parent (shallow boundary)"
+    },
+    {
+      "sha": "0cfc0b03cd93635df0f456526f588152afbe660d",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "0cfc0b03cd93635df0f456526f588152afbe660d",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "76b2c21f0e69b1e5b5ccd1e8c59249534770b8d9",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "76b2c21f0e69b1e5b5ccd1e8c59249534770b8d9",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "aa49b52b0cbc7ed7dd93e0ad97c7e6b48989b2a5",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "aa49b52b0cbc7ed7dd93e0ad97c7e6b48989b2a5",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "03c81a357717ada0274e7993e9065c8692e05c1f",
+      "file": "CLAUDE.md",
+      "action": "drop-file",
+      "reason": "doc-only (markdown)"
+    },
+    {
+      "sha": "ea12cb1d2c587471da8daaaf54817b4f1f8c66aa",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "ea12cb1d2c587471da8daaaf54817b4f1f8c66aa",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "e8bf9e0642e11d0202fc2791198ddd14980c77e9",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "e8bf9e0642e11d0202fc2791198ddd14980c77e9",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "f5d7b9a45e16f0a4bf0f0ab21f0abfbdabc33afa",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "f5d7b9a45e16f0a4bf0f0ab21f0abfbdabc33afa",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "c2f0a47521715854770538090400a240fd2405e1",
+      "file": "frontend/src/locales/ar.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    },
+    {
+      "sha": "c2f0a47521715854770538090400a240fd2405e1",
+      "file": "frontend/src/locales/en.json",
+      "action": "drop-file",
+      "reason": "locale blob"
+    }
+  ],
+  "curation": {
+    "dropped_wiring": [
+      {
+        "id": "real-0001",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0008",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0015",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0046",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0050",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0051",
+        "file": "frontend/src/components/Layout.jsx",
+        "net_lines": 1,
+        "reason": "nav-entry fragment"
+      },
+      {
+        "id": "real-0069",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0074",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0082",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0085",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0102",
+        "file": "backend/config.py",
+        "net_lines": 2,
+        "reason": "config-stub fragment"
+      },
+      {
+        "id": "real-0103",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0110",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0121",
+        "file": "backend/config.py",
+        "net_lines": 8,
+        "reason": "config-stub fragment"
+      },
+      {
+        "id": "real-0122",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0125",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0135",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0138",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0139",
+        "file": "frontend/src/components/Layout.jsx",
+        "net_lines": 1,
+        "reason": "nav-entry fragment"
+      },
+      {
+        "id": "real-0146",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0155",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0161",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0173",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0177",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0183",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0185",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0188",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0194",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0203",
+        "file": "backend/main.py",
+        "net_lines": 4,
+        "reason": "route-mount fragment (main.py)"
+      },
+      {
+        "id": "real-0205",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0206",
+        "file": "frontend/src/components/Layout.jsx",
+        "net_lines": 1,
+        "reason": "nav-entry fragment"
+      },
+      {
+        "id": "real-0209",
+        "file": "frontend/src/App.jsx",
+        "net_lines": 2,
+        "reason": "route-registration fragment (App.jsx)"
+      },
+      {
+        "id": "real-0210",
+        "file": "frontend/src/components/Layout.jsx",
+        "net_lines": 1,
+        "reason": "nav-entry fragment"
+      }
+    ],
+    "kept": 210
+  }
+}

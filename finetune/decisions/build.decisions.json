@@ -1,0 +1,46 @@
+{
+  "synth_dropped_verify": 0,
+  "dropped_exact_dup": 134,
+  "dropped_near_dup": 10,
+  "family_cap": 52,
+  "synth_after_trim": 840,
+  "family_distribution": {
+    "ai_provider_call": 40,
+    "async_route": 39,
+    "audit_logger": 39,
+    "background_task": 39,
+    "idempotency": 39,
+    "index_constraint": 39,
+    "pagination": 38,
+    "pydantic_model": 39,
+    "pytest_logic": 4,
+    "pytest_service": 38,
+    "rate_limiter": 12,
+    "rbac_dependency": 38,
+    "react_dashboard": 31,
+    "react_form": 39,
+    "react_hook": 38,
+    "react_list": 39,
+    "retry_decorator": 18,
+    "rls_policy": 39,
+    "service_aggregate": 39,
+    "sql_view": 39,
+    "sync_service_crud": 38,
+    "table_migration": 38,
+    "trigger_fn": 39,
+    "webhook_ingest": 39
+  },
+  "dropped_over_token": 0,
+  "split": {
+    "train": 998,
+    "eval": 52,
+    "eval_frac": 0.0495
+  },
+  "secret_sweep": {},
+  "mix": {
+    "real": 210,
+    "synthetic": 840,
+    "total": 1050,
+    "synthetic_pct": 80.0
+  }
+}

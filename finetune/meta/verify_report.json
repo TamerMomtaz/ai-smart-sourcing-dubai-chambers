@@ -1,0 +1,31 @@
+{
+  "total": 1092,
+  "pass": 1092,
+  "fail": 0,
+  "full_pass_rate": 1.0,
+  "sample_size": 109,
+  "sample_pass_rate": 1.0,
+  "by_lang": {
+    "python": {
+      "pass": 669,
+      "fail": 0,
+      "skip": 0
+    },
+    "sql": {
+      "pass": 235,
+      "fail": 0,
+      "skip": 0
+    },
+    "jsx": {
+      "pass": 141,
+      "fail": 0,
+      "skip": 0
+    },
+    "javascript": {
+      "pass": 47,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "failures": []
+}

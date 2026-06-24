@@ -1,0 +1,74 @@
+{
+  "dist/train.anthropic.jsonl": {
+    "ok": true,
+    "jq_parsed": 998,
+    "records": 998,
+    "sha256": "3edafc99a25291acf695316f0fc8a14862070f87c86e9e5533267d737cd2a20d",
+    "tokens(min/max/mean)": [
+      174,
+      4981,
+      1157.7
+    ],
+    "issues": []
+  },
+  "dist/eval.anthropic.jsonl": {
+    "ok": true,
+    "jq_parsed": 52,
+    "records": 52,
+    "sha256": "dd59f3493d94d089ec9450e88f18008ab30f31b8b9b082c63e9b660ef75abc33",
+    "tokens(min/max/mean)": [
+      210,
+      3283,
+      1112.7
+    ],
+    "issues": []
+  },
+  "smoke.anthropic.jsonl": {
+    "ok": true,
+    "jq_parsed": 50,
+    "records": 50,
+    "sha256": "c9fac781e5d4ab8c8325579b38a79d893920bacb32dad4f57a428d99cb8dab3a",
+    "tokens(min/max/mean)": [
+      200,
+      2937,
+      1092.1
+    ],
+    "issues": []
+  },
+  "dist/train.axolotl.jsonl": {
+    "ok": true,
+    "jq_parsed": 998,
+    "records": 998,
+    "sha256": "dcf45b38846443db880ac085701c46b6afa631dc9190f800942d9f097decde83",
+    "tokens(min/max/mean)": [
+      259,
+      5066,
+      1242.7
+    ],
+    "issues": []
+  },
+  "dist/eval.axolotl.jsonl": {
+    "ok": true,
+    "jq_parsed": 52,
+    "records": 52,
+    "sha256": "fe415b47fb6aeef8a53924836724734004617bd80db3e10dc66243e12847ae66",
+    "tokens(min/max/mean)": [
+      295,
+      3368,
+      1197.7
+    ],
+    "issues": []
+  },
+  "smoke.axolotl.jsonl": {
+    "ok": true,
+    "jq_parsed": 50,
+    "records": 50,
+    "sha256": "5140a716cc38e5f637d33e81831b2530003a9c25144bbc55e5d063965996482f",
+    "tokens(min/max/mean)": [
+      285,
+      3022,
+      1177.1
+    ],
+    "issues": []
+  }
+}

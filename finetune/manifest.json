@@ -1,0 +1,111 @@
+{
+  "platform": [
+    "anthropic-messages",
+    "hf-axolotl-chat_template"
+  ],
+  "tokenizer": "tiktoken o200k_base (Anthropic has no offline tokenizer; sizes are an APPROXIMATION, clearly labeled; records are far below the 16k cap so it does not bind)",
+  "seed": 20240624,
+  "max_tokens_per_record": 16000,
+  "near_dup_threshold": 0.9,
+  "split": "95/5 (group-based, no source leakage)",
+  "mix": {
+    "real": 210,
+    "synthetic": 840,
+    "total": 1050,
+    "synthetic_pct": 80.0
+  },
+  "synthetic_over_70pct_FLAG": true,
+  "files": {
+    "dist/train.anthropic.jsonl": {
+      "records": 998,
+      "sha256": "3edafc99a25291acf695316f0fc8a14862070f87c86e9e5533267d737cd2a20d",
+      "tokens": {
+        "min": 258,
+        "max": 5065,
+        "mean": 1241.8
+      },
+      "token_histogram": {
+        "0-256": 0,
+        "256-512": 194,
+        "512-1024": 217,
+        "1024-2048": 494,
+        "2048-4096": 88,
+        "4096-8192": 5,
+        "8192-16000": 0,
+        "16000-inf": 0
+      },
+      "uploadable": true
+    },
+    "dist/eval.anthropic.jsonl": {
+      "records": 52,
+      "sha256": "dd59f3493d94d089ec9450e88f18008ab30f31b8b9b082c63e9b660ef75abc33",
+      "tokens": {
+        "min": 294,
+        "max": 3367,
+        "mean": 1196.7
+      },
+      "token_histogram": {
+        "0-256": 0,
+        "256-512": 14,
+        "512-1024": 7,
+        "1024-2048": 25,
+        "2048-4096": 6,
+        "4096-8192": 0,
+        "8192-16000": 0,
+        "16000-inf": 0
+      },
+      "uploadable": true
+    },
+    "dist/train.axolotl.jsonl": {
+      "records": 998,
+      "sha256": "dcf45b38846443db880ac085701c46b6afa631dc9190f800942d9f097decde83",
+      "tokens": {
+        "min": 258,
+        "max": 5065,
+        "mean": 1241.8
+      },
+      "token_histogram": {
+        "0-256": 0,
+        "256-512": 194,
+        "512-1024": 217,
+        "1024-2048": 494,
+        "2048-4096": 88,
+        "4096-8192": 5,
+        "8192-16000": 0,
+        "16000-inf": 0
+      },
+      "uploadable": true
+    },
+    "dist/eval.axolotl.jsonl": {
+      "records": 52,
+      "sha256": "fe415b47fb6aeef8a53924836724734004617bd80db3e10dc66243e12847ae66",
+      "tokens": {
+        "min": 294,
+        "max": 3367,
+        "mean": 1196.7
+      },
+      "token_histogram": {
+        "0-256": 0,
+        "256-512": 14,
+        "512-1024": 7,
+        "1024-2048": 25,
+        "2048-4096": 6,
+        "4096-8192": 0,
+        "8192-16000": 0,
+        "16000-inf": 0
+      },
+      "uploadable": true
+    },
+    "smoke.anthropic.jsonl": {
+      "records": 50,
+      "sha256": "c9fac781e5d4ab8c8325579b38a79d893920bacb32dad4f57a428d99cb8dab3a",
+      "uploadable": "trial-only"
+    },
+    "smoke.axolotl.jsonl": {
+      "records": 50,
+      "sha256": "5140a716cc38e5f637d33e81831b2530003a9c25144bbc55e5d063965996482f",
+      "uploadable": "trial-only"
+    }
+  },
+  "secret_sweep_hits": {}
+}
