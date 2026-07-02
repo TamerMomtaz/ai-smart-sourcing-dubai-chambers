@@ -1,7 +1,12 @@
+import logging
+
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime, timezone
 from database import supabase
+from services.document_service import SUPABASE_STORAGE_BUCKET as STORAGE_BUCKET
+
+logger = logging.getLogger(__name__)
 
 
 class ChamberDocumentService:
@@ -238,11 +243,11 @@ class ChamberDocumentService:
     def delete(user_id: UUID, document_id: UUID) -> bool:
         """
         Delete a document (hard delete due to CASCADE on proposal).
-        
+
         Args:
             user_id: User UUID performing deletion
             document_id: Document UUID
-            
+
         Returns:
             True if deleted, False if not found/unauthorized
         """
@@ -255,19 +260,34 @@ class ChamberDocumentService:
             .maybe_single()
             .execute()
         )
-        
+
         if not ownership_check.data:
             return False
-        
-        # Delete from database (storage cleanup should be handled separately)
+
+        # Delete the database row first. If this fails, the caller gets False
+        # and nothing is touched; and if storage cleanup then fails, a
+        # recoverable orphaned file is better than a live row pointing at a
+        # deleted object.
         result = (
             supabase.table("chamber_documents")
             .delete()
             .eq("id", str(document_id))
             .execute()
         )
-        
-        return len(result.data) > 0 if result.data else False
+
+        if not (result.data and len(result.data) > 0):
+            return False
+
+        storage_path: Optional[str] = ownership_check.data.get("storage_path")
+        if storage_path:
+            try:
+                removed = supabase.storage.from_(STORAGE_BUCKET).remove([storage_path])
+                if not removed:
+                    logger.warning(f"Storage removal returned empty for {storage_path} (document {document_id}) — object may not have existed")
+            except Exception as e:  # client/network/auth errors
+                logger.warning(f"Failed to cleanup storage for document {document_id}: {e}")
+
+        return True
 
     @staticmethod
     def get_by_proposal(user_id: UUID, proposal_id: UUID) -> List[Dict[str, Any]]:
