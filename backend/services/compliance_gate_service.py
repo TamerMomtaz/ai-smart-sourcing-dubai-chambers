@@ -58,15 +58,22 @@ def _check_required_certifications(*, vendor_id: str) -> Dict[str, Any]:
     try:
         flags_resp = (
             supabase.table("chamber_vendor_flags")
-            .select("flag_value")
+            .select("flag_type, expiry_date, resolution_status")
             .eq("vendor_id", vendor_id)
-            .eq("flag_type", "certification")
+            .in_("flag_type", ["iso_27001"])
             .execute()
         )
-        certs = [
-            (f.get("flag_value") or "").upper() for f in (flags_resp.data or [])
+        today_str = datetime.now(timezone.utc).date().isoformat()  # ISO string for date comparison
+        valid_certs = [
+            f
+            for f in (flags_resp.data or [])
+            if (
+                f.get("expiry_date") is None
+                or f["expiry_date"] >= today_str  # both sides are strings now
+            )
+            and f.get("resolution_status") != "dismissed"
         ]
-        has_iso = any("ISO 27001" in c or "ISO27001" in c for c in certs)
+        has_iso = any(f["flag_type"] == "iso_27001" for f in valid_certs)
         return {
             "rule": "Required Certifications",
             "result": "pass" if has_iso else "flag",
@@ -81,7 +88,7 @@ def _check_required_certifications(*, vendor_id: str) -> Dict[str, Any]:
         return {
             "rule": "Required Certifications",
             "result": "flag",
-            "detail": f"Unable to verify certifications — {e}",
+            "detail": "Unable to verify certifications",
         }
 
 
