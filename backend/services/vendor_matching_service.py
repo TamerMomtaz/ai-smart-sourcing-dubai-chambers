@@ -2,6 +2,7 @@
 import json
 import logging
 import time
+from datetime import date
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
@@ -75,10 +76,18 @@ async def discover_vendors(*, case_id: str, user_id: str) -> List[Dict[str, Any]
         # Residency proxied via country (no dedicated column on chamber_vendors);
         # mirrors compliance_gate_service._check_data_residency.
         vendor_query = vendor_query.in_("country", ["UAE", "AE", "United Arab Emirates"])
-        # TODO(post-submission): pre-fetch vendor IDs from chamber_vendor_flags
-        # where flag_type='certification' AND flag_value ILIKE '%ISO 27001%',
-        # then .in_("id", those_ids). Omitted for MVP — no production cases
-        # currently use tier='critical'.
+        # Fetch vendor IDs holding a valid ISO 27001 flag
+        today = date.today().isoformat()
+        flags_resp = (
+            supabase.table("chamber_vendor_flags")
+            .select("vendor_id")
+            .eq("flag_type", "iso_27001")
+            .or_("expiry_date.is.null,expiry_date.gte.{}".format(today))
+            .not_.in_("resolution_status", ["dismissed"])
+            .execute()
+        )
+        iso_vendor_ids = {f["vendor_id"] for f in (flags_resp.data or [])}
+        vendor_query = vendor_query.in_("id", list(iso_vendor_ids))
     # 'open' and 'standard' have no hard filters at the query level
 
     # Limit to a reasonable candidate pool
@@ -293,6 +302,24 @@ def get_matched_vendors(*, case_id: str) -> Optional[Dict[str, Any]]:
     )
     vendor_lookup = {v["id"]: v for v in (vendors_result.data or [])}
 
+    # Build ISO 27001 flag presence map for all matched vendors.
+    # Batch-query chamber_vendor_flags with the same validity filter that
+    # discover_vendors uses, then set has_iso_27001_flag on each vendor dict
+    # so _vendor_meets_tier can read it.
+    today = date.today().isoformat()
+    flags_resp = (
+        supabase.table("chamber_vendor_flags")
+        .select("vendor_id")
+        .eq("flag_type", "iso_27001")
+        .or_("expiry_date.is.null,expiry_date.gte.{}".format(today))
+        .not_.in_("resolution_status", ["dismissed"])
+        .in_("vendor_id", vendor_ids)
+        .execute()
+    )
+    iso_vendor_ids = {f["vendor_id"] for f in (flags_resp.data or [])}
+    for vendor in vendor_lookup.values():
+        vendor["has_iso_27001_flag"] = vendor["id"] in iso_vendor_ids
+
     # Get evaluation averages
     proposals_result = (
         supabase.table("chamber_proposals")
@@ -335,11 +362,11 @@ def _vendor_meets_tier(*, vendor: Dict[str, Any], tier: str) -> bool:
     if tier == "government":
         return bool(vendor.get("is_desc_approved"))
     if tier == "critical":
-        # Current schema limits: no ISO 27001 column; residency proxied via country
-        # TODO(post-submission): integrate chamber_vendor_flags lookup for real ISO check
         return (
             bool(vendor.get("is_desc_approved"))
             and vendor.get("country") in ("UAE", "AE", "United Arab Emirates")
+            # Real ISO 27001 check — chamber_vendor_flags row exists for this vendor
+            and vendor.get("has_iso_27001_flag", False)
         )
     return True
 
