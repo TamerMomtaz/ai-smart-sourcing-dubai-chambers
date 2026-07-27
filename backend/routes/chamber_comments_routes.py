@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from uuid import UUID
@@ -9,6 +10,8 @@ from models.comment import CommentCreate, CommentResponse
 from models.common import ErrorResponse, PaginationResponse
 from services import comment_service
 from database import supabase
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chamber-comments", tags=["Chamber Comments"])
 
@@ -137,11 +140,12 @@ async def create_comment(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("Operation=create_comment error=%s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": "Internal server error",
-                "detail": str(e),
+                "detail": "Failed to create comment",
                 "code": "INTERNAL_ERROR",
             },
         )
@@ -265,11 +269,12 @@ async def list_comments(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("Operation=list_comments error=%s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": "Internal server error",
-                "detail": str(e),
+                "detail": "Failed to load comments",
                 "code": "INTERNAL_ERROR",
             },
         )
@@ -367,11 +372,12 @@ async def get_comment(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("Operation=get_comment error=%s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": "Internal server error",
-                "detail": str(e),
+                "detail": "Failed to load comment",
                 "code": "INTERNAL_ERROR",
             },
         )
@@ -445,11 +451,12 @@ async def delete_comment(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("Operation=delete_comment error=%s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": "Internal server error",
-                "detail": str(e),
+                "detail": "Failed to delete comment",
                 "code": "INTERNAL_ERROR",
             },
         )
