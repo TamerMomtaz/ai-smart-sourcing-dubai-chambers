@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import List, Optional
+import logging
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from datetime import datetime, timezone
@@ -20,10 +21,14 @@ from models.common import ErrorResponse, PaginationResponse
 from services.chamber_proposal_service import ChamberProposalService
 from services.proposal_service import create_proposal
 from services.submit_service import submit_proposal
+from services.document_service import SUPABASE_STORAGE_BUCKET
 from services.evaluate_service import trigger_proposal_evaluation
 from services.status_service import update_proposal_status
 from services.duplicate_check_service import run_duplicate_check
 from database import supabase
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chamber_proposals", tags=["chamber_proposals"])
 
@@ -579,7 +584,16 @@ async def delete_chamber_proposal(
     proposal_id: UUID,
     current_user: UserInfo = Depends(get_current_user),
 ):
-    """Delete proposal (admin-only operation, soft delete via RLS)."""
+    """Delete a proposal and its attached documents (admin-only operation).
+
+    Collects all storage_path values from chamber_documents in one batch query
+    BEFORE the database delete. The document rows cascade via ON DELETE CASCADE at
+    delete time, so we have the paths before they are gone. Storage objects are
+    removed in one supabase.storage.from_(SUPABASE_STORAGE_BUCKET).remove() call:
+    a missing path is silently ignored (no exception), and any path not accounted for by the
+    result is logged as a warning with the paths involved. Database failures raise HTTP 500;
+    storage cleanup failures log warnings but do not abort the response.
+    """
     try:
         if current_user.role != "admin":
             raise HTTPException(
@@ -595,6 +609,17 @@ async def delete_chamber_proposal(
                 detail={"error": "NotFound", "detail": "Proposal not found", "code": 404},
             )
 
+        # Collect all storage paths before touching the database.
+        document_rows = (
+            supabase.table("chamber_documents")
+            .select("storage_path")
+            .eq("proposal_id", str(proposal_id))
+            .execute()
+        ).data or []
+
+        paths_to_remove: List[str] = [row["storage_path"] for row in document_rows if "storage_path" in row]
+
+        # Database delete first (chamber_documents cascade is triggered here).
         delete_response = supabase.table("chamber_proposals").delete().eq("id", str(proposal_id)).execute()
 
         if not delete_response.data:
@@ -602,6 +627,19 @@ async def delete_chamber_proposal(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"error": "InternalServerError", "detail": "Failed to delete proposal", "code": 500},
             )
+
+        # Storage cleanup after the database is consistent. A missing path returns
+        # an empty result (no exception) and we warn if not everything was removed.
+        try:
+            if paths_to_remove:
+                removed = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).remove(paths_to_remove)
+                if len(removed or []) != len(paths_to_remove):
+                    logger.warning(
+                        f"Storage cleanup partial: requested {len(paths_to_remove)} paths, "
+                        f"got {len(removed or [])} results (proposal {proposal_id}): {paths_to_remove}"
+                    )
+        except Exception as e:
+            logger.warning(f"Failed to cleanup storage for proposal {proposal_id}: {e}")
 
         return None
 
